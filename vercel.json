@@ -1,17 +1,33 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "",
   "outputDirectory": "public",
-  "cleanUrls": true,
   "rewrites": [
-    { "source": "/juri", "destination": "/index.html" },
-    { "source": "/juri/", "destination": "/index.html" }
+    {
+      "source": "/juri",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/juri/",
+      "destination": "/index.html"
+    }
   ],
   "headers": [
-    { "source": "/(.*)", "headers": [
-      { "key": "X-Content-Type-Options", "value": "nosniff" },
-      { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
-      { "key": "X-Robots-Tag", "value": "noindex" }
-    ] }
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex"
+        }
+      ]
+    }
   ]
 }
