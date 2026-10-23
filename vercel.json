@@ -9,6 +9,22 @@
     {
       "source": "/juri/",
       "destination": "/index.html"
+    },
+    {
+      "source": "/coordenador",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/coordenador/",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/coordenador/juri",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/coordenador/juri/",
+      "destination": "/index.html"
     }
   ],
   "headers": [

@@ -445,7 +445,7 @@ const CRM_URL="https://claude.ai/artifact/MsdAABAFPKvqq7ANo4yDMP";
 
 /* ================= Estado ================= */
 /* Painel do júri: #juri no Claude, /juri na versão web */
-function isJuriRoute(){return location.hash==="#juri"||/\/juri\/?$/.test(location.pathname);}
+function isJuriRoute(){return window.INOV_ISJURI?window.INOV_ISJURI():(location.hash==="#juri"||/\/juri\/?$/.test(location.pathname));}
 const S={view:"geral",tab:{hub:"ideias",apollo:"resumo",ud:"resumo",kpi:"perfis"},cfg:clone(DEFAULT_CFG),cfgLoaded:false,
   ideias:new Map(),kpi:new Map(),startups:new Map(),contactos:new Map(),mbr:new Map(),crm:null,db:null,sample:null,dbState:"pending",
   sessoes:new Map(),pedidos:new Map(),feedback:new Map(),live:new Map(),fotos:new Map(),isOwner:false,userKnown:false,mode:isJuriRoute()?"juri":"app",jTab:"avaliar",room:null,lastSync:0,me:{email:"",name:""},preview:false,draft:{},jurado:"",follow:true,jPar:null,liveN:null,
@@ -1333,7 +1333,7 @@ function juryRanking(n,s,J){
 }
 function hLive(){
   const L=liveState();if(S.liveN==null)S.liveN=L.sessao||1;const n=S.liveN,s=sess(n),M=S.cfg.membros;
-  const link=ART_URL+"#juri";
+  const link=window.INOV_JURI_URL||ART_URL+"#juri";
   const used=new Set((s.pares||[]).flatMap(p=>[p.a,p.b,p.c]).filter(Boolean));
   const sel=(k,side,val)=>`<select class="field sm" data-pair="${n}:${k}:${side}" aria-label="Membro"><option value="">—</option>${M.map(m=>`<option ${m===val?"selected":""} ${m!==val&&used.has(m)?'style="color:var(--muted)"':""}>${esc(m)}</option>`).join("")}</select>`;
   return `<div class="toolbar"><span class="sess">${[1,2,3,4].map(k=>`<button type="button" class="chip" data-act="liven" data-v="${k}" aria-pressed="${k===n}">${k}.ª sessão${(L.sessao||1)===k?" · ativa":""}</button>`).join("")}</span>

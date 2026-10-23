@@ -10,7 +10,12 @@
   const SB = "https://hggrgaktnacmmgmaoeib.supabase.co";
   const KEY = "sb_publishable_em1gUMD7EQjI8n1hCE18tQ_DSy-eAsR";
   const LS_CODE = "inov-coord-code";
-  const isJuri = () => location.hash === "#juri" || /\/juri\/?$/.test(location.pathname);
+  /* Rotas: "/" e "/juri" = painel do júri; "/coordenador" = área do coordenador (com código).
+     "/coordenador/juri" ou "#juri" mostram o júri também ao coordenador. */
+  const isCoordPath = () => /^\/coordenador(\/|$)/.test(location.pathname);
+  const isJuri = () => location.hash === "#juri" || /\/juri\/?$/.test(location.pathname) || !isCoordPath();
+  window.INOV_ISJURI = isJuri;
+  window.INOV_JURI_URL = location.origin + "/juri";
   const getCode = () => { try { return localStorage.getItem(LS_CODE) || ""; } catch (e) { return ""; } };
 
   function headers(extra){
@@ -134,7 +139,7 @@
   };
   document.addEventListener("click", async e => {
     const t = e.target.closest && e.target.closest("#inov-export,#inov-logout"); if (!t) return;
-    if (t.id === "inov-logout") { try { localStorage.removeItem(LS_CODE); } catch (err) {} location.href = "/"; return; }
+    if (t.id === "inov-logout") { try { localStorage.removeItem(LS_CODE); } catch (err) {} location.href = "/coordenador"; return; }
     const rows = await req("docs?select=col,id,data&order=col,id&limit=10000");
     const blob = new Blob([JSON.stringify({ app: "INOV2627", exportedAt: new Date().toISOString(), docs: rows }, null, 1)], { type: "application/json" });
     const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "inov2627-copia-" + new Date().toISOString().slice(0, 10) + ".json"; a.click();
