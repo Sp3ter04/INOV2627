@@ -141,6 +141,9 @@ tr:last-child td{border-bottom:0}
 tr.sel td{background:var(--brand-soft)}
 td .t{font-weight:700}
 td .s{display:block;color:var(--muted);font-size:12.5px;max-width:420px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+td .ps{display:block;color:var(--muted);font-size:13px;line-height:1.45;max-width:62ch;white-space:normal;margin-top:4px}
+td .ps b{display:block;font-family:var(--display);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--fg);opacity:.75}
+.pcell{display:flex;flex-direction:column;gap:4px;min-width:130px}.pp{display:flex;align-items:center;gap:7px;font-size:12.5px;white-space:nowrap}.pp .av{flex:none}
 .rowbtn{all:unset;cursor:pointer;display:block}
 .rowbtn:focus-visible{outline:2px solid var(--brand)}
 .detail td{background:var(--surface-2);padding:12px 14px}
@@ -775,7 +778,7 @@ function memberOpts(){return `<datalist id="dl-membros">${S.cfg.membros.map(m=>`
 function hIdeias(){
   const f=S.f,all=[...S.ideias.values()];
   const q=norm(f.q);
-  let list=all.filter(i=>(!f.sess||i.sessao===f.sess)&&(!f.dec||(f.dec==="none"?!i.decisao:i.decisao===f.dec))&&(!f.tipo||(f.tipo==="none"?!i.tipo:i.tipo===f.tipo))&&(!f.par||(i.par||[]).includes(f.par))&&(!q||norm([i.titulo,i.problema,i.solucao,...(i.par||[])].join(" ")).includes(q)));
+  let list=all.filter(i=>(!f.sess||i.sessao===f.sess)&&(!f.tipo||(f.tipo==="none"?!i.tipo:i.tipo===f.tipo))&&(!f.par||(i.par||[]).includes(f.par))&&(!q||norm([i.titulo,i.problema,i.solucao,...(i.par||[])].join(" ")).includes(q)));
   list.sort(f.ord==="gosto"?(a,b)=>((b.gosto||0)-(a.gosto||0))||(score(b.id)-score(a.id))||(a.titulo||"").localeCompare(b.titulo||""):(a,b)=>(b.sessao-a.sessao)||(b.createdAt||"").localeCompare(a.createdAt||""));
   const perS=[1,2,3,4].map(n=>all.filter(i=>i.sessao===n));
   const maxS=Math.max(1,...perS.map(a=>a.length));
@@ -783,21 +786,20 @@ function hIdeias(){
   const qk=S.quick;
   return `${memberOpts()}
   <div class="grid g2" style="margin-bottom:14px">
-    <div class="card"><div class="card-h"><h2>Ideias por sessão</h2><span class="src">${all.length} ideias · ${all.filter(i=>i.decisao==="boa").length} muito boas</span></div>
-      <div class="hbars">${perS.map((a,k)=>hbar(`${k+1}.ª sessão · ${fmtD(S.cfg.sessoes[k]&&S.cfg.sessoes[k].data)}`,[[a.filter(i=>i.decisao==="boa").length,"var(--ok)","Muito boa"],[a.filter(i=>i.decisao==="investigar").length,"var(--warn)","Investigar"],[a.filter(i=>i.decisao==="ma").length,"var(--bad)","Má"],[a.filter(i=>!i.decisao).length,"var(--line-2)","Sem decisão"]],a.length,maxS)).join("")}</div>
-      <div class="legend"><span><i style="background:var(--ok)"></i>Muito boa</span><span><i style="background:var(--warn)"></i>Investigar</span><span><i style="background:var(--bad)"></i>Má</span><span><i style="background:var(--line-2)"></i>Sem decisão</span></div></div>
+    <div class="card"><div class="card-h"><h2>Ideias por sessão</h2><span class="src">${all.length} ideias · ${all.filter(i=>(i.gosto||0)>=4).length} com 4★ ou mais</span></div>
+      <div class="hbars">${perS.map((a,k)=>hbar(`${k+1}.ª sessão · ${fmtD(S.cfg.sessoes[k]&&S.cfg.sessoes[k].data)}`,[[a.filter(i=>(i.gosto||0)>=4).length,"var(--ok)","4–5★"],[a.filter(i=>(i.gosto||0)===3).length,"var(--warn)","3★"],[a.filter(i=>(i.gosto||0)>=1&&(i.gosto||0)<=2).length,"var(--bad)","1–2★"],[a.filter(i=>!(i.gosto||0)).length,"var(--line-2)","Sem estrelas"]],a.length,maxS)).join("")}</div>
+      <div class="legend"><span><i style="background:var(--ok)"></i>4–5★</span><span><i style="background:var(--warn)"></i>3★</span><span><i style="background:var(--bad)"></i>1–2★</span><span><i style="background:var(--line-2)"></i>Sem estrelas</span></div></div>
     <div class="card"><div class="card-h"><h2>Por membro</h2><span class="src">ideias em que participou · média de gosto</span></div>
       ${pares.length?`<div class="hbars mem">${pares.map(p=>{const a=all.filter(i=>(i.par||[]).includes(p));const g=avg(a.map(i=>i.gosto||null));return hbar(`<span class="who">${av(p,24)}<span>${esc(p)}</span></span>`,[[a.length,"var(--brand)","Ideias"]],a.length,Math.max(...pares.map(x=>all.filter(i=>(i.par||[]).includes(x)).length)),`${a.length}${g?" · "+nf(g)+"★":""}`);}).join("")}</div>`:'<p class="note">Aparece quando registares as primeiras ideias. Os nomes dos 12 membros ficam em Definições para os escolheres rapidamente.</p>'}</div>
   </div>
   <div class="toolbar">
     <input type="search" class="field" id="f-q" placeholder="Procurar título, problema, membro…" value="${esc(f.q)}">
     <span class="sess">${[0,1,2,3,4].map(n=>`<button type="button" class="chip" data-fsess="${n}" aria-pressed="${f.sess===n}">${n?n+".ª":"Todas"}</button>`).join("")}</span>
-    <select class="field" id="f-dec"><option value="">Todas as decisões</option><option value="none" ${f.dec==="none"?"selected":""}>Sem decisão</option>${IDEIA_DEC.map(([k,l])=>`<option value="${k}" ${f.dec===k?"selected":""}>${l}</option>`).join("")}</select>
     <select class="field" id="f-tipo"><option value="">Todos os tipos</option><option value="none" ${f.tipo==="none"?"selected":""}>Sem tipo</option>${TIPO_IDEIA.map(([k,l])=>`<option value="${k}" ${f.tipo===k?"selected":""}>${l}</option>`).join("")}</select>
     <select class="field" id="f-par"><option value="">Todos os membros</option>${pares.map(p=>`<option ${f.par===p?"selected":""}>${esc(p)}</option>`).join("")}</select>
-    <select class="field" id="f-ord" aria-label="Ordenar"><option value="">Mais recentes primeiro</option><option value="gosto" ${f.ord==="gosto"?"selected":""}>Mais gosto primeiro</option></select>
+    <select class="field" id="f-ord" aria-label="Ordenar"><option value="">Mais recentes primeiro</option><option value="gosto" ${f.ord==="gosto"?"selected":""}>Mais estrelas primeiro</option></select>
   </div>
-  ${list.length?`<div class="tw"><table><thead><tr><th>S.</th><th>Ideia</th><th>Par</th><th>Gosto</th><th>Júri</th><th>Decisão</th><th>Challenge I</th></tr></thead><tbody>
+  ${list.length?`<div class="tw"><table><thead><tr><th>S.</th><th>Ideia</th><th>Pessoas</th><th>Estrelas</th><th>Júri</th><th>Challenge I</th></tr></thead><tbody>
   ${list.map(i=>ideaRow(i)).join("")}</tbody></table></div><p class="note" style="margin-top:8px">${list.length} de ${all.length} ideias. Clica no título para abrir a ficha completa.</p>`
   :empty(all.length?"Nenhuma ideia com estes filtros":"Ainda não há ideias registadas","As ideias são registadas na vista do júri, durante cada sessão de ideação. No ano passado foram cerca de 200 ideias nas quatro sessões.")}`;
 }
@@ -806,11 +808,10 @@ function ideaRow(i){
   const open=S.open===i.id;
   const inC1=rank(i.etapa)>=1;
   return `<tr class="${open?"sel":""}"><td class="mono">${i.sessao}</td>
-  <td><button type="button" class="rowbtn" data-open="${i.id}" aria-expanded="${open}"><span class="chev" aria-hidden="true">${open?"▾":"▸"}</span>${i.tipo&&TIPO_COR[i.tipo]?`<span class="tag" style="--pc:${TIPO_COR[i.tipo]}">${TIPO_IDEIA.find(x=>x[0]===i.tipo)[1]}</span>`:""}<span class="t">${esc(i.titulo||"(sem título)")}</span><span class="s">${esc(i.problema||"")}</span></button></td>
-  <td class="note">${esc((i.par||[]).filter(Boolean).join(" & "))}</td><td>${stars(i)}</td><td>${tallyHtml(i.id)||'<span class="note">–</span>'}</td>
-  <td>${decBtns(IDEIA_DEC,i.decisao,"idec",i.id)}</td>
+  <td><button type="button" class="rowbtn" data-open="${i.id}" aria-expanded="${open}"><span class="chev" aria-hidden="true">${open?"▾":"▸"}</span>${i.tipo&&TIPO_COR[i.tipo]?`<span class="tag" style="--pc:${TIPO_COR[i.tipo]}">${TIPO_IDEIA.find(x=>x[0]===i.tipo)[1]}</span>`:""}<span class="t">${esc(i.titulo||"(sem título)")}</span>${i.problema?`<span class="ps"><b>Problema</b>${esc(i.problema)}</span>`:""}${i.solucao?`<span class="ps"><b>Solução</b>${esc(i.solucao)}</span>`:""}</button></td>
+  <td><div class="pcell">${(i.par||[]).filter(Boolean).map(p=>`<span class="pp">${av(p,26)}<span>${esc(p)}</span></span>`).join("")||'<span class="note">Sem grupo</span>'}</div></td><td>${stars(i)}</td><td>${tallyHtml(i.id)||'<span class="note">–</span>'}</td>
   <td>${rank(i.etapa)>1?`<span class="stage ${i.etapa}">${ETAPA_L[i.etapa]}</span>`:`<label class="row" style="gap:5px;font-size:12.5px"><input type="checkbox" data-act="toc1" data-id="${i.id}" ${inC1?"checked":""}>Passa</label>`}</td></tr>
-  ${open?`<tr class="detail"><td colspan="7">${ideaForm(i)}</td></tr>`:""}`;
+  ${open?`<tr class="detail"><td colspan="6">${ideaForm(i)}</td></tr>`:""}`;
 }
 function ideaForm(i){
   const LOCK=new Set(["titulo","problema","solucao"]);
