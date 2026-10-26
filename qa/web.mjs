@@ -25,13 +25,13 @@ async function open(pathname,{code,w}={}){
   const c=await b.newContext({viewport:{width:w||1250,height:900}});
   await c.route(/fonts\.g/,r=>r.abort());
   await c.route(/supabase\.co/,handle);
-  await c.route(/^http:\/\/inov\.test\//,r=>{const u=new URL(r.request().url());let f=u.pathname==="/"||u.pathname.startsWith("/juri")?"index.html":u.pathname.slice(1);return r.fulfill({path:ROOT+"/public/"+f,contentType:f.endsWith(".js")?"application/javascript":"text/html"});});
+  await c.route(/^http:\/\/inov\.test\//,r=>{const u=new URL(r.request().url());let f=u.pathname==="/"||u.pathname.startsWith("/juri")||u.pathname.startsWith("/coordenador")?"index.html":u.pathname.slice(1);return r.fulfill({path:ROOT+"/public/"+f,contentType:f.endsWith(".js")?"application/javascript":"text/html"});});
   const p=await c.newPage();p.errs=[];p.on("pageerror",e=>p.errs.push(e.message));
   if(code)await c.addInitScript(`localStorage.setItem("inov-coord-code",${JSON.stringify(code)})`);
   await p.goto("http://inov.test"+pathname);await W(1500);return p;
 }
-// 1. raiz sem código: ecrã de entrada
-const R=await open("/");
+// 1. /coordenador sem código: ecrã de entrada
+const R=await open("/coordenador");
 ok(await R.locator("#inov-login").count()===1,"raiz pede código de coordenador");
 ok(await R.locator('[data-go="kpis"]').count()===0,"sem menu de coordenador");
 await R.fill("#inov-code","errado");await R.click('#inov-login button');await W(500);
@@ -58,7 +58,7 @@ ok(priv===0,"júri não lê o CRM",priv);
 const w=await J.evaluate(async()=>{const db=await window.claude.use("db");try{await db.collection("config").doc("main").set({x:1});return "gravou";}catch(e){return e.code;}});
 ok(w==="permission-denied","júri não altera config",w);
 // 4. coordenador vê KPIs e ferramenta de cópia
-const C=await open("/",{code:CODE});await C.click('[data-go="defs"]');await W(600);
+const C=await open("/coordenador",{code:CODE});await C.click('[data-go="defs"]');await W(600);
 ok(await C.locator("#inov-export").count()===1,"Definições: cópia de segurança");
 ok(R.errs.length+J.errs.length+C.errs.length===0,"sem erros JS",R.errs.concat(J.errs,C.errs).join("|"));
 await b.close();

@@ -89,7 +89,9 @@ main{padding-block:22px 80px;padding-inline:28px;min-width:0;max-width:1400px}
 .hbars{display:flex;flex-direction:column;gap:7px}
 .hbar{display:grid;grid-template-columns:130px minmax(0,1fr) 64px;gap:10px;align-items:center;font-size:13px}
 .hbar .bar{height:14px;border-radius:3px}
-.hbar .v{font-family:var(--mono);text-align:right;font-size:12.5px}
+.hbar .v{font-family:var(--mono);text-align:right;font-size:12.5px;white-space:nowrap}
+.hbars.mem .hbar{grid-template-columns:minmax(0,150px) minmax(0,1fr) auto}
+.hbar .who{display:flex;align-items:center;gap:8px;min-width:0}.hbar .who>span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.hbar .who .av{flex:none}
 .legend{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12px;color:var(--muted)}
 .legend i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px;vertical-align:-1px}
 
@@ -388,6 +390,7 @@ td .s{display:block;color:var(--muted);font-size:12.5px;max-width:420px;overflow
 "use strict";
 /* ================= Configuração por omissão ================= */
 const DEFAULT_CFG={
+  dupIgnorar:[],
   hubAcesso:["miguel.faustino"],
   membros:["Afonso M.","Bernardo F.","Francisca O.","Guilherme D.","Inês F.","Inês P.","João F.","Lourenço S.","Maria P.","Matilde S.","Rita M.","Xavier S."],
   sessoes:[{n:1,data:"2026-10-13"},{n:2,data:"2026-10-16"},{n:3,data:"2026-10-22"},{n:4,data:"2026-10-30"}],
@@ -703,10 +706,70 @@ function vHub(){
   const all=[...S.ideias.values()];const sts=activeStartups();
   const cnt=f=>all.filter(i=>rank(i.etapa)>=rank(f)).length;
   const t=S.tab.hub;
-  const body={ideias:hIdeias,live:hLive,c1:()=>hFase("c1"),c2:()=>hFase("c2"),sd:()=>hFase("sd"),startups:hStartups,hist:hHist}[t]||hIdeias;
+  const body={ideias:hIdeias,dup:hDup,live:hLive,c1:()=>hFase("c1"),c2:()=>hFase("c2"),sd:()=>hFase("sd"),startups:hStartups,hist:hHist}[t]||hIdeias;
   return `<div class="head"><div><div class="eyebrow">Pilar 1 · Inovação interna</div><h1>Bootcamp</h1>${liveBadge()}<div class="sub">Do Bootcamp às 3 startups: ideias, Challenges, Selection Day e acompanhamento até ao Unicorn Day.</div></div></div>
-  ${tabs("hub",[["ideias","Sessões de ideação",all.length],["live","Sessão ao vivo",null],["c1","Challenge I",cnt("c1")],["c2","Challenge II",cnt("c2")],["sd","Selection Day",cnt("sd")],["startups","Startups",sts.length],["hist","Histórico",null]])}
+  ${tabs("hub",[["ideias","Sessões de ideação",all.length],["dup","Ideias repetidas",dupPairs().length||null],["live","Sessão ao vivo",null],["c1","Challenge I",cnt("c1")],["c2","Challenge II",cnt("c2")],["sd","Selection Day",cnt("sd")],["startups","Startups",sts.length],["hist","Histórico",null]])}
   ${body()}`;
+}
+/* ---------- Ideias repetidas: propor pares, confirmar e juntar (fica a mais recente, pessoas sem repetidos, feedbacks somados) ---------- */
+function dupKey(a,b){return [a,b].sort().join("|");}
+function dupTok(i){return new Set(norm([i.titulo,i.problema].join(" ")).replace(/[^a-z0-9 ]/g," ").split(/\s+/).filter(w=>w.length>3));}
+function dupSim(a,b){const A=dupTok(a),B=dupTok(b);if(!A.size||!B.size)return 0;let n=0;A.forEach(w=>{if(B.has(w))n++;});return n/Math.min(A.size,B.size);}
+function dupPairs(){
+  const all=[...S.ideias.values()],ign=new Set(S.cfg.dupIgnorar||[]),out=new Map();
+  const add=(a,b,why)=>{if(!a||!b||a.id===b.id)return;const k=dupKey(a.id,b.id);if(ign.has(k)||out.has(k))return;out.set(k,{a,b,why});};
+  all.forEach(i=>{if(i.origem)add(S.ideias.get(i.origem),i,"Retomada de uma sessão anterior");});
+  for(let x=0;x<all.length;x++)for(let y=x+1;y<all.length;y++){const a=all[x],b=all[y],ta=norm(a.titulo).trim();
+    if(ta&&ta===norm(b.titulo).trim())add(a,b,"Mesmo título");else if(dupSim(a,b)>=0.6)add(a,b,"Título e problema parecidos");}
+  return [...out.values()];
+}
+function dupPlan(x,y){
+  const older=((x.sessao||0)-(y.sessao||0))||String(x.createdAt||"").localeCompare(String(y.createdAt||""));
+  const [old,keep]=older<=0?[x,y]:[y,x];
+  const par=[...new Set([...(keep.par||[]),...(old.par||[])].filter(Boolean))];
+  const fb=[...S.feedback.values()].filter(f=>f.ideiaId===old.id).length;
+  return {old,keep,par,novos:par.filter(p=>!(keep.par||[]).includes(p)),fb};
+}
+function dupTxt(k,pl){S.dupTxt=S.dupTxt||{};if(S.dupTxt[k])return S.dupTxt[k];const L=i=>String(i.problema||"").length+String(i.solucao||"").length;return L(pl.keep)>=L(pl.old)?"keep":"old";}
+function dupBoth(x,y){x=String(x||"").trim();y=String(y||"").trim();if(!x)return y;if(!y||norm(x).includes(norm(y)))return x;if(norm(y).includes(norm(x)))return y;return x+"\n\n"+y;}
+function hDup(){
+  const ps=dupPairs(),all=[...S.ideias.values()].sort((a,b)=>((a.sessao||0)-(b.sessao||0))||String(a.titulo||"").localeCompare(String(b.titulo||"")));
+  const man=S.dupMan||{};
+  const opt=sel=>all.map(i=>`<option value="${esc(i.id)}" ${sel===i.id?"selected":""}>${i.sessao||"?"}.ª · ${esc(i.titulo||"(sem título)")}</option>`).join("");
+  const mp=man.a&&man.b&&man.a!==man.b&&S.ideias.get(man.a)&&S.ideias.get(man.b)?[{a:S.ideias.get(man.a),b:S.ideias.get(man.b),why:"Escolhidas à mão",man:1}]:[];
+  const list=[...mp,...ps.filter(p=>!mp.length||dupKey(p.a.id,p.b.id)!==dupKey(man.a,man.b))];
+  return `<div class="card" style="margin-bottom:14px"><div class="card-h"><h2>Juntar duas ideias à mão</h2><span class="src">para pares que não aparecem em baixo</span></div>
+    <div class="row"><select class="field" id="dup-a" aria-label="Primeira ideia"><option value="">Ideia 1</option>${opt(man.a)}</select><select class="field" id="dup-b" aria-label="Segunda ideia"><option value="">Ideia 2</option>${opt(man.b)}</select><button type="button" class="btn" data-act="dupman">Comparar</button></div></div>
+  <p class="note" style="margin:0 0 10px">${ps.length} par${ps.length===1?"":"es"} proposto${ps.length===1?"":"s"}. Confirma só os que são mesmo a mesma ideia: fica a ideia mais recente, com as pessoas das duas (sem repetidos) e os feedbacks das duas.</p>
+  ${list.length?list.map(dupCard).join(""):'<div class="card"><p class="note" style="margin:0">Não há pares por confirmar.</p></div>'}`;
+}
+function dupCard(p){
+  const pl=dupPlan(p.a,p.b),k=dupKey(p.a.id,p.b.id),t=dupTxt(k,pl);
+  const side=(i,l)=>`<div style="min-width:0"><div class="eyebrow">${l} · ${i.sessao||"?"}.ª sessão</div><h3 style="margin:2px 0">${esc(i.titulo||"(sem título)")}</h3><p class="note" style="margin:0 0 6px">${esc((i.par||[]).join(", ")||"Sem grupo")}</p><p style="margin:0 0 4px"><b>Problema:</b> ${esc(i.problema||"—")}</p><p style="margin:0"><b>Solução:</b> ${esc(i.solucao||"—")}</p></div>`;
+  return `<div class="card" style="margin-bottom:12px"><div class="card-h"><h2>${esc(p.why)}</h2></div>
+    <div class="grid g2">${side(pl.old,"Mais antiga")}${side(pl.keep,"Fica esta")}</div>
+    <p style="margin:0"><b>Pessoas depois de juntar (${pl.par.length}):</b> ${esc(pl.par.join(", ")||"—")} ${pl.novos.length?`<span class="pill ok">+${pl.novos.length} nova${pl.novos.length>1?"s":""}</span>`:'<span class="pill">sem pessoas novas</span>'}</p>
+    <div class="row"><span class="note">Problema e solução:</span>${[["keep","Da que fica"],["old","Da mais antiga"],["both","Juntar os dois"]].map(([v,l])=>`<button type="button" class="chip" data-act="duptxt" data-k="${esc(k)}" data-v="${v}" aria-pressed="${t===v}">${l}</button>`).join("")}</div>
+    <p class="note" style="margin:0">${pl.fb} feedback${pl.fb===1?"":"s"} da mais antiga passa${pl.fb===1?"":"m"} para a que fica.</p>
+    <div class="row" style="justify-content:flex-end">${p.man?'<button type="button" class="btn" data-act="dupclear">Limpar</button>':`<button type="button" class="btn" data-act="dupno" data-k="${esc(k)}">Não são a mesma</button>`}<button type="button" class="btn pri" data-act="dupok" data-a="${esc(p.a.id)}" data-b="${esc(p.b.id)}">Confirmar e juntar</button></div></div>`;
+}
+function dupMerge(aId,bId){
+  const a=S.ideias.get(aId),b=S.ideias.get(bId);if(!a||!b)return;
+  const pl=dupPlan(a,b),{old,keep}=pl,t=dupTxt(dupKey(a.id,b.id),pl);
+  if(old.startupId&&keep.startupId){toast("As duas ideias já são startups: junta-as no separador Startups.",true);return;}
+  const now=new Date().toISOString();
+  keep.juntou=[...(keep.juntou||[]),{id:old.id,titulo:old.titulo||"",sessao:old.sessao,par:old.par||[],problema:old.problema||"",solucao:old.solucao||"",gosto:old.gosto||0,decisao:old.decisao||"",em:now}];
+  keep.par=pl.par;
+  keep.problema=t==="old"?(old.problema||keep.problema||""):t==="both"?dupBoth(keep.problema,old.problema):(keep.problema||old.problema||"");
+  keep.solucao=t==="old"?(old.solucao||keep.solucao||""):t==="both"?dupBoth(keep.solucao,old.solucao):(keep.solucao||old.solucao||"");
+  keep.gosto=Math.max(keep.gosto||0,old.gosto||0);if(!keep.decisao&&old.decisao)keep.decisao=old.decisao;
+  if(rank(old.etapa)>rank(keep.etapa))keep.etapa=old.etapa;keep.aval=Object.assign({},old.aval||{},keep.aval||{});
+  if(old.startupId&&!keep.startupId){keep.startupId=old.startupId;const st=S.startups.get(old.startupId);if(st){st.ideiaId=keep.id;save("startups",st.id);}}
+  if(keep.origem===old.id)delete keep.origem;
+  for(const f of S.feedback.values())if(f.ideiaId===old.id){f.ideiaId=keep.id;save("feedback",f.id);}
+  for(const i of S.ideias.values())if(i.origem===old.id&&i.id!==keep.id){i.origem=keep.id;save("ideias",i.id);}
+  save("ideias",keep.id);if(S.dupMan&&[S.dupMan.a,S.dupMan.b].includes(old.id))S.dupMan=null;
+  remove("ideias",old.id);toast(`Juntadas em “${keep.titulo||""}” · ${keep.par.length} pessoas.`);
 }
 function memberOpts(){return `<datalist id="dl-membros">${S.cfg.membros.map(m=>`<option value="${esc(m)}">`).join("")}</datalist>`;}
 function hIdeias(){
@@ -724,7 +787,7 @@ function hIdeias(){
       <div class="hbars">${perS.map((a,k)=>hbar(`${k+1}.ª sessão · ${fmtD(S.cfg.sessoes[k]&&S.cfg.sessoes[k].data)}`,[[a.filter(i=>i.decisao==="boa").length,"var(--ok)","Muito boa"],[a.filter(i=>i.decisao==="investigar").length,"var(--warn)","Investigar"],[a.filter(i=>i.decisao==="ma").length,"var(--bad)","Má"],[a.filter(i=>!i.decisao).length,"var(--line-2)","Sem decisão"]],a.length,maxS)).join("")}</div>
       <div class="legend"><span><i style="background:var(--ok)"></i>Muito boa</span><span><i style="background:var(--warn)"></i>Investigar</span><span><i style="background:var(--bad)"></i>Má</span><span><i style="background:var(--line-2)"></i>Sem decisão</span></div></div>
     <div class="card"><div class="card-h"><h2>Por membro</h2><span class="src">ideias em que participou · média de gosto</span></div>
-      ${pares.length?`<div class="hbars">${pares.slice(0,12).map(p=>{const a=all.filter(i=>(i.par||[]).includes(p));const g=avg(a.map(i=>i.gosto||null));return hbar(esc(p),[[a.length,"var(--brand)","Ideias"]],a.length,Math.max(...pares.map(x=>all.filter(i=>(i.par||[]).includes(x)).length)),`${a.length}${g?" · "+nf(g)+"★":""}`);}).join("")}</div>`:'<p class="note">Aparece quando registares as primeiras ideias. Os nomes dos 12 membros ficam em Definições para os escolheres rapidamente.</p>'}</div>
+      ${pares.length?`<div class="hbars mem">${pares.map(p=>{const a=all.filter(i=>(i.par||[]).includes(p));const g=avg(a.map(i=>i.gosto||null));return hbar(`<span class="who">${av(p,24)}<span>${esc(p)}</span></span>`,[[a.length,"var(--brand)","Ideias"]],a.length,Math.max(...pares.map(x=>all.filter(i=>(i.par||[]).includes(x)).length)),`${a.length}${g?" · "+nf(g)+"★":""}`);}).join("")}</div>`:'<p class="note">Aparece quando registares as primeiras ideias. Os nomes dos 12 membros ficam em Definições para os escolheres rapidamente.</p>'}</div>
   </div>
   <div class="toolbar">
     <input type="search" class="field" id="f-q" placeholder="Procurar título, problema, membro…" value="${esc(f.q)}">
@@ -1525,6 +1588,11 @@ document.addEventListener("click",e=>{
   if(a==="gosto"){const i=S.ideias.get(id);const v=Number(b.dataset.v);i.gosto=i.gosto===v?0:v;save("ideias",id);render();}
   else if(a==="idec"){const i=S.ideias.get(id);i.decisao=i.decisao===b.dataset.v?"":b.dataset.v;save("ideias",id);render();}
   else if(a==="fdec")setFaseDec(id,b.dataset.f,b.dataset.v);
+  else if(a==="dupman"){const x=document.getElementById("dup-a").value,y=document.getElementById("dup-b").value;if(!x||!y||x===y){toast("Escolhe duas ideias diferentes.",true);return;}S.dupMan={a:x,b:y};render();}
+  else if(a==="dupclear"){S.dupMan=null;render();}
+  else if(a==="duptxt"){S.dupTxt=S.dupTxt||{};S.dupTxt[b.dataset.k]=b.dataset.v;render();}
+  else if(a==="dupno"){const L=S.cfg.dupIgnorar=Array.isArray(S.cfg.dupIgnorar)?S.cfg.dupIgnorar:[];if(!L.includes(b.dataset.k))L.push(b.dataset.k);save("config","main");render();toast("Par marcado como ideias diferentes.");}
+  else if(a==="dupok"){const x=S.ideias.get(b.dataset.a),y=S.ideias.get(b.dataset.b);if(!x||!y)return;const pl=dupPlan(x,y);confirmDlg("Juntar estas duas ideias?",`Fica “${pl.keep.titulo||""}” (${pl.keep.sessao}.ª sessão) com ${pl.par.length} pessoas e mais ${pl.fb} feedback(s). “${pl.old.titulo||""}” (${pl.old.sessao}.ª sessão) deixa de aparecer em separado; fica registada dentro da ideia que fica.`,()=>dupMerge(x.id,y.id),"Juntar");}
   else if(a==="delidea"){const it=S.ideias.get(id);confirmDlg("Apagar esta ideia?",`“${it&&it.titulo||""}” e as notas dos júris desaparecem. Não dá para desfazer.`,()=>{S.open=null;if(S.jEdit===id)S.jEdit=null;
     if(S.isOwner)for(const f of [...S.feedback.values()])if(f.ideiaId===id)remove("feedback",f.id);remove("ideias",id);toast("Ideia apagada.");});}
   else if(a==="impjuri"){const f=b.dataset.f;const ev=crmEventFor(f);const J=S.cfg.fases[f].juri=S.cfg.fases[f].juri||[];let n=0;(ev.juri||[]).filter(j=>j.estado==="confirmado").forEach(j=>{if(!J.includes(j.nome)){J.push(j.nome);n++;}});saveCfg();render();toast(n?`${n} jurados importados.`:"Já estavam todos.");}
@@ -1553,9 +1621,9 @@ function setFaseDec(id,f,v){
   else if(rank(i.etapa)>rank(f)&&!(f==="sd"&&i.startupId&&nv==="")){i.etapa=f;}
   if(nv==="startup"&&!i.startupId){const st=newStartup(i);i.startupId=st.id;toast(`“${i.titulo}” é agora uma startup. Abre o separador Startups.`);}
   save("ideias",id);render();}
-function confirmDlg(t,s,ok){
+function confirmDlg(t,s,ok,lbl){
   const m=document.getElementById("modal");
-  m.innerHTML=`<div class="overlay"><div class="dlg" role="dialog" aria-modal="true"><h2>${esc(t)}</h2><p class="note" style="margin:0">${esc(s)}</p><div class="row end"><button class="btn" id="dlg-no">Cancelar</button><button class="btn danger" id="dlg-ok">Apagar</button></div></div></div>`;
+  m.innerHTML=`<div class="overlay"><div class="dlg" role="dialog" aria-modal="true"><h2>${esc(t)}</h2><p class="note" style="margin:0">${esc(s)}</p><div class="row end"><button class="btn" id="dlg-no">Cancelar</button><button class="btn ${lbl?"pri":"danger"}" id="dlg-ok">${esc(lbl||"Apagar")}</button></div></div></div>`;
   document.getElementById("dlg-no").onclick=()=>m.innerHTML="";document.getElementById("dlg-ok").onclick=()=>{m.innerHTML="";ok();};document.getElementById("dlg-no").focus();}
 
 render();boot();
