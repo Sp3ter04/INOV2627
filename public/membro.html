@@ -64,15 +64,21 @@ function ideaCard(i,mine){
   <div class="meta">${i.sessao||"?"}.ª sessão · ${stars(i.gosto)} <span class="pp">${(i.par||[]).map(av).join("")}</span> <span>${esc((i.par||[]).join(", "))}</span></div>
   <div class="lab">Problema</div><p class="txt">${esc(i.problema||"—")}</p><div class="lab">Solução</div><p class="txt">${esc(i.solucao||"—")}</p>
   <details><summary>Feedback (${nfb})</summary>${fbHtml(i)}</details>
-  ${mine?`<details><summary>Materiais (${ma.length})</summary>${matHtml(i,ma)}</details>
-  <details><summary>Sugerir alteração${sg.length?` · ${sg.length} enviada${sg.length>1?"s":""}`:""}</summary>${sugHtml(i,sg)}</details>`:""}</article>`;}
+  ${mine?`<div class="row"><button class="pri" data-a="open" data-id="${esc(i.id)}" data-k="mat">Juntar PDF / documento</button><button data-a="open" data-id="${esc(i.id)}" data-k="sug">Sugerir melhoria do problema e da solução</button></div><details data-k="mat"><summary>Materiais (${ma.length})</summary>${matHtml(i,ma)}</details>
+  <details data-k="sug"><summary>Sugerir alteração${sg.length?` · ${sg.length} enviada${sg.length>1?"s":""}`:""}</summary>${sugHtml(i,sg)}</details>`:""}</article>`;}
 function matHtml(i,ma){return (ma.length?ma.map(m=>`<div class="fb"><button class="lnk" data-a="dl" data-p="${esc(m.path)}">${esc(m.ficheiro)}</button> <span class="pill">${esc(m.tipo)}</span> <span class="note">${esc(m.nome)} · ${(m.em||"").slice(0,10)}</span>${m.email===st.ses.user.email?` <button class="lnk" data-a="rm" data-id="${esc(m.id)}" data-p="${esc(m.path)}">Remover</button>`:""}</div>`).join(""):`<p class="note">Ainda sem ficheiros.</p>`)+
   `<label for="t-${esc(i.id)}">Tipo</label><select id="t-${esc(i.id)}"><option>Pesquisa</option><option>Validação de mercado</option><option>Outro</option></select>
-  <label for="f-${esc(i.id)}">Ficheiro (PDF, Word, imagem… até 25 MB)</label><input type="file" id="f-${esc(i.id)}"><div class="row"><button class="pri" data-a="up" data-id="${esc(i.id)}">Enviar ficheiro</button></div>`;}
+  <label for="f-${esc(i.id)}">Ficheiro (PDF, Word, Excel, PowerPoint, imagem… até 25 MB)</label><input type="file" id="f-${esc(i.id)}" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.csv,.txt,.png,.jpg,.jpeg"><div class="row"><button class="pri" data-a="up" data-id="${esc(i.id)}">Enviar ficheiro</button></div>`;}
 function sugHtml(i,sg){return sg.map(s=>`<div class="fb"><span class="pill ${s.estado==="aceite"?"ok":s.estado==="rejeitada"?"bad":"warn"}">${esc(s.estado||"pendente")}</span> <span class="note">${(s.em||"").slice(0,10)}</span>${s.nota?`<p class="txt" style="margin:4px 0 0">${esc(s.nota)}</p>`:""}</div>`).join("")+
   `<label for="p-${esc(i.id)}">Problema</label><textarea id="p-${esc(i.id)}">${esc(i.problema||"")}</textarea>
   <label for="s-${esc(i.id)}">Solução</label><textarea id="s-${esc(i.id)}">${esc(i.solucao||"")}</textarea>
   <label for="n-${esc(i.id)}">Porquê? (opcional)</label><input id="n-${esc(i.id)}"><div class="row"><button class="pri" data-a="sug" data-id="${esc(i.id)}">Enviar sugestão ao coordenador</button></div><p class="note">A descrição só muda depois de o coordenador aceitar.</p>`;}
+function novoHtml(){const ms=Object.keys(st.fotos).filter(n=>n!==st.nome).sort(),mx=Math.max(1,...st.ideias.map(i=>i.sessao||1));
+  return `<div class="card" id="novo"><h2>Nova ideia</h2><label for="nt">Título</label><input id="nt" maxlength="120">
+  <label for="np">Problema</label><textarea id="np"></textarea><label for="ns">Solução</label><textarea id="ns"></textarea>
+  <label for="nse">Sessão de ideação</label><input id="nse" type="number" min="1" value="${mx}">
+  <div class="lab">Outras pessoas na ideia (opcional)</div><div class="row">${ms.map(n=>`<label style="margin:0;font-weight:400"><input type="checkbox" class="npar" value="${esc(n)}" style="width:auto;min-height:0"> ${esc(n)}</label>`).join("")}</div>
+  <div class="row"><button class="pri" data-a="novook">Criar ideia</button><button data-a="novono">Cancelar</button></div><p class="note">Depois de criada, podes juntar PDFs e documentos à ideia.</p></div>`;}
 function render(){const A=$("#app");
   if(!st.ses){A.innerHTML=`<div class="wrap login"><div class="card"><h1>Inovação 26/27</h1><p class="note">Área dos membros</p>${st.msg?`<div class="msg err" role="alert">${esc(st.msg)}</div>`:""}
    <form id="lf"><label for="em">Email</label><input id="em" type="email" autocomplete="username" required placeholder="nome@junitec.pt"><label for="pw">Palavra-passe</label><input id="pw" type="password" autocomplete="current-password" required><div class="row"><button class="pri" style="flex:1">Entrar</button></div></form></div></div>`;
@@ -85,6 +91,7 @@ function render(){const A=$("#app");
   A.innerHTML=`<div class="bar"><span class="pp" style="margin-left:6px">${av(st.nome)}</span><div class="sp"><b>${esc(st.nome||st.ses.user.email)}</b><small>Inovação 26/27</small></div><button data-a="pw" class="lnk">Palavra-passe</button><button data-a="out">Sair</button></div>
   <div class="wrap">${st.msg?`<div class="msg ${st.err?"err":""}" role="status">${esc(st.msg)}</div>`:""}
   <div class="tabs" role="group"><button data-a="tab" data-t="minhas" aria-pressed="${st.tab==="minhas"}">As minhas ideias (${mine.length})</button><button data-a="tab" data-t="todas" aria-pressed="${st.tab==="todas"}">Todas as ideias (${all.length})</button></div>
+  <div class="row" style="margin:0 0 12px"><button class="pri" data-a="novo">+ Nova ideia</button></div>${st.novo?novoHtml():""}
   <p class="note">Ordenadas por estrelas, depois pelas mais recentes. Podes ler o feedback de todas; só podes sugerir alterações e juntar ficheiros às tuas.</p>
   ${st.load?`<p>A carregar…</p>`:list.length?list.map(i=>ideaCard(i,(i.par||[]).includes(st.nome))).join(""):`<div class="card"><p>Não tens ideias associadas ainda.</p></div>`}</div>`;}
 const flash=(m,e)=>{st.msg=m;st.err=!!e;render();window.scrollTo(0,0);};
@@ -92,6 +99,13 @@ document.addEventListener("click",async ev=>{const b=ev.target.closest("[data-a]
   const keep=()=>{open.forEach(k=>{const[aid,s]=k.split("|");const art=document.getElementById(aid);if(art)art.querySelectorAll("details").forEach(d=>{if(d.querySelector("summary").textContent.startsWith(s))d.open=true;});});};
   try{
   if(a==="tab"){st.tab=b.dataset.t;st.msg=null;render();}
+  else if(a==="novo"){st.novo=true;st.msg=null;st.tab="minhas";render();document.getElementById("novo").scrollIntoView();}
+  else if(a==="novono"){st.novo=false;render();}
+  else if(a==="novook"){const t=$("#nt").value.trim(),p=$("#np").value.trim(),so=$("#ns").value.trim();if(!t||!p){flash("Preenche pelo menos o título e o problema.",1);return;}
+    const nid=Math.random().toString(36).slice(2,14),now=new Date().toISOString(),par=[st.nome,...[...document.querySelectorAll(".npar:checked")].map(c=>c.value)];
+    const d={id:nid,titulo:t,problema:p,solucao:so,par,sessao:Math.max(1,parseInt($("#nse").value)||1),etapa:"ideacao",gosto:0,aval:{},decisao:"",criadaPor:st.ses.user.email,createdAt:now,updatedAt:now};
+    await rest("docs",{method:"POST",body:JSON.stringify({col:"ideias",id:nid,data:d})});st.ideias.push(d);st.novo=false;st.tab="minhas";flash("Ideia criada. Já podes juntar ficheiros.");}
+  else if(a==="open"){const art=b.closest("article"),dt=art.querySelector('details[data-k="'+b.dataset.k+'"]');dt.open=true;dt.scrollIntoView({behavior:"smooth",block:"center"});}
   else if(a==="out"){try{await fetch(U+"/auth/v1/logout",{method:"POST",headers:hdr()});}catch(e){}st.ses=null;lsSet(null);render();}
   else if(a==="pw"){const u=Object.assign({},st.ses.user);u.user_metadata=Object.assign({},u.user_metadata,{must_change:true});st.ses.user=u;render();}
   else if(a==="sug"){const p=$("#p-"+id).value.trim(),s=$("#s-"+id).value.trim(),n=$("#n-"+id).value.trim(),i=st.ideias.find(x=>x.id===id);if(p===(i.problema||"").trim()&&s===(i.solucao||"").trim()){flash("Não alteraste nada.",1);return;}
