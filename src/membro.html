@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="pt-PT"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex"><link rel="icon" href="data:,">
+<title>Inovação 26/27 · Membros</title>
+<style>
+:root{--bg:#f3f6fa;--surface:#fff;--surface-2:#f7f9fc;--fg:#122033;--muted:#5a6a80;--line:#dbe3ee;--line-2:#c3cfdf;--brand:#175dab;--brand-soft:#e6f0fb;--on-brand:#fff;--ok:#1a7f4b;--ok-soft:#e1f3e9;--warn:#946200;--warn-soft:#fbf0d4;--bad:#b4231b;--bad-soft:#fbe7e5;--r:10px;--body:"Nunito Sans",system-ui,-apple-system,"Segoe UI",sans-serif;--display:"Montserrat",system-ui,sans-serif}
+@media (prefers-color-scheme:dark){:root{--bg:#0d1420;--surface:#141d2b;--surface-2:#192435;--fg:#e3eaf4;--muted:#93a3b8;--line:#253246;--line-2:#34445c;--brand:#5aa2f0;--brand-soft:#1a2c45;--on-brand:#0b1422;--ok:#5fd394;--ok-soft:#14301f;--warn:#e8b84e;--warn-soft:#352a10;--bad:#ff8a7e;--bad-soft:#3b1a18}}
+*{box-sizing:border-box}html{background:var(--bg)}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.5 var(--body)}
+h1,h2,h3{font-family:var(--display);margin:0;line-height:1.25}h1{font-size:1.35rem}h2{font-size:1.1rem}h3{font-size:1rem}
+.wrap{max-width:860px;margin:0 auto;padding:16px}
+.bar{display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--surface);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
+.bar .sp{flex:1;min-width:0}.bar small{color:var(--muted);display:block}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;margin:0 0 12px}
+.login{max-width:380px;margin:12vh auto 0}.login .card{padding:24px}
+label{display:block;font-weight:700;font-size:.85rem;margin:12px 0 4px}
+input,textarea,select{width:100%;font:inherit;color:var(--fg);background:var(--surface-2);border:1px solid var(--line-2);border-radius:8px;padding:10px 12px;min-height:44px}
+textarea{min-height:110px;resize:vertical}
+button{font:inherit;cursor:pointer;min-height:44px;padding:8px 16px;border-radius:8px;border:1px solid var(--line-2);background:var(--surface);color:var(--fg);font-weight:700}
+button.pri{background:var(--brand);color:var(--on-brand);border-color:var(--brand)}button.lnk{border:0;background:none;color:var(--brand);padding:8px}
+button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:3px solid var(--brand);outline-offset:2px}
+.tabs{display:flex;gap:6px;margin:0 0 14px}.tabs button{flex:1}.tabs button[aria-pressed=true]{background:var(--brand);color:var(--on-brand);border-color:var(--brand)}
+.stars{color:var(--line-2);letter-spacing:2px;white-space:nowrap}.stars .on{color:#e0a100}
+.pp{display:inline-flex;margin-left:4px}.pp img,.pp i{width:26px;height:26px;border-radius:50%;border:2px solid var(--surface);margin-left:-6px;object-fit:cover;background:var(--brand-soft);color:var(--brand);font:700 .62rem/22px var(--body);text-align:center;font-style:normal;display:inline-block}
+.meta{display:flex;flex-wrap:wrap;gap:8px;align-items:center;color:var(--muted);font-size:.85rem;margin:4px 0 10px}
+.txt{white-space:pre-wrap;margin:0 0 10px}.lab{font-size:.75rem;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin:10px 0 2px}
+.pill{display:inline-block;padding:2px 10px;border-radius:99px;font-size:.78rem;font-weight:700;background:var(--brand-soft);color:var(--brand)}
+.pill.ok{background:var(--ok-soft);color:var(--ok)}.pill.bad{background:var(--bad-soft);color:var(--bad)}.pill.warn{background:var(--warn-soft);color:var(--warn)}
+details{border-top:1px solid var(--line);padding-top:8px;margin-top:10px}summary{cursor:pointer;font-weight:700;min-height:36px;display:flex;align-items:center}
+.fb{padding:8px 0;border-top:1px dashed var(--line)}.fb:first-of-type{border-top:0}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.msg{padding:10px 12px;border-radius:8px;margin:10px 0;background:var(--brand-soft)}.msg.err{background:var(--bad-soft);color:var(--bad)}
+.note{color:var(--muted);font-size:.88rem}
+@media (max-width:520px){.tabs{flex-direction:column}}
+</style></head><body>
+<div id="app"></div>
+<script>
+const U="https://hggrgaktnacmmgmaoeib.supabase.co",K="sb_publishable_em1gUMD7EQjI8n1hCE18tQ_DSy-eAsR",DOM="@junitec.pt";
+const st={ses:null,nome:"",ideias:[],fb:[],fotos:{},sug:[],mat:[],tab:"minhas",msg:null,load:false};
+const $=s=>document.querySelector(s);
+const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const lsGet=()=>{try{return JSON.parse(localStorage.getItem("inov-membro")||"null")}catch(e){return null}};
+const lsSet=v=>{try{v?localStorage.setItem("inov-membro",JSON.stringify(v)):localStorage.removeItem("inov-membro")}catch(e){}};
+const hdr=(x)=>Object.assign({apikey:K,Authorization:"Bearer "+(st.ses?st.ses.access_token:K)},x||{});
+async function auth(path,body,method){const r=await fetch(U+"/auth/v1/"+path,{method:method||"POST",headers:hdr({"Content-Type":"application/json"}),body:body?JSON.stringify(body):undefined});const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.error_description||j.msg||j.message||"Erro");return j;}
+function setSes(j){st.ses={access_token:j.access_token,refresh_token:j.refresh_token,user:j.user,exp:Date.now()+(j.expires_in||3600)*1000-60000};lsSet({r:j.refresh_token});}
+async function fresh(){if(st.ses&&Date.now()>st.ses.exp){const j=await auth("token?grant_type=refresh_token",{refresh_token:st.ses.refresh_token});setSes(j);}}
+async function rest(path,opt){await fresh();const r=await fetch(U+"/rest/v1/"+path,Object.assign({headers:hdr({"Content-Type":"application/json"})},opt||{}));if(!r.ok)throw new Error((await r.text()).slice(0,200));const t=await r.text();return t?JSON.parse(t):null;}
+const docs=c=>rest("docs?select=id,data&col=eq."+c+"&limit=2000").then(a=>a.map(x=>x.data));
+async function loadAll(){st.load=true;render();
+  const [i,f,fo,su,ma,nm]=await Promise.all([docs("ideias"),docs("feedback"),docs("fotos"),docs("sugestoes"),docs("materiais"),rest("rpc/inov_nome",{method:"POST",body:"{}"})]);
+  st.ideias=i;st.fb=f;st.fotos=(fo.find(x=>x.fotos)||{}).fotos||{};st.sug=su;st.mat=ma;st.nome=nm||(st.ses.user.user_metadata||{}).nome||"";st.load=false;}
+function ordem(a,b){return (b.gosto||0)-(a.gosto||0)||(b.sessao||0)-(a.sessao||0)||String(b.createdAt||"").localeCompare(String(a.createdAt||""));}
+const VER={matar:["Matar","bad"],gosto:["Gosto","ok"],mercado:["Validar mercado","warn"],outro:["Outro","warn"]};
+function av(n){const f=st.fotos[n],ini=String(n||"?").split(" ").map(x=>x[0]||"").join("").slice(0,2);return f?`<img src="${esc(f)}" alt="${esc(n)}" title="${esc(n)}" loading="lazy" onerror="this.outerHTML='<i title=&quot;${esc(n)}&quot;>${esc(ini)}</i>'">`:`<i title="${esc(n)}">${esc(ini)}</i>`;}
+function stars(g){return `<span class="stars" role="img" aria-label="${g||0} de 5 estrelas">${[1,2,3,4,5].map(k=>`<span class="${k<=(g||0)?"on":""}">★</span>`).join("")}</span>`;}
+function fbHtml(i){const l=st.fb.filter(f=>f.ideiaId===i.id).sort((a,b)=>String(b.d||"").localeCompare(String(a.d||"")));
+  if(!l.length)return `<p class="note">Ainda sem feedback.</p>`;
+  return l.map(f=>{const v=VER[f.veredito]||[f.veredito||"",""];return `<div class="fb"><b>${esc(f.jurado||"Júri")}</b> ${v[0]?`<span class="pill ${v[1]}">${esc(v[0])}${f.custom?": "+esc(f.custom):""}</span>`:""} <span class="note">${esc(f.d||"")}</span>${f.comentario?`<p class="txt" style="margin:4px 0 0">${esc(f.comentario)}</p>`:""}</div>`;}).join("");}
+function ideaCard(i,mine){
+  const sg=st.sug.filter(s=>s.ideiaId===i.id).sort((a,b)=>String(b.em).localeCompare(String(a.em))),ma=st.mat.filter(m=>m.ideiaId===i.id);
+  const nfb=st.fb.filter(f=>f.ideiaId===i.id).length;
+  return `<article class="card" id="i-${esc(i.id)}"><h3>${esc(i.titulo||"(sem título)")}</h3>
+  <div class="meta">${i.sessao||"?"}.ª sessão · ${stars(i.gosto)} <span class="pp">${(i.par||[]).map(av).join("")}</span> <span>${esc((i.par||[]).join(", "))}</span></div>
+  <div class="lab">Problema</div><p class="txt">${esc(i.problema||"—")}</p><div class="lab">Solução</div><p class="txt">${esc(i.solucao||"—")}</p>
+  <details><summary>Feedback (${nfb})</summary>${fbHtml(i)}</details>
+  ${mine?`<details><summary>Materiais (${ma.length})</summary>${matHtml(i,ma)}</details>
+  <details><summary>Sugerir alteração${sg.length?` · ${sg.length} enviada${sg.length>1?"s":""}`:""}</summary>${sugHtml(i,sg)}</details>`:""}</article>`;}
+function matHtml(i,ma){return (ma.length?ma.map(m=>`<div class="fb"><button class="lnk" data-a="dl" data-p="${esc(m.path)}">${esc(m.ficheiro)}</button> <span class="pill">${esc(m.tipo)}</span> <span class="note">${esc(m.nome)} · ${(m.em||"").slice(0,10)}</span>${m.email===st.ses.user.email?` <button class="lnk" data-a="rm" data-id="${esc(m.id)}" data-p="${esc(m.path)}">Remover</button>`:""}</div>`).join(""):`<p class="note">Ainda sem ficheiros.</p>`)+
+  `<label for="t-${esc(i.id)}">Tipo</label><select id="t-${esc(i.id)}"><option>Pesquisa</option><option>Validação de mercado</option><option>Outro</option></select>
+  <label for="f-${esc(i.id)}">Ficheiro (PDF, Word, imagem… até 25 MB)</label><input type="file" id="f-${esc(i.id)}"><div class="row"><button class="pri" data-a="up" data-id="${esc(i.id)}">Enviar ficheiro</button></div>`;}
+function sugHtml(i,sg){return sg.map(s=>`<div class="fb"><span class="pill ${s.estado==="aceite"?"ok":s.estado==="rejeitada"?"bad":"warn"}">${esc(s.estado||"pendente")}</span> <span class="note">${(s.em||"").slice(0,10)}</span>${s.nota?`<p class="txt" style="margin:4px 0 0">${esc(s.nota)}</p>`:""}</div>`).join("")+
+  `<label for="p-${esc(i.id)}">Problema</label><textarea id="p-${esc(i.id)}">${esc(i.problema||"")}</textarea>
+  <label for="s-${esc(i.id)}">Solução</label><textarea id="s-${esc(i.id)}">${esc(i.solucao||"")}</textarea>
+  <label for="n-${esc(i.id)}">Porquê? (opcional)</label><input id="n-${esc(i.id)}"><div class="row"><button class="pri" data-a="sug" data-id="${esc(i.id)}">Enviar sugestão ao coordenador</button></div><p class="note">A descrição só muda depois de o coordenador aceitar.</p>`;}
+function render(){const A=$("#app");
+  if(!st.ses){A.innerHTML=`<div class="wrap login"><div class="card"><h1>Inovação 26/27</h1><p class="note">Área dos membros</p>${st.msg?`<div class="msg err" role="alert">${esc(st.msg)}</div>`:""}
+   <form id="lf"><label for="em">Email</label><input id="em" type="email" autocomplete="username" required placeholder="nome@junitec.pt"><label for="pw">Palavra-passe</label><input id="pw" type="password" autocomplete="current-password" required><div class="row"><button class="pri" style="flex:1">Entrar</button></div></form></div></div>`;
+   $("#lf").onsubmit=async e=>{e.preventDefault();let em=$("#em").value.trim().toLowerCase();if(!em.includes("@"))em+=DOM;try{setSes(await auth("token?grant_type=password",{email:em,password:$("#pw").value}));st.msg=null;await start();}catch(x){st.msg="Email ou palavra-passe incorretos.";render();}};return;}
+  if((st.ses.user.user_metadata||{}).must_change){A.innerHTML=`<div class="wrap login"><div class="card"><h1>Escolhe a tua palavra-passe</h1><p class="note">Por segurança, tens de definir uma nova palavra-passe antes de continuar (mínimo 8 caracteres).</p>${st.msg?`<div class="msg err" role="alert">${esc(st.msg)}</div>`:""}
+   <form id="cf"><label for="n1">Nova palavra-passe</label><input id="n1" type="password" minlength="8" autocomplete="new-password" required><label for="n2">Repetir</label><input id="n2" type="password" minlength="8" autocomplete="new-password" required><div class="row"><button class="pri" style="flex:1">Guardar</button></div></form></div></div>`;
+   $("#cf").onsubmit=async e=>{e.preventDefault();const a=$("#n1").value,b=$("#n2").value,em=st.ses.user.email;if(a!==b){st.msg="As palavras-passe não coincidem.";return render();}if(a.length<8||a===em.split("@")[0]||a===em){st.msg="Escolhe uma palavra-passe diferente do email e com 8 ou mais caracteres.";return render();}
+    try{await fresh();const u=await auth("user",{password:a,data:{must_change:false}},"PUT");st.ses.user=u;st.msg=null;await start();}catch(x){st.msg=x.message;render();}};return;}
+  const mine=st.ideias.filter(i=>(i.par||[]).includes(st.nome)).sort(ordem),all=[...st.ideias].sort(ordem),list=st.tab==="minhas"?mine:all;
+  A.innerHTML=`<div class="bar"><span class="pp" style="margin-left:6px">${av(st.nome)}</span><div class="sp"><b>${esc(st.nome||st.ses.user.email)}</b><small>Inovação 26/27</small></div><button data-a="pw" class="lnk">Palavra-passe</button><button data-a="out">Sair</button></div>
+  <div class="wrap">${st.msg?`<div class="msg ${st.err?"err":""}" role="status">${esc(st.msg)}</div>`:""}
+  <div class="tabs" role="group"><button data-a="tab" data-t="minhas" aria-pressed="${st.tab==="minhas"}">As minhas ideias (${mine.length})</button><button data-a="tab" data-t="todas" aria-pressed="${st.tab==="todas"}">Todas as ideias (${all.length})</button></div>
+  <p class="note">Ordenadas por estrelas, depois pelas mais recentes. Podes ler o feedback de todas; só podes sugerir alterações e juntar ficheiros às tuas.</p>
+  ${st.load?`<p>A carregar…</p>`:list.length?list.map(i=>ideaCard(i,(i.par||[]).includes(st.nome))).join(""):`<div class="card"><p>Não tens ideias associadas ainda.</p></div>`}</div>`;}
+const flash=(m,e)=>{st.msg=m;st.err=!!e;render();window.scrollTo(0,0);};
+document.addEventListener("click",async ev=>{const b=ev.target.closest("[data-a]");if(!b)return;const a=b.dataset.a,id=b.dataset.id,open=[...document.querySelectorAll("details[open]")].map(d=>d.closest("article")&&d.closest("article").id+"|"+d.querySelector("summary").textContent.slice(0,6));
+  const keep=()=>{open.forEach(k=>{const[aid,s]=k.split("|");const art=document.getElementById(aid);if(art)art.querySelectorAll("details").forEach(d=>{if(d.querySelector("summary").textContent.startsWith(s))d.open=true;});});};
+  try{
+  if(a==="tab"){st.tab=b.dataset.t;st.msg=null;render();}
+  else if(a==="out"){try{await fetch(U+"/auth/v1/logout",{method:"POST",headers:hdr()});}catch(e){}st.ses=null;lsSet(null);render();}
+  else if(a==="pw"){const u=Object.assign({},st.ses.user);u.user_metadata=Object.assign({},u.user_metadata,{must_change:true});st.ses.user=u;render();}
+  else if(a==="sug"){const p=$("#p-"+id).value.trim(),s=$("#s-"+id).value.trim(),n=$("#n-"+id).value.trim(),i=st.ideias.find(x=>x.id===id);if(p===(i.problema||"").trim()&&s===(i.solucao||"").trim()){flash("Não alteraste nada.",1);return;}
+    const sid="s"+Date.now().toString(36)+Math.random().toString(36).slice(2,6),d={id:sid,email:st.ses.user.email,nome:st.nome,ideiaId:id,titulo:i.titulo,problema:p,solucao:s,nota:n,estado:"pendente",em:new Date().toISOString()};
+    await rest("docs",{method:"POST",body:JSON.stringify({col:"sugestoes",id:sid,data:d})});st.sug.push(d);flash("Sugestão enviada. O coordenador vai ver e responder.");}
+  else if(a==="up"){const f=$("#f-"+id).files[0];if(!f){flash("Escolhe primeiro um ficheiro.",1);return;}if(f.size>26214400){flash("Ficheiro acima de 25 MB.",1);return;}
+    await fresh();const path=id+"/"+Date.now().toString(36)+"-"+f.name.normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^A-Za-z0-9._-]+/g,"_");
+    const r=await fetch(U+"/storage/v1/object/materiais/"+path,{method:"POST",headers:hdr({"Content-Type":f.type||"application/octet-stream","x-upsert":"false"}),body:f});if(!r.ok)throw new Error("Não foi possível enviar o ficheiro.");
+    const mid="m"+Date.now().toString(36)+Math.random().toString(36).slice(2,6),d={id:mid,email:st.ses.user.email,nome:st.nome,ideiaId:id,ficheiro:f.name,path,tipo:$("#t-"+id).value,tamanho:f.size,em:new Date().toISOString()};
+    await rest("docs",{method:"POST",body:JSON.stringify({col:"materiais",id:mid,data:d})});st.mat.push(d);st.msg="Ficheiro enviado.";st.err=false;render();keep();}
+  else if(a==="dl"){await fresh();const r=await fetch(U+"/storage/v1/object/sign/materiais/"+b.dataset.p,{method:"POST",headers:hdr({"Content-Type":"application/json"}),body:JSON.stringify({expiresIn:300})});const j=await r.json();if(!r.ok)throw new Error("Sem acesso ao ficheiro.");window.open(U+"/storage/v1"+j.signedURL,"_blank","noopener");}
+  else if(a==="rm"){if(!confirm("Remover este ficheiro?"))return;await fresh();await fetch(U+"/storage/v1/object/materiais/"+b.dataset.p,{method:"DELETE",headers:hdr()});await rest("docs?col=eq.materiais&id=eq."+encodeURIComponent(id),{method:"DELETE"});st.mat=st.mat.filter(m=>m.id!==id);st.msg="Ficheiro removido.";st.err=false;render();keep();}
+  }catch(x){flash(x.message||"Erro.",1);}});
+async function start(){try{await loadAll();}catch(x){st.load=false;st.msg="Não foi possível carregar os dados.";st.err=true;}render();}
+(async()=>{const s=lsGet();if(s&&s.r){try{setSes(await auth("token?grant_type=refresh_token",{refresh_token:s.r}));await start();return;}catch(e){lsSet(null);}}render();})();
+</script></body></html>

@@ -8,4 +8,5 @@ head = ('<!doctype html><html lang="pt-PT"><head><meta charset="utf-8">'
         '<script src="/adapter.js"></script></head><body>')
 (root / "public/index.html").write_text(head + app + "</body></html>", encoding="utf-8")
 (root / "public/adapter.js").write_text((root / "web/adapter.js").read_text(encoding="utf-8"), encoding="utf-8")
+(root / "public/membro.html").write_text((root / "src/membro.html").read_text(encoding="utf-8"), encoding="utf-8")
 print("public/index.html", len(head) + len(app))
