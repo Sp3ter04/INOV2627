@@ -893,18 +893,27 @@ function atEvents(){
   return E.filter(e=>e.t).sort((a,b)=>String(b.t).localeCompare(String(a.t)));
 }
 function hAtiv(){
-  const all=atEvents(),role=S.atRole||"",pes=S.atPessoa||"";
+  const all=atEvents(),role=S.atRole||"",pes=S.atPessoa||"",per=S.atPer||"todos";
+  const now=new Date(),hoje=new Date(now.getFullYear(),now.getMonth(),now.getDate()),semana=new Date(hoje);semana.setDate(hoje.getDate()-((now.getDay()+6)%7));
+  const inPer=t=>{const d=new Date(t);if(isNaN(d))return per==="todos";if(per==="hoje")return d>=hoje;if(per==="semana")return d>=semana;if(per==="antes")return d<semana;return true;};
   const people=[...new Set(all.map(e=>e.who))].sort((a,b)=>a.localeCompare(b,"pt"));
-  const L=all.filter(e=>(!role||e.role===role)&&(!pes||e.who===pes));
-  const dt=t=>{const d=new Date(t);return isNaN(d)?String(t).slice(0,10):d.toLocaleString("pt-PT",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"});};
+  const L=all.filter(e=>(!role||e.role===role)&&(!pes||e.who===pes)&&inPer(e.t));
+  const fmt=t=>{const d=new Date(t);if(isNaN(d))return String(t).slice(0,10);const h=d.toLocaleTimeString("pt-PT",{hour:"2-digit",minute:"2-digit"});return d>=hoje?"Hoje, "+h:d.toLocaleDateString("pt-PT",{day:"2-digit",month:"short"})+", "+h;};
   const seg=(v,l)=>`<button type="button" data-act="atrole" data-v="${v}" aria-pressed="${role===v}">${l}</button>`;
-  return `<div class="itool"><div class="seg" role="group" aria-label="Quem">${seg("","Todos")}${seg("Júri","Júri")}${seg("Membro","Membros")}${seg("Coordenador","Coordenador")}</div>
+  const sel=(v,l)=>`<option value="${v}" ${per===v?"selected":""}>${l}</option>`;
+  const RP={Júri:"br",Membro:"",Coordenador:"ok"};
+  return `<div class="itool" style="flex-wrap:wrap;gap:8px"><div class="seg" role="group" aria-label="Quem">${seg("","Todos")}${seg("Júri","Júri")}${seg("Membro","Membros")}${seg("Coordenador","Coordenador")}</div>
+    <select class="field sm" data-atper aria-label="Período">${sel("todos","Todo o período")}${sel("hoje","Hoje")}${sel("semana","Esta semana")}${sel("antes","Anteriores")}</select>
     <select class="field sm" data-atpessoa aria-label="Pessoa"><option value="">Todas as pessoas</option>${people.map(p=>`<option value="${esc(p)}" ${p===pes?"selected":""}>${esc(p)}</option>`).join("")}</select>
     <span class="note">${L.length} ${L.length===1?"registo":"registos"}</span></div>
-  <p class="note" style="margin:0 0 10px">O que os jurados e os membros fizeram, do mais recente para o mais antigo. Quando alguém altera um veredito ou apaga uma entrada, fica só a versão atual.</p>
-  ${L.length?`<div class="card"><ul class="tlist">${L.slice(0,300).map(e=>`<li><span class="mono note" style="white-space:nowrap">${esc(dt(e.t))}</span><span style="min-width:0"><b>${esc(e.who)}</b> <span class="pill ${e.role==="Júri"?"br":e.role==="Membro"?"":"ok"}">${esc(e.role)}</span> ${esc(e.what)}<span class="note" style="display:block">${e.iid&&S.ideias.get(e.iid)?`<button type="button" class="lnk" data-act="sugver" data-id="${esc(e.iid)}">${esc(e.idea)}</button>`:esc(e.idea)}</span>${e.txt?`<span class="fbc">${esc(e.txt)}</span>`:""}</span></li>`).join("")}</ul></div>`:empty("Ainda sem atividade","Os veredictos do júri e as ações dos membros aparecem aqui.")}`;
+  <p class="note" style="margin:6px 0 10px">O que os jurados e os membros fizeram, do mais recente para o mais antigo.</p>
+  ${L.length?`<div class="card"><ul class="tlist" style="list-style:none;margin:0;padding:0">${L.slice(0,300).map(e=>`<li style="padding:12px 0;border-bottom:1px solid var(--line)">
+      <div class="row" style="gap:8px;flex-wrap:wrap;align-items:center"><b>${esc(e.who)}</b><span class="pill ${RP[e.role]||""}">${esc(e.role)}</span><span class="note mono" style="margin-left:auto">${esc(fmt(e.t))}</span></div>
+      <div style="margin-top:4px">${esc(e.what)} ${e.iid&&S.ideias.get(e.iid)?`· <button type="button" class="lnk" data-act="sugver" data-id="${esc(e.iid)}">${esc(e.idea)}</button>`:`· <span class="note">${esc(e.idea)}</span>`}</div>
+      ${e.txt?`<p class="note" style="margin:6px 0 0;white-space:pre-wrap">${esc(e.txt)}</p>`:""}</li>`).join("")}</ul></div>`:empty("Sem atividade neste período","Muda o período ou as pessoas no filtro.")}`;
 }
-document.addEventListener("change",e=>{const el=e.target;if(!el.dataset)return;if(el.dataset.atpessoa!==undefined){S.atPessoa=el.value;render();}if(el.dataset.fbf!==undefined){S.fbF=el.value;render();}});
+
+document.addEventListener("change",e=>{const el=e.target;if(!el.dataset)return;if(el.dataset.atpessoa!==undefined){S.atPessoa=el.value;render();}if(el.dataset.atper!==undefined){S.atPer=el.value;render();}if(el.dataset.fbf!==undefined){S.fbF=el.value;render();}});
 /* Feedback: o que os membros veem. Quando ainda não foi confirmado, usa a sugestão automática. */
 function fbSugOcultar(f){const raw=String(f.comentario||"").trim();if(!raw)return false;const t=raw.replace(/^\[Sessão \d\]\s*/,"").trim();if(!t)return true;return t.length<=12||(!/\s/.test(t)&&t.length<=15);}
 function fbOculto(f){return f.ocultoMembros===undefined?fbSugOcultar(f):!!f.ocultoMembros;}
