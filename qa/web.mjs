@@ -13,6 +13,7 @@ function handle(route){
   const req=route.request(),u=new URL(req.url()),h=req.headers(),coord=h["x-inov-code"]===CODE;
   const p=u.pathname.replace("/rest/v1/","");
   if(p==="rpc/inov_coord")return route.fulfill({json:coord});
+  if(p==="rpc/inov_juri")return route.fulfill({json:h["x-inov-code"]==="1fh73r"});
   const q=k=>{const v=u.searchParams.get(k);return v&&v.startsWith("eq.")?v.slice(3):null;};
   const m=req.method();
   if(m==="GET"){const col=q("col"),id=q("id");const rows=[...store.values()].filter(r=>(!col||r.col===col)&&(!id||r.id===id)&&(coord||PUB_R.includes(r.col)));return route.fulfill({json:rows.map(r=>({id:r.id,col:r.col,data:r.data}))});}
@@ -42,8 +43,14 @@ ok(await R.locator('[data-go="kpis"]').count()===1,"código certo abre vista de 
 const J=await open("/juri",{w:390});
 ok(await J.locator(".app.jmode").count()===1,"/juri abre o painel do júri");
 ok(await J.locator('[data-go="kpis"],[data-go="defs"]').count()===0,"júri sem vista de coordenador");
-ok(await J.locator('form[data-form="liveidea"]').count()===1,"júri pode registar ideias");
+ok(await J.locator("#inov-jgate").count()===1,"júri sem código vê o ecrã de código");
+await J.fill("#inov-jcode","1fh73r");await J.click("#inov-jform button");await W(1500);
+ok(await J.locator("#inov-jgate").count()===0,"código do júri aceite");
+ok(await J.locator(".whobtn",{hasText:"Lourenço Ponces Duarte"}).count()===1,"lista de júris inclui Lourenço Ponces Duarte");
+ok(await J.locator('[data-act="verd"],form[data-form="liveidea"]').count()===0,"júri não vê ideias antes de escolher quem é");
+await J.click("summary:has-text('Não estou na lista')");
 await J.fill('form[data-form="jname"] input[name="n"]',"Jurado Web");await J.click('form[data-form="jname"] button');await W(400);
+ok(await J.locator('form[data-form="liveidea"]').count()===1,"júri pode registar ideias");
 const first=await J.locator('[data-act="verd"]').first();
 const iid=await first.getAttribute("data-id");
 await J.click(`[data-act="verd"][data-id="${iid}"][data-v="gosto"]`);await W(150);
@@ -60,5 +67,9 @@ ok(w==="permission-denied","júri não altera config",w);
 // 4. coordenador vê KPIs e ferramenta de cópia
 const C=await open("/coordenador",{code:CODE});await C.click('[data-go="defs"]');await W(600);
 ok(await C.locator("#inov-export").count()===1,"Definições: cópia de segurança");
+await C.click('[data-go="hub"]');await W(400);await C.click('[data-tab="hub:ativ"]');await W(500);
+ok(await C.locator("text=Jurado Web").count()>0,"Atividade: mostra o veredito do jurado");
+await C.selectOption("[data-atpessoa]","Jurado Web");await W(300);
+ok(await C.locator("select[data-atpessoa]").inputValue()==="Jurado Web","Atividade: filtro por pessoa");
 ok(R.errs.length+J.errs.length+C.errs.length===0,"sem erros JS",R.errs.concat(J.errs,C.errs).join("|"));
 await b.close();

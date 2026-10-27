@@ -490,7 +490,7 @@ const P_EST=["a contactar","contactado","em negociação","confirmado","pago","s
 const P_TONE={"a contactar":"","contactado":"warn","em negociação":"br","confirmado":"ok","pago":"ok","sem interesse":"bad"};
 const P_COLOR={"a contactar":"var(--line-2)","contactado":"var(--warn)","em negociação":"var(--brand)","confirmado":"var(--ok)","pago":"var(--p-hub)","sem interesse":"var(--bad)"};
 const ART_URL="https://claude.ai/artifact/XdLsd2YFxzJyojWf3gqUBU";
-const JURI_DEF=["Gabriela Gomes","António Sarafana","Miguel Faustino","Tiago Romão","Vitor Clara"];
+const JURI_DEF=["Gabriela Gomes","António Sarafana","Miguel Faustino","Tiago Romão","Lourenço Ponces Duarte","Miguel Gomes","Vitor Clara"];
 const VERD=[["matar","Matar","bad"],["mercado","Analisar o mercado","warn"],["gosto","Gosto","ok"],["outro","Personalizado","br"]];
 function canHub(){
   if(S.isOwner)return true;
@@ -765,9 +765,9 @@ function vHub(){
   const all=[...S.ideias.values()];const sts=activeStartups();
   const cnt=f=>all.filter(i=>rank(i.etapa)>=rank(f)).length;
   const t=S.tab.hub;
-  const body={ideias:hIdeias,sug:hSug,dup:hDup,live:hLive,c1:()=>hFase("c1"),c2:()=>hFase("c2"),sd:()=>hFase("sd"),startups:hStartups,hist:hHist}[t]||hIdeias;
+  const body={ideias:hIdeias,sug:hSug,dup:hDup,live:hLive,c1:()=>hFase("c1"),c2:()=>hFase("c2"),sd:()=>hFase("sd"),startups:hStartups,hist:hHist,ativ:hAtiv}[t]||hIdeias;
   return `<div class="head"><div><div class="eyebrow">Pilar 1 · Inovação interna</div><h1>Bootcamp</h1>${liveBadge()}<div class="sub">Do Bootcamp às 3 startups: ideias, Challenges, Selection Day e acompanhamento até ao Unicorn Day.</div></div></div>
-  ${tabs("hub",[["ideias","Sessões de ideação",all.length],["sug","Sugestões dos membros",sugPend().length||null],["dup","Ideias repetidas",dupPairs().length||null],["live","Sessão ao vivo",null],["c1","Challenge I",cnt("c1")],["c2","Challenge II",cnt("c2")],["sd","Selection Day",cnt("sd")],["startups","Startups",sts.length],["hist","Histórico",null]])}
+  ${tabs("hub",[["ideias","Sessões de ideação",all.length],["sug","Sugestões dos membros",sugPend().length||null],["dup","Ideias repetidas",dupPairs().length||null],["live","Sessão ao vivo",null],["c1","Challenge I",cnt("c1")],["c2","Challenge II",cnt("c2")],["sd","Selection Day",cnt("sd")],["startups","Startups",sts.length],["ativ","Atividade",null],["hist","Histórico",null]])}
   ${body()}`;
 }
 /* ---------- Ideias repetidas: propor pares, confirmar e juntar (fica a mais recente, pessoas sem repetidos, feedbacks somados) ---------- */
@@ -872,6 +872,7 @@ function juryTodas(jur){
 document.addEventListener("input",e=>{if(e.target.id!=="jq")return;const q=norm(e.target.value.trim());document.querySelectorAll("#jtodas > .jcard").forEach(c=>{c.hidden=!!q&&!String(c.dataset.q||"").includes(q);});});
 document.addEventListener("click",e=>{const b=e.target.closest("[data-act]");if(!b)return;const a=b.dataset.act;
   if(a==="matopen"){e.preventDefault();if(window.INOV_FILE)window.INOV_FILE(b.dataset.p).catch(()=>toast("Não foi possível abrir o ficheiro.",true));else toast("Os ficheiros só abrem na versão web.",true);}
+  else if(a==="atrole"){S.atRole=b.dataset.v||"";render();}
   else if(a==="jsess"){S.jSess=Number(b.dataset.v)||0;render();}
   else if(a==="sugver"){S.view="hub";S.tab.hub="ideias";S.open=b.dataset.id;render();setTimeout(()=>{const el=document.querySelector(`[data-open="${b.dataset.id}"]`);if(el)el.scrollIntoView({block:"center"});},60);}
   else if(a==="sugok"||a==="sugno"){const x=S.sugestoes.get(b.dataset.id);if(!x)return;const i=S.ideias.get(x.ideiaId);const now=new Date().toISOString();
@@ -881,6 +882,28 @@ document.addEventListener("click",e=>{const b=e.target.closest("[data-act]");if(
     x.estado=a==="sugok"?"aceite":"rejeitada";x.decididoEm=now;save("sugestoes",x.id);render();toast(a==="sugok"?(x.tipo==="participar"?`${x.nome} juntou-se à ideia.`:"Ideia atualizada."):"Sugestão rejeitada.");}
 });
 function memberOpts(){return `<datalist id="dl-membros">${S.cfg.membros.map(m=>`<option value="${esc(m)}">`).join("")}</datalist>`;}
+function atEvents(){
+  const E=[],ide=id=>{const i=S.ideias.get(id);return i?i.titulo||"(sem título)":"(ideia apagada)";};
+  [...S.feedback.values()].forEach(f=>E.push({t:f.enviadoEm||f.updatedAt||f.d||"",who:f.jurado||"?",role:"Júri",what:isQ(f)?"fez uma pergunta":"deu o veredito "+verdLabel(f),txt:f.comentario||"",idea:ide(f.ideiaId),iid:f.ideiaId}));
+  [...S.sugestoes.values()].forEach(x=>{E.push({t:x.em||x.updatedAt||"",who:x.nome||x.email||"?",role:"Membro",what:x.tipo==="participar"?"pediu para participar":"sugeriu melhorar a descrição",txt:x.nota||"",idea:ide(x.ideiaId),iid:x.ideiaId});
+    if(x.decididoEm&&(x.estado||"pendente")!=="pendente")E.push({t:x.decididoEm,who:"Coordenador",role:"Coordenador",what:(x.estado==="aceite"?"aceitou":"recusou")+" o pedido de "+(x.nome||x.email||"?"),txt:"",idea:ide(x.ideiaId),iid:x.ideiaId});});
+  [...S.materiais.values()].forEach(m=>E.push({t:m.em||"",who:m.nome||m.email||"?",role:"Membro",what:"juntou um ficheiro ("+(m.tipo||"Outro")+")",txt:m.ficheiro||"",idea:ide(m.ideiaId),iid:m.ideiaId}));
+  [...S.ideias.values()].filter(i=>i.criadaPor).forEach(i=>E.push({t:i.createdAt||"",who:(i.par||[])[0]||i.criadaPor||"?",role:"Membro",what:"criou a ideia",txt:"",idea:i.titulo||"(sem título)",iid:i.id}));
+  return E.filter(e=>e.t).sort((a,b)=>String(b.t).localeCompare(String(a.t)));
+}
+function hAtiv(){
+  const all=atEvents(),role=S.atRole||"",pes=S.atPessoa||"";
+  const people=[...new Set(all.map(e=>e.who))].sort((a,b)=>a.localeCompare(b,"pt"));
+  const L=all.filter(e=>(!role||e.role===role)&&(!pes||e.who===pes));
+  const dt=t=>{const d=new Date(t);return isNaN(d)?String(t).slice(0,10):d.toLocaleString("pt-PT",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"});};
+  const seg=(v,l)=>`<button type="button" data-act="atrole" data-v="${v}" aria-pressed="${role===v}">${l}</button>`;
+  return `<div class="itool"><div class="seg" role="group" aria-label="Quem">${seg("","Todos")}${seg("Júri","Júri")}${seg("Membro","Membros")}${seg("Coordenador","Coordenador")}</div>
+    <select class="field sm" data-atpessoa aria-label="Pessoa"><option value="">Todas as pessoas</option>${people.map(p=>`<option value="${esc(p)}" ${p===pes?"selected":""}>${esc(p)}</option>`).join("")}</select>
+    <span class="note">${L.length} ${L.length===1?"registo":"registos"}</span></div>
+  <p class="note" style="margin:0 0 10px">O que os jurados e os membros fizeram, do mais recente para o mais antigo. Quando alguém altera um veredito ou apaga uma entrada, fica só a versão atual.</p>
+  ${L.length?`<div class="card"><ul class="tlist">${L.slice(0,300).map(e=>`<li><span class="mono note" style="white-space:nowrap">${esc(dt(e.t))}</span><span style="min-width:0"><b>${esc(e.who)}</b> <span class="pill ${e.role==="Júri"?"br":e.role==="Membro"?"":"ok"}">${esc(e.role)}</span> ${esc(e.what)}<span class="note" style="display:block">${e.iid&&S.ideias.get(e.iid)?`<button type="button" class="lnk" data-act="sugver" data-id="${esc(e.iid)}">${esc(e.idea)}</button>`:esc(e.idea)}</span>${e.txt?`<span class="fbc">${esc(e.txt)}</span>`:""}</span></li>`).join("")}</ul></div>`:empty("Ainda sem atividade","Os veredictos do júri e as ações dos membros aparecem aqui.")}`;
+}
+document.addEventListener("change",e=>{const el=e.target;if(!el.dataset||el.dataset.atpessoa===undefined)return;S.atPessoa=el.value;render();});
 function hIdeias(){
   const f=S.f,all=[...S.ideias.values()];
   const q=norm(f.q);
@@ -1371,7 +1394,7 @@ const avs=(arr,sz)=>arr.filter(Boolean).map(m=>av(m,sz)).join("");
 const mem3=p=>[p.a,p.b,p.c].filter(Boolean);
 function liveState(){return S.live.get("estado")||{id:"estado",sessao:1,parAtual:0};}
 function setLive(p){const L=Object.assign({},liveState(),p,{id:"estado"});S.live.set("estado",L);save("live","estado");}
-function sess(n){return S.sessoes.get("s"+n)||{id:"s"+n,n,pares:Array.from({length:6},()=>({a:"",b:""})),juri:n===1?JURI_DEF.slice():[]};}
+function sess(n){return S.sessoes.get("s"+n)||{id:"s"+n,n,pares:Array.from({length:6},()=>({a:"",b:""})),juri:JURI_DEF.slice()};}
 function editSess(n){const s=sess(n);if(!S.sessoes.get(s.id))S.sessoes.set(s.id,s);return s;}
 const fbId=(iid,j)=>iid+"__"+slug(j)+"__"+Date.now().toString(36)+Math.random().toString(36).slice(2,5);
 const isQ=f=>f.tipo==="pergunta";
@@ -1402,11 +1425,7 @@ function vJuri(){
     ${S.jTab!=="rank"&&S.jTab!=="todas"&&!S.follow&&pares.length?`<div class="row" style="justify-content:center"><button type="button" class="btn sm" data-act="jfollow">Voltar ao par que está a apresentar</button></div>`:""}
   </div>`;
   if(S.dbState!=="on")return h+empty("Sem ligação à base de dados","Abre este link com a tua conta Claude. Se o problema continuar, pede ao Vitor que te convide como Editor.");
-  if(!jur){
-    h+=`<div class="card" style="margin-bottom:14px"><h2>Quem és?</h2><p class="note" style="margin:0">Escreve o teu nome para avaliares as ideias. Fica guardado neste dispositivo.</p>
-      <form class="row" data-form="jname" autocomplete="off" style="flex-wrap:nowrap"><input class="field" name="n" required maxlength="60" placeholder="Nome e apelido" aria-label="O teu nome"><button class="btn pri" type="submit">Entrar</button></form>
-      ${J.length?`<p class="note" style="margin:0">Ou escolhe:</p><div class="who">${J.map(n=>`<button type="button" class="whobtn" data-act="jset" data-v="${esc(n)}">${esc(n)}</button>`).join("")}</div>`:""}</div>`;
-  }
+  if(!jur)return juryWho();
   if(S.jTab==="rank")return h+juryRanking(n,s,J);
   if(S.jTab==="todas")return h+juryTodas(jur);
   if(S.isOwner&&!S.preview)h+=pedidosCard();
@@ -1421,6 +1440,16 @@ function vJuri(){
   if(!pares.length)return h+empty("Os pares desta sessão ainda não estão definidos","Assim que o Vitor os definir, aparecem aqui com as fotos.");
   h+=ideas.length?`<div class="stack">${ideas.map(i=>juryIdea(i,jur,J)).join("")}</div>`:empty("Ainda sem ideias deste par","O problema e a solução aparecem aqui sozinhos assim que o Vitor os registar.");
   return h;
+}
+function juryRoster(){const set=new Set(JURI_DEF);[...S.sessoes.values()].forEach(x=>(x.juri||[]).forEach(n=>n&&set.add(n)));[...S.feedback.values()].forEach(f=>f.jurado&&set.add(f.jurado));return [...set].sort((a,b)=>a.localeCompare(b,"pt"));}
+function juryWho(){
+  const R=juryRoster();
+  return `<div class="jhero"><div class="eyebrow">Bootcamp de Inovação 26/27 · Júri</div><h1>Quem és?</h1><div style="opacity:.9;margin-top:2px">Escolhe o teu nome antes de veres as ideias. É com ele que ficam registados os teus comentários e perguntas.</div></div>
+  <div class="card" style="margin-bottom:14px"><h2>Sou…</h2>
+    <div class="who">${R.map(n=>`<button type="button" class="whobtn" data-act="jset" data-v="${esc(n)}">${esc(n)}</button>`).join("")}</div>
+    <details style="margin-top:6px"><summary class="note" style="cursor:pointer">Não estou na lista</summary>
+      <form class="row" data-form="jname" autocomplete="off" style="flex-wrap:nowrap;margin-top:8px"><input class="field" name="n" required maxlength="60" placeholder="Nome e apelido" aria-label="O teu nome"><button class="btn pri" type="submit">Entrar</button></form></details>
+    <p class="note" style="margin:8px 0 0">Fica guardado neste dispositivo. Podes trocar de nome no topo do painel.</p></div>`;
 }
 function liveBadge(){if(S.dbState!=="on")return "";const t=S.lastSync?new Date(S.lastSync).toLocaleTimeString("pt-PT",{hour:"2-digit",minute:"2-digit",second:"2-digit"}):"";return `<span class="livebadge"><i></i><span>Ao vivo${t?" · atualizado às "+t:""}</span></span>`;}
 function hhmm(f){const t=f.enviadoEm||f.updatedAt;return t?new Date(t).toLocaleTimeString("pt-PT",{hour:"2-digit",minute:"2-digit"}):"";}
