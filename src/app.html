@@ -27,6 +27,31 @@
 .ic-ps b{display:block;font:800 10.5px var(--display);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}.ic-ps p{margin:2px 0 0;font-size:13.5px;line-height:1.5;white-space:pre-wrap}
 .ic-d{border-top:1px solid var(--line);padding-top:10px}
 @media (max-width:760px){.itool{position:static}.ic-ps{grid-template-columns:1fr}.ic-r{margin-left:0;width:100%}.seg button{padding:7px 9px}}
+.jc2{border-left:4px solid var(--sc);gap:12px}
+.jc-top{display:flex;gap:8px 10px;align-items:center;flex-wrap:wrap}
+.jc-s{font:800 11.5px/1 var(--display);color:#fff;background:var(--sc);border-radius:6px;padding:5px 8px}
+.jc-ppl{display:flex;gap:5px;flex-wrap:wrap}.jc-meta{margin-left:auto;display:flex;gap:6px;align-items:center}
+.jc-meta .btn.ghost{border-color:transparent}.jc-meta .btn.ghost:hover{border-color:var(--line-2)}
+.jc-t{font:800 19px/1.25 var(--display);margin:0}
+.jc-ps{display:grid;grid-template-columns:1fr 1fr;gap:10px}.jc-ps>div{background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+.jc-ps b,.jc-lbl{display:block;font:800 10.5px var(--display);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.jc-ps p{margin:3px 0 0;font-size:14.5px;line-height:1.5;white-space:pre-wrap}
+.jc-files{display:flex;gap:6px;flex-wrap:wrap;align-items:center}.jc-files .jc-lbl{width:100%}
+.fchip{all:unset;cursor:pointer;display:inline-flex;gap:8px;align-items:center;border:1px solid var(--line-2);border-radius:8px;padding:5px 10px 5px 5px;background:var(--surface);max-width:100%}
+.fchip:hover{border-color:var(--brand)}.fchip:focus-visible{outline:2px solid var(--brand)}
+.fchip .fi{font:800 10px var(--mono);background:var(--brand-soft);color:var(--brand);border-radius:5px;padding:5px 6px}
+.fchip .fn{font-weight:700;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:220px}.fchip small{color:var(--muted);font-size:11.5px}
+.jc-fb{background:var(--brand-soft);border-radius:10px;padding:12px;display:grid;gap:10px}
+.verd.v2 .vb{display:flex;gap:6px;align-items:center;justify-content:center;padding:10px 6px;background:var(--surface)}
+.verd.v2 .vi{font-size:15px;line-height:1}
+.verd.v2 .vb.bad .vi{color:var(--bad)}.verd.v2 .vb.warn .vi{color:var(--warn)}.verd.v2 .vb.ok .vi{color:var(--ok)}.verd.v2 .vb.br .vi{color:var(--brand)}
+.verd.v2 .vb.on .vi{color:inherit}
+.jc-comp{display:flex;gap:8px;align-items:flex-end}.jc-comp textarea{flex:1;min-width:0;background:var(--surface)}.jc-comp .btn{flex:none}
+.jc-q summary,.jc-hist summary{cursor:pointer;font-weight:700;font-size:13.5px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;min-height:32px}
+.jc-q[open] summary{margin-bottom:6px}.jc-hist{border-top:1px solid var(--line);padding-top:8px}
+.jc-hist .cnt{font:700 11px var(--mono);background:var(--surface-2);border:1px solid var(--line);border-radius:99px;padding:1px 7px}
+.jc-hist .fbl{border-top:0;padding-top:6px}.jc-hist .fbl>.eyebrow{display:none}
+@media(max-width:600px){.jc-ps{grid-template-columns:1fr}.jc-meta{margin-left:0}.jc-comp{flex-direction:column;align-items:stretch}.jc-t{font-size:17px}}
 .matb{border-top:1px solid var(--line);padding-top:10px;margin-top:10px;display:grid;gap:6px}
 .matl{list-style:none;margin:0;padding:0;display:grid;gap:6px}.matl li{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .sgcard{margin-bottom:12px;display:grid;gap:10px}.sgcard.done{opacity:.75}.sgt{font-weight:700;font-family:var(--display)}
@@ -1455,25 +1480,35 @@ function reuseSel(n,cur){
 }
 function juryIdea(i,jur,J){
   const d=S.draft[i.id]||{veredito:"",custom:"",comentario:"",pergunta:""};
-  const mine=jur?fbAll(i.id).filter(f=>f.jurado===jur).length:0;
+  const mine=jur?fbAll(i.id).filter(f=>f.jurado===jur):[];const myV=mine.filter(f=>!isQ(f)).slice(-1)[0];
   const ed=canEditSess(i.sessao)&&!S.preview&&(S.isOwner||S.jTab!=="todas");const editing=ed&&S.jEdit===i.id;
-  const head=editing?`<div class="form"><label class="l full">Título<input class="field" data-b="ideias|${i.id}|titulo" value="${esc(i.titulo||"")}"></label>
+  const ppl=(i.par||[]).filter(Boolean),nfb=fbAll(i.id).length,mats=matsOf(i.id);
+  const qOpen=!!(d.pergunta||"").trim()||!!(S.qOpen&&S.qOpen[i.id]);
+  const ICON={matar:"✕",mercado:"🔍",gosto:"♥",outro:"✎"};
+  const body=editing?`<div class="form"><label class="l full">Título<input class="field" data-b="ideias|${i.id}|titulo" value="${esc(i.titulo||"")}"></label>
     <label class="l">Problema<textarea class="field" rows="3" data-b="ideias|${i.id}|problema">${esc(i.problema||"")}</textarea></label><label class="l">Solução<textarea class="field" rows="3" data-b="ideias|${i.id}|solucao">${esc(i.solucao||"")}</textarea></label>
     <div class="full row" style="justify-content:space-between"><button type="button" class="btn sm danger" data-act="delidea" data-id="${i.id}">Apagar ideia</button><button type="button" class="btn sm pri" data-act="jedit" data-id="">Concluir edição</button></div></div>`
-    :`<div class="row" style="justify-content:space-between;flex-wrap:nowrap;align-items:flex-start"><h3>${esc(i.titulo||"(sem título)")}${i.origem&&S.ideias.get(i.origem)?`<small class="note" style="display:block;font-weight:400">↺ Retomada da sessão ${esc(S.ideias.get(i.origem).sessao)} (${esc(S.ideias.get(i.origem).titulo||"")})</small>`:""}</h3>${ed?`<span class="row" style="flex-wrap:nowrap"><button type="button" class="btn sm" data-act="jedit" data-id="${i.id}">Editar</button><button type="button" class="btn sm danger" data-act="delidea" data-id="${i.id}" aria-label="Apagar a ideia ${esc(i.titulo||"")}">Apagar</button></span>`:""}</div>
-    <div class="ps"><div><span class="eyebrow">Problema</span><p>${esc(i.problema||"–")}</p></div><div><span class="eyebrow">Solução</span><p>${esc(i.solucao||"–")}</p></div></div>`;
-  return `<article class="jcard" data-q="${esc(norm([i.titulo,i.problema,i.solucao,(i.par||[]).join(" ")].join(" ")))}">${S.jTab==="todas"?`<div class="row" style="gap:6px"><span class="pill br">${esc(sessLabel(i))}</span><span class="stack2">${avs(i.par||[],24)}</span><span class="note">${esc((i.par||[]).join(", "))}</span>${starsRO(i)}</div>`:""}${head}
-    ${jur?`<span class="eyebrow">Veredito + sugestões</span><div class="verd" role="group" aria-label="O teu veredito">${VERD.map(([k,l,t])=>`<button type="button" class="vb ${t} ${d.veredito===k?"on":""}" aria-pressed="${d.veredito===k}" data-act="verd" data-id="${i.id}" data-v="${k}">${l}</button>`).join("")}</div>
-      ${d.veredito==="outro"?`<input class="field" data-fb="${i.id}" data-k="custom" value="${esc(d.custom||"")}" placeholder="O teu veredito (ex.: pivotar para B2B)" aria-label="Veredito personalizado">`:""}
-      <textarea class="field" rows="2" data-fb="${i.id}" data-k="comentario" placeholder="Sugestões para o par (opcional) · Enter envia" aria-label="Sugestões">${esc(d.comentario||"")}</textarea>
-      <div class="row" style="justify-content:flex-end"><button type="button" class="btn pri" data-act="fbsend" data-id="${i.id}" ${d.veredito?"":"disabled"}>${d.veredito?"Enviar veredito":"Escolhe um veredito"}</button></div>
-      <span class="eyebrow">Perguntas que vais fazer</span>
-      <textarea class="field" rows="2" data-fb="${i.id}" data-k="pergunta" placeholder="Escreve uma pergunta para o par · Enter envia" aria-label="Pergunta">${esc(d.pergunta||"")}</textarea>
-      <div class="row" style="justify-content:space-between"><span class="note">${mine?`Já enviaste ${mine} ${mine===1?"entrada":"entradas"} nesta ideia.`:""}</span><button type="button" class="btn" data-act="qsend" data-id="${i.id}" ${(d.pergunta||"").trim()?"":"disabled"}>Enviar pergunta</button></div>`:""}
-    ${matBlock(i.id,false)}
-    ${fbList(i.id,J)}
+    :`<h3 class="jc-t">${esc(i.titulo||"(sem título)")}</h3>${i.origem&&S.ideias.get(i.origem)?`<p class="note" style="margin:-6px 0 0">↺ Retomada da ${esc(S.ideias.get(i.origem).sessao)}.ª sessão (${esc(S.ideias.get(i.origem).titulo||"")})</p>`:""}
+    <div class="jc-ps"><div><b>Problema</b><p>${esc(i.problema||"—")}</p></div><div><b>Solução</b><p>${esc(i.solucao||"—")}</p></div></div>
+    ${mats.length?`<div class="jc-files"><span class="jc-lbl">📎 Ficheiros dos membros</span>${mats.map(m=>`<button type="button" class="fchip" data-act="matopen" data-p="${esc(m.path)}" title="${esc(m.tipo||"")} · ${esc(m.nome||"")}"><span class="fi">${esc((String(m.ficheiro).split(".").pop()||"").slice(0,4).toUpperCase())}</span><span class="fn">${esc(m.ficheiro)}</span><small>${esc(m.tipo||"")}</small></button>`).join("")}</div>`:""}`;
+  return `<article class="jcard jc2" style="--sc:var(--s${Math.min(4,Number(i.sessao)||1)})" data-q="${esc(norm([i.titulo,i.problema,i.solucao,ppl.join(" ")].join(" ")))}">
+  <div class="jc-top"><span class="jc-s">${esc(sessLabel(i))}</span><span class="jc-ppl">${ppl.map(p=>`<span class="chipp">${av(p,22)}${esc(p)}</span>`).join("")||'<span class="note">Sem grupo</span>'}</span>
+    <span class="jc-meta">${starsRO(i)}${ed&&!editing?`<button type="button" class="btn sm ghost" data-act="jedit" data-id="${i.id}">Editar</button><button type="button" class="btn sm ghost danger" data-act="delidea" data-id="${i.id}" aria-label="Apagar a ideia ${esc(i.titulo||"")}">Apagar</button>`:""}</span></div>
+  ${body}
+  ${jur?`<section class="jc-fb">
+    <div class="jc-lbl">O teu veredito${myV?` <span class="pill ${(VERD.find(z=>z[0]===myV.veredito)||[])[2]||""}">já enviaste: ${esc(verdLabel(myV))}</span>`:""}</div>
+    <div class="verd v2" role="group" aria-label="O teu veredito">${VERD.map(([k,l,t])=>`<button type="button" class="vb ${t} ${d.veredito===k?"on":""}" aria-pressed="${d.veredito===k}" data-act="verd" data-id="${i.id}" data-v="${k}"><span class="vi" aria-hidden="true">${ICON[k]||""}</span>${l}</button>`).join("")}</div>
+    ${d.veredito==="outro"?`<input class="field" data-fb="${i.id}" data-k="custom" value="${esc(d.custom||"")}" placeholder="O teu veredito (ex.: pivotar para B2B)" aria-label="Veredito personalizado">`:""}
+    <div class="jc-comp"><textarea class="field" rows="2" data-fb="${i.id}" data-k="comentario" placeholder="${d.veredito?"Porquê? Sugestões para o par (opcional)":"Escolhe primeiro um veredito"} · Enter envia" aria-label="Sugestões">${esc(d.comentario||"")}</textarea>
+      <button type="button" class="btn pri" data-act="fbsend" data-id="${i.id}" ${d.veredito?"":"disabled"}>Enviar</button></div>
+    <details class="jc-q" data-qid="${i.id}" ${qOpen?"open":""}><summary>❓ Fazer uma pergunta ao par</summary>
+      <div class="jc-comp"><textarea class="field" rows="2" data-fb="${i.id}" data-k="pergunta" placeholder="Escreve a pergunta · Enter envia" aria-label="Pergunta">${esc(d.pergunta||"")}</textarea>
+      <button type="button" class="btn" data-act="qsend" data-id="${i.id}" ${(d.pergunta||"").trim()?"":"disabled"}>Enviar pergunta</button></div></details>
+  </section>`:""}
+  <details class="jc-hist" ${nfb&&nfb<=4?"open":""}><summary>Feedback do júri <span class="cnt">${nfb}</span> ${tallyHtml(i.id)}</summary>${fbList(i.id,J)}</details>
   </article>`;
 }
+document.addEventListener("toggle",e=>{const q=e.target&&e.target.dataset&&e.target.dataset.qid;if(!q)return;S.qOpen=S.qOpen||{};S.qOpen[q]=e.target.open;},true);
 function juryRanking(n,s,J){
   const ids=[...S.ideias.values()].filter(i=>i.sessao===n).sort((a,b)=>score(b.id)-score(a.id)||fbFor(b.id).length-fbFor(a.id).length||(a.createdAt||"").localeCompare(b.createdAt||""));
   if(!ids.length)return empty("Ainda não há ideias nesta sessão","Aparecem aqui à medida que os pares apresentam.");
