@@ -57,7 +57,7 @@ async function loadAll(){st.load=true;render();
   const [i,f,fo,su,ma,nm]=await Promise.all([docs("ideias"),docs("feedback"),docs("fotos"),docs("sugestoes"),docs("materiais"),rest("rpc/inov_nome",{method:"POST",body:"{}"})]);
   st.ideias=i;st.fb=f;st.fotos=(fo.find(x=>x.fotos)||{}).fotos||{};st.sug=su;st.mat=ma;st.nome=nm||(st.ses.user.user_metadata||{}).nome||"";st.load=false;}
 function ordem(a,b){return (b.gosto||0)-(a.gosto||0)||(b.sessao||0)-(a.sessao||0)||String(b.createdAt||"").localeCompare(String(a.createdAt||""));}
-const VER={matar:["Matar","bad"],gosto:["Gosto","ok"],mercado:["Validar mercado","warn"],outro:["Outro","warn"]};
+const VER={matar:["Difícil","bad"],gosto:["Gosto","ok"],mercado:["Validar mercado","warn"],outro:["Outro","warn"]};
 function av(n){const f=st.fotos[n],ini=String(n||"?").split(" ").map(x=>x[0]||"").join("").slice(0,2);return f?`<img src="${esc(f)}" alt="${esc(n)}" title="${esc(n)}" loading="lazy" onerror="this.outerHTML='<i title=&quot;${esc(n)}&quot;>${esc(ini)}</i>'">`:`<i title="${esc(n)}">${esc(ini)}</i>`;}
 function stars(g){return `<span class="stars" role="img" aria-label="${g||0} de 5 estrelas">${[1,2,3,4,5].map(k=>`<span class="${k<=(g||0)?"on":""}">★</span>`).join("")}</span>`;}
 function fbOc(f){if(f.ocultoMembros!==undefined)return !!f.ocultoMembros;const raw=String(f.comentario||"").trim();if(!raw)return false;const x=raw.replace(/^\[Sessão \d\]\s*/,"").trim();if(!x)return true;return x.length<=12||(!/\s/.test(x)&&x.length<=15);}

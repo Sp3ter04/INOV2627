@@ -491,7 +491,7 @@ const P_TONE={"a contactar":"","contactado":"warn","em negociação":"br","confi
 const P_COLOR={"a contactar":"var(--line-2)","contactado":"var(--warn)","em negociação":"var(--brand)","confirmado":"var(--ok)","pago":"var(--p-hub)","sem interesse":"var(--bad)"};
 const ART_URL="https://claude.ai/artifact/XdLsd2YFxzJyojWf3gqUBU";
 const JURI_DEF=["Gabriela Gomes","António Sarafana","Miguel Faustino","Tiago Romão","Lourenço Ponces Duarte","Miguel Gomes","Vitor Clara"];
-const VERD=[["matar","Matar","bad"],["mercado","Analisar o mercado","warn"],["gosto","Gosto","ok"],["outro","Personalizado","br"]];
+const VERD=[["matar","Difícil","bad"],["mercado","Analisar o mercado","warn"],["gosto","Gosto","ok"],["outro","Personalizado","br"]];
 function canHub(){
   if(S.isOwner)return true;
   const em=String(S.me&&S.me.email||"").toLowerCase(),loc=em.split("@")[0],nm=norm(S.me&&S.me.name||"").trim().replace(/\s+/g,".");
@@ -1677,7 +1677,7 @@ document.addEventListener("keydown",e=>{
   const d=draftOf(iid);d[k]=el.value;
   const refocus=()=>{const n=document.querySelector(`[data-fb="${iid}"][data-k="${k==="custom"?"comentario":k}"]`);if(n)n.focus({preventScroll:true});};
   if(k==="pergunta"){if(!(d.pergunta||"").trim())return;el.blur();sendFb(iid,document.querySelector(`[data-act="qsend"][data-id="${iid}"]`),"pergunta").then(refocus);}
-  else{if(!d.veredito){toast("Escolhe primeiro um veredito (Matar, Analisar o mercado, Gosto ou Personalizado).",true);return;}
+  else{if(!d.veredito){toast("Escolhe primeiro um veredito (Difícil, Analisar o mercado, Gosto ou Personalizado).",true);return;}
     el.blur();sendFb(iid,document.querySelector(`[data-act="fbsend"][data-id="${iid}"]`),"veredito").then(refocus);}
 });
 document.addEventListener("submit",e=>{
