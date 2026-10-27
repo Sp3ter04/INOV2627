@@ -913,6 +913,18 @@ function fbSugOcultar(f){const raw=String(f.comentario||"").trim();if(!raw)retur
 function fbOculto(f){return f.ocultoMembros===undefined?fbSugOcultar(f):!!f.ocultoMembros;}
 /* Resumo do feedback: por sessão (1 ou 2 sessões), com a evolução das ideias retomadas. Tom neutro e apoiante. */
 function fbTally(iid){const T={};fbAll(iid).filter(f=>!isQ(f)).forEach(f=>{const k=verdLabel(f);if(k)T[k]=(T[k]||0)+1;});return T;}
+/* Frase de apoio por ideia, com base no veredito mais frequente. Tom neutro e construtivo. */
+function fbApoio(T){
+  const e=Object.entries(T).sort((a,b)=>b[1]-a[1]);
+  if(!e.length)return "Ainda sem feedback. Quando chegar, aparece aqui.";
+  const tot=e.reduce((a,x)=>a+x[1],0),top=e[0];
+  if(e.length>1&&e[1][1]===top[1])return "Opiniões divididas: vale a pena cruzar os comentários abaixo para perceber o que pesa mais.";
+  if(top[1]/tot<0.5)return "Opiniões variadas: os comentários abaixo ajudam a perceber onde estão os pontos de atenção.";
+  if(top[0]==="Gosto")return "Boa receção: há interesse e vale a pena aprofundar os pontos levantados.";
+  if(top[0]==="Analisar o mercado")return "Há pontos de mercado a validar antes de avançar.";
+  if(top[0]==="Difícil")return "Há desafios importantes a resolver; os comentários abaixo indicam por onde começar.";
+  return "Os comentários abaixo dão o contexto desta ideia.";
+}
 function fbTallyHtml(T){const e=Object.entries(T);return e.length?e.map(([k,v])=>`<span class="pill">${esc(k)} · ${v}</span>`).join(""):'<span class="note">Ainda sem vereditos</span>';}
 function hFb(){
   const mode=S.fbMode||"resumo";
@@ -933,6 +945,7 @@ function hFbResumo(){
       <div class="note" style="margin-top:2px">${esc((i.par||[]).join(", "))}</div>
       ${origem?`<div class="note" style="margin-top:4px">Evolução: retomada de “${esc(origem.titulo||"")}” (${esc(sessLabel(origem))})</div>`:""}</div></div>
       <div class="row" style="gap:6px;flex-wrap:wrap;margin:6px 0">${fbTallyHtml(T)}</div>
+      <p style="margin:0 0 6px">${esc(fbApoio(T))}</p>
       ${antes?`<div class="note" style="margin:0 0 6px">Antes: ${Object.keys(antes).length?Object.entries(antes).map(([k,v])=>esc(k)+" · "+v).join(", "):"sem vereditos"}</div>`:""}
       ${vis.length?`<ul class="fbul" style="margin:0 0 6px;padding:0;list-style:none">${vis.map(f=>`<li class="fb"><b>${esc(f.jurado||"Júri")}</b> ${isQ(f)?'<span class="pill br">Pergunta</span>':""} <span class="note">${esc(String(f.enviadoEm||"").slice(0,10))}</span><p class="txt" style="margin:2px 0 0">${esc(f.comentario||"")}</p></li>`).join("")}</ul>`:'<p class="note" style="margin:0 0 6px">Sem comentários visíveis.</p>'}
       <details><summary class="note" style="cursor:pointer">Ver todos os feedbacks (${fbAll(i.id).length})</summary><ul class="fbul" style="padding:0;list-style:none">${fbAll(i.id).map(f=>fbItem(f,true)).join("")||'<li class="note">Ainda sem feedback.</li>'}</ul></details></article>`;
