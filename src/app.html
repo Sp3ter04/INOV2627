@@ -62,6 +62,8 @@
 .tl-i::before{content:"";position:absolute;left:-26px;top:3px;width:14px;height:14px;border-radius:50%;background:var(--sc,var(--brand));box-shadow:0 0 0 3px var(--surface)}
 .tl-h{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}.tl-h b{font:800 14px var(--display)}
 .fres{margin:0;background:var(--brand-soft);border-radius:8px;padding:10px 12px;line-height:1.55;white-space:pre-wrap}
+.ic-res{margin:10px 0 0;background:var(--brand-soft);border-radius:8px;padding:10px 12px;line-height:1.55}
+.ic-res p{margin:4px 0 0;white-space:pre-wrap}.ic-res-d{margin-top:8px}.ic-res-d summary{cursor:pointer;font-weight:700;font-size:13px}.ic-res-d p{margin:6px 0 0}
 .fres.auto{background:var(--surface-2);border:1px dashed var(--line-2);color:var(--muted)}
 .fres-e textarea{width:100%;min-height:96px}
 .schips{display:flex;flex-wrap:wrap;gap:6px}.schips button{all:unset;box-sizing:border-box;cursor:pointer;min-height:36px;padding:6px 14px;border:1.5px solid var(--line-2);border-radius:99px;font-weight:700;font-size:13px;color:var(--muted);background:var(--surface)}.schips button[aria-pressed=true]{background:var(--brand);border-color:var(--brand);color:var(--on-brand)}.schips button:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
@@ -1072,6 +1074,13 @@ function hIdeias(){
   :empty(all.length?"Nenhuma ideia com estes filtros":"Ainda não há ideias registadas","As ideias são registadas na vista do júri, durante cada sessão de ideação. No ano passado foram cerca de 200 ideias nas quatro sessões.")}`;
 }
 function stars(i){const g=i.gosto||0,mx=S.cfg.gostoMax||5;return `<span class="stars" role="group" aria-label="Gosto">${Array.from({length:mx},(_,k)=>`<button type="button" class="${k<g?"on":""}" data-act="gosto" data-id="${i.id}" data-v="${k+1}" aria-label="${k+1} de ${mx}">★</button>`).join("")}</span>`;}
+/* Resumo do feedback visível no cartão da ideia (lista do Bootcamp): último resumo cumulativo + evolução. */
+function resumoCard(i){
+  const R=i.resumoS||{},ks=Object.keys(R).filter(k=>R[k]).sort((a,b)=>Number(a)-Number(b));
+  if(!ks.length)return "";
+  const k=ks[ks.length-1],prev=ks.slice(0,-1);
+  return `<div class="ic-res"><span class="eyebrow">Resumo do feedback do júri · até à ${esc(k)}.ª sessão</span><p>${esc(R[k])}</p>${prev.length?`<details class="ic-res-d"><summary>Ver evolução (${prev.length} ${prev.length>1?"sessões anteriores":"sessão anterior"})</summary>${prev.map(x=>`<p><b>${esc(x)}.ª sessão</b> · ${esc(R[x])}</p>`).join("")}</details>`:""}</div>`;
+}
 function ideaRow(i){
   const open=S.open===i.id,inC1=rank(i.etapa)>=1,nfb=fbAll(i.id).length,ppl=(i.par||[]).filter(Boolean);
   const tipo=i.tipo&&TIPO_COR[i.tipo]?`<span class="tag" style="--pc:${TIPO_COR[i.tipo]}">${TIPO_IDEIA.find(x=>x[0]===i.tipo)[1]}</span>`:"";
@@ -1083,6 +1092,7 @@ function ideaRow(i){
   <div class="ic-m"><span class="ic-p">${ppl.length?ppl.map(p=>`<span class="chipp">${av(p,22)}${esc(p)}</span>`).join(""):'<span class="note">Sem grupo</span>'}</span>
     <span class="ic-j">${tallyHtml(i.id)||'<span class="note">sem avaliações do júri</span>'}${nfb?`<span class="note">${nfb} entrada${nfb>1?"s":""}</span>`:""}</span></div>
   ${i.problema||i.solucao?`<div class="ic-ps"><div><b>Problema</b><p>${esc(i.problema||"—")}</p></div><div><b>Solução</b><p>${esc(i.solucao||"—")}</p></div></div>`:""}
+  ${resumoCard(i)}
   ${open?`<div class="ic-d">${ideaForm(i)}${matBlock(i.id,true)}</div>`:""}</article>`;
 }
 /* Resumo cumulativo por ideia (Bootcamp): segue a cadeia até à versão mais recente e mostra/edita resumoS por sessão. */
