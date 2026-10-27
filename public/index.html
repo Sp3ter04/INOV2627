@@ -26,6 +26,51 @@
 .ic-ps{display:grid;grid-template-columns:1fr 1fr;gap:10px}.ic-ps>div{background:var(--surface-2);border-radius:8px;padding:8px 12px}
 .ic-ps b{display:block;font:800 10.5px var(--display);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}.ic-ps p{margin:2px 0 0;font-size:13.5px;line-height:1.5;white-space:pre-wrap}
 .ic-d{border-top:1px solid var(--line);padding-top:10px}
+.ftool{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 12px}
+.ftool select.field{width:auto;min-width:150px}.ftool .cnt{margin-left:auto;font:600 12px var(--mono);color:var(--muted)}
+.kpis3{display:grid;grid-template-columns:repeat(var(--n,3),minmax(0,1fr));gap:10px;margin:0 0 12px}@media (max-width:600px){.kpis3.k4{grid-template-columns:repeat(2,minmax(0,1fr))}.kpis3 .k b{font-size:22px}.kpis3 .k{padding:10px 12px}}
+.kpis3 .k{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.kpis3 .k span{display:block;font:700 11px var(--display);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.kpis3 .k b{display:block;font:800 26px/1.2 var(--display);font-variant-numeric:tabular-nums;margin-top:4px}
+.fday{font:800 12px var(--display);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:18px 0 2px;display:flex;gap:8px;align-items:center}
+.fday:first-child{margin-top:0}.fday .n{font:600 11px var(--mono);letter-spacing:0;background:var(--surface-2);border:1px solid var(--line);border-radius:99px;padding:0 7px}
+.feed{list-style:none;margin:0;padding:0}
+.fi{display:grid;grid-template-columns:32px minmax(0,1fr);gap:12px;padding:12px 0;border-top:1px solid var(--line)}
+.feed>.fi:first-child{border-top:0}
+.fi-h{display:flex;gap:8px;align-items:center;flex-wrap:wrap;min-height:24px}.fi-h b{font-weight:800}
+.fi-t{margin-left:auto;font:500 12px var(--mono);color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.fi-a{margin-top:2px;line-height:1.5}
+.fi-q{margin:6px 0 0;padding:4px 0 4px 12px;border-left:3px solid var(--line-2);white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.5}
+.fi-x{display:flex;gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap}
+.ilink{all:unset;cursor:pointer;color:var(--brand);font-weight:700;border-radius:4px;overflow-wrap:anywhere}
+.ilink:hover{text-decoration:underline}.ilink:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+.more{display:flex;justify-content:center;margin-top:12px}
+.fsec{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin:22px 0 10px}.fsec h2{margin:0;font:800 18px var(--display)}
+.fcard{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--sc,var(--brand));border-radius:12px;padding:16px;margin-bottom:12px;display:grid;gap:12px}
+.fc-h{display:flex;gap:8px 12px;align-items:flex-start;flex-wrap:wrap}.fc-h h3{margin:0;font:800 16px/1.3 var(--display);flex:1 1 220px;min-width:0}
+.fc-p{display:flex;gap:6px;align-items:center;flex-wrap:wrap;color:var(--muted);font-size:13px}
+.vbar{display:flex;height:8px;border-radius:99px;overflow:hidden;background:var(--idle)}.vbar i{display:block;height:100%}
+.vleg{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.fapoio{background:var(--brand-soft);border-radius:8px;padding:10px 12px;line-height:1.5}
+.fevo{display:grid;gap:6px;border:1px dashed var(--line-2);border-radius:8px;padding:10px 12px;font-size:13px;color:var(--muted)}.fevo b{color:var(--fg)}
+.fc-d summary{cursor:pointer;font-weight:700;color:var(--brand);min-height:32px;display:flex;align-items:center}
+.fc-d summary:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+.mt td{vertical-align:top}.mt .who2{display:flex;gap:8px;align-items:center;font-weight:700}
+@media (max-width:700px){.mt thead{display:none}.mt,.mt tbody,.mt tr,.mt td{display:block;width:100%}.mt tr{border-bottom:1px solid var(--line);padding:10px 12px}.mt td{border:0!important;padding:3px 0!important}.mt td[data-l]::before{content:attr(data-l);display:block;font:700 10.5px var(--display);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}.ftool .cnt{margin-left:0;width:100%}}
+.tl{list-style:none;margin:0;padding:0 0 0 18px;border-left:2px solid var(--line);display:grid;gap:18px}
+.tl-i{position:relative;display:grid;gap:8px;min-width:0}
+.tl-i::before{content:"";position:absolute;left:-26px;top:3px;width:14px;height:14px;border-radius:50%;background:var(--sc,var(--brand));box-shadow:0 0 0 3px var(--surface)}
+.tl-h{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}.tl-h b{font:800 14px var(--display)}
+.fres{margin:0;background:var(--brand-soft);border-radius:8px;padding:10px 12px;line-height:1.55;white-space:pre-wrap}
+.fres.auto{background:var(--surface-2);border:1px dashed var(--line-2);color:var(--muted)}
+.fres-e textarea{width:100%;min-height:96px}
+.schips{display:flex;flex-wrap:wrap;gap:6px}.schips button{all:unset;box-sizing:border-box;cursor:pointer;min-height:36px;padding:6px 14px;border:1.5px solid var(--line-2);border-radius:99px;font-weight:700;font-size:13px;color:var(--muted);background:var(--surface)}.schips button[aria-pressed=true]{background:var(--brand);border-color:var(--brand);color:var(--on-brand)}.schips button:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+.wgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px}
+.wcard{all:unset;box-sizing:border-box;cursor:pointer;display:flex;gap:10px;align-items:center;min-height:52px;padding:8px 12px;border:1.5px solid var(--line-2);border-radius:12px;background:var(--surface);font-weight:800}
+.wcard:hover{border-color:var(--brand);background:var(--brand-soft)}.wcard:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+.jgate{position:fixed;inset:0;z-index:10000;background:var(--bg);display:grid;place-items:center;padding:16px;overflow:auto}
+.jgate form{width:100%;max-width:380px;display:grid;gap:14px;padding:24px}.jgate .bar{width:56px;height:5px;border-radius:99px;background:var(--brand-2)}
+.jgate .field{width:100%;min-height:44px}.jgate .btn{min-height:44px;justify-content:center}
 @media (max-width:760px){.itool{position:static}.ic-ps{grid-template-columns:1fr}.ic-r{margin-left:0;width:100%}.seg button{padding:7px 9px}}
 .jc2{border-left:4px solid var(--sc);gap:12px}
 .jc-top{display:flex;gap:8px 10px;align-items:center;flex-wrap:wrap}
@@ -870,9 +915,13 @@ document.addEventListener("input",e=>{if(e.target.id!=="jq")return;const q=norm(
 document.addEventListener("click",e=>{const b=e.target.closest("[data-act]");if(!b)return;const a=b.dataset.act;
   if(a==="matopen"){e.preventDefault();if(window.INOV_FILE)window.INOV_FILE(b.dataset.p).catch(()=>toast("Não foi possível abrir o ficheiro.",true));else toast("Os ficheiros só abrem na versão web.",true);}
   else if(a==="fbmode"){S.fbMode=b.dataset.v;render();}
-  else if(a==="fbsess"){const n=Number(b.dataset.v);let c=(S.fbS&&S.fbS.length?S.fbS:[1]).map(Number);if(c.includes(n))c=c.length>1?c.filter(x=>x!==n):c;else{c=[...c,n];if(c.length>2)c=c.slice(-2);}S.fbS=c;render();}
+  else if(a==="fbsess"){const n=Number(b.dataset.v);let c=(S.fbS&&S.fbS.length?S.fbS:[1,2,3,4]).map(Number);if(c.includes(n)){if(c.length>1)c=c.filter(x=>x!==n);}else c=[...c,n];S.fbS=c;render();}
+  else if(a==="fbed"){S.fbEd=S.fbEd||{};S.fbEd[b.dataset.id]=!S.fbEd[b.dataset.id];render();}
   else if(a==="fbvis"){const f=S.feedback.get(b.dataset.id);if(!f)return;f.ocultoMembros=!fbOculto(f);save("feedback",f.id);render();}
-  else if(a==="fbconf"){let n=0;[...S.feedback.values()].forEach(f=>{if(f.ocultoMembros===undefined&&(f.comentario||f.veredito)){f.ocultoMembros=fbSugOcultar(f);save("feedback",f.id);n++;}});render();toast(n+" feedbacks confirmados.");}
+  else if(a==="fbcancel"){S.fbArm=false;render();}
+  else if(a==="atmore"){S.atLim=(S.atLim||150)+150;render();}
+  else if(a==="fbmore"){S.fbLim=(S.fbLim||200)+200;render();}
+  else if(a==="fbconf"){if(!S.fbArm){S.fbArm=true;render();return;}S.fbArm=false;let n=0;[...S.feedback.values()].forEach(f=>{if(f.ocultoMembros===undefined&&(f.comentario||f.veredito)){f.ocultoMembros=fbSugOcultar(f);save("feedback",f.id);n++;}});render();toast(n+" feedbacks confirmados.");}
   else if(a==="atrole"){S.atRole=b.dataset.v||"";render();}
   else if(a==="jsess"){S.jSess=Number(b.dataset.v)||0;render();}
   else if(a==="sugver"){S.view="hub";S.tab.hub="ideias";S.open=b.dataset.id;render();setTimeout(()=>{const el=document.querySelector(`[data-open="${b.dataset.id}"]`);if(el)el.scrollIntoView({block:"center"});},60);}
@@ -892,28 +941,34 @@ function atEvents(){
   [...S.ideias.values()].filter(i=>i.criadaPor).forEach(i=>E.push({t:i.createdAt||"",who:(i.par||[])[0]||i.criadaPor||"?",role:"Membro",what:"criou a ideia",txt:"",idea:i.titulo||"(sem título)",iid:i.id}));
   return E.filter(e=>e.t).sort((a,b)=>String(b.t).localeCompare(String(a.t)));
 }
+function dayLbl(d){const h=new Date(),t0=new Date(h.getFullYear(),h.getMonth(),h.getDate()),t1=new Date(t0);t1.setDate(t0.getDate()-1);if(d>=t0)return "Hoje";if(d>=t1)return "Ontem";return d.toLocaleDateString("pt-PT",{weekday:"short",day:"numeric",month:"short"});}
+function hm(d){return isNaN(d)?"":d.toLocaleTimeString("pt-PT",{hour:"2-digit",minute:"2-digit"});}
+const ROLEC={"Júri":"br","Membro":"","Coordenador":"ok"};
+function feedLi(o){return `<li class="fi"><span>${av(o.who,32)}</span><div style="min-width:0"><div class="fi-h"><b>${esc(o.who)}</b>${o.role?`<span class="pill ${ROLEC[o.role]||""}">${esc(o.role)}</span>`:""}${o.tag||""}<time class="fi-t">${esc(o.time||"")}</time></div>${o.act?`<div class="fi-a">${o.act}</div>`:""}${o.txt?`<p class="fi-q">${esc(o.txt)}</p>`:""}${o.extra||""}</div></li>`;}
+function ideaLink(iid,t){return iid&&S.ideias.get(iid)?`<button type="button" class="ilink" data-act="sugver" data-id="${esc(iid)}">${esc(t)}</button>`:`<span class="note">${esc(t)}</span>`;}
 function hAtiv(){
-  const all=atEvents(),role=S.atRole||"",pes=S.atPessoa||"",per=S.atPer||"todos";
+  const all=atEvents(),role=S.atRole||"",pes=S.atPessoa||"",per=S.atPer||"todos",lim=S.atLim||150;
   const now=new Date(),hoje=new Date(now.getFullYear(),now.getMonth(),now.getDate()),semana=new Date(hoje);semana.setDate(hoje.getDate()-((now.getDay()+6)%7));
   const inPer=t=>{const d=new Date(t);if(isNaN(d))return per==="todos";if(per==="hoje")return d>=hoje;if(per==="semana")return d>=semana;if(per==="antes")return d<semana;return true;};
+  const base=all.filter(e=>(!role||e.role===role)&&(!pes||e.who===pes));
+  const nH=base.filter(e=>new Date(e.t)>=hoje).length,nS=base.filter(e=>new Date(e.t)>=semana).length;
   const people=[...new Set(all.map(e=>e.who))].sort((a,b)=>a.localeCompare(b,"pt"));
-  const L=all.filter(e=>(!role||e.role===role)&&(!pes||e.who===pes)&&inPer(e.t));
-  const fmt=t=>{const d=new Date(t);if(isNaN(d))return String(t).slice(0,10);const h=d.toLocaleTimeString("pt-PT",{hour:"2-digit",minute:"2-digit"});return d>=hoje?"Hoje, "+h:d.toLocaleDateString("pt-PT",{day:"2-digit",month:"short"})+", "+h;};
+  const L=base.filter(e=>inPer(e.t));
   const seg=(v,l)=>`<button type="button" data-act="atrole" data-v="${v}" aria-pressed="${role===v}">${l}</button>`;
   const sel=(v,l)=>`<option value="${v}" ${per===v?"selected":""}>${l}</option>`;
-  const RP={Júri:"br",Membro:"",Coordenador:"ok"};
-  return `<div class="itool" style="flex-wrap:wrap;gap:8px"><div class="seg" role="group" aria-label="Quem">${seg("","Todos")}${seg("Júri","Júri")}${seg("Membro","Membros")}${seg("Coordenador","Coordenador")}</div>
+  const groups=[];L.slice(0,lim).forEach(e=>{const d=new Date(e.t),k=isNaN(d)?"Sem data":dayLbl(d);let g=groups[groups.length-1];if(!g||g.k!==k){g={k,items:[]};groups.push(g);}g.items.push(e);});
+  const li=e=>{const d=new Date(e.t);const j=/ideia$/.test(e.what)?" ":" em ";return feedLi({who:e.who,role:e.role,time:hm(d),act:esc(e.what)+j+ideaLink(e.iid,e.idea),txt:e.txt});};
+  return `<div class="kpis3"><div class="k"><span>Hoje</span><b>${nH}</b></div><div class="k"><span>Esta semana</span><b>${nS}</b></div><div class="k"><span>No total</span><b>${base.length}</b></div></div>
+  <div class="ftool"><div class="seg" role="group" aria-label="Quem">${seg("","Todos")}${seg("Júri","Júri")}${seg("Membro","Membros")}${seg("Coordenador","Coordenador")}</div>
     <select class="field sm" data-atper aria-label="Período">${sel("todos","Todo o período")}${sel("hoje","Hoje")}${sel("semana","Esta semana")}${sel("antes","Anteriores")}</select>
     <select class="field sm" data-atpessoa aria-label="Pessoa"><option value="">Todas as pessoas</option>${people.map(p=>`<option value="${esc(p)}" ${p===pes?"selected":""}>${esc(p)}</option>`).join("")}</select>
-    <span class="note">${L.length} ${L.length===1?"registo":"registos"}</span></div>
-  <p class="note" style="margin:6px 0 10px">O que os jurados e os membros fizeram, do mais recente para o mais antigo.</p>
-  ${L.length?`<div class="card"><ul class="tlist" style="list-style:none;margin:0;padding:0">${L.slice(0,300).map(e=>`<li style="padding:12px 0;border-bottom:1px solid var(--line)">
-      <div class="row" style="gap:8px;flex-wrap:wrap;align-items:center"><b>${esc(e.who)}</b><span class="pill ${RP[e.role]||""}">${esc(e.role)}</span><span class="note mono" style="margin-left:auto">${esc(fmt(e.t))}</span></div>
-      <div style="margin-top:4px">${esc(e.what)} ${e.iid&&S.ideias.get(e.iid)?`· <button type="button" class="lnk" data-act="sugver" data-id="${esc(e.iid)}">${esc(e.idea)}</button>`:`· <span class="note">${esc(e.idea)}</span>`}</div>
-      ${e.txt?`<p class="note" style="margin:6px 0 0;white-space:pre-wrap">${esc(e.txt)}</p>`:""}</li>`).join("")}</ul></div>`:empty("Sem atividade neste período","Muda o período ou as pessoas no filtro.")}`;
+    <span class="cnt">${L.length} ${L.length===1?"registo":"registos"}</span></div>
+  ${L.length?`<div class="card">${groups.map(g=>`<h3 class="fday">${esc(g.k)} <span class="n">${g.items.length}</span></h3><ul class="feed">${g.items.map(li).join("")}</ul>`).join("")}
+    ${L.length>lim?`<div class="more"><button type="button" class="btn sm" data-act="atmore">Mostrar mais ${Math.min(150,L.length-lim)}</button></div>`:""}</div>`
+  :empty("Sem atividade neste período","Muda o período ou a pessoa no filtro.")}`;
 }
-
-document.addEventListener("change",e=>{const el=e.target;if(!el.dataset)return;if(el.dataset.atpessoa!==undefined){S.atPessoa=el.value;render();}if(el.dataset.atper!==undefined){S.atPer=el.value;render();}if(el.dataset.fbf!==undefined){S.fbF=el.value;render();}});
+document.addEventListener("change",e=>{const el=e.target;if(!el.dataset)return;if(el.dataset.atpessoa!==undefined){S.atPessoa=el.value;S.atLim=0;render();}if(el.dataset.atper!==undefined){S.atPer=el.value;S.atLim=0;render();}if(el.dataset.fbf!==undefined){S.fbF=el.value;S.fbLim=0;render();}});
+document.addEventListener("toggle",e=>{const k=e.target&&e.target.dataset&&e.target.dataset.fdet;if(!k)return;S.fbOpen=S.fbOpen||{};S.fbOpen[k]=e.target.open;},true);
 /* Feedback: o que os membros veem. Quando ainda não foi confirmado, usa a sugestão automática. */
 function fbSugOcultar(f){const raw=String(f.comentario||"").trim();if(!raw)return false;const t=raw.replace(/^\[Sessão \d\]\s*/,"").trim();if(!t)return true;return t.length<=12||(!/\s/.test(t)&&t.length<=15);}
 function fbOculto(f){return f.ocultoMembros===undefined?fbSugOcultar(f):!!f.ocultoMembros;}
@@ -931,48 +986,54 @@ function fbApoio(T){
   if(top[0]==="Difícil")return "Há desafios importantes a resolver; os comentários abaixo indicam por onde começar.";
   return "Os comentários abaixo dão o contexto desta ideia.";
 }
-function fbTallyHtml(T){const e=Object.entries(T);return e.length?e.map(([k,v])=>`<span class="pill">${esc(k)} · ${v}</span>`).join(""):'<span class="note">Ainda sem vereditos</span>';}
+function vStats(iid){const all=fbAll(iid).filter(f=>!isQ(f));const C=VERD.map(([k,l,t])=>({k,l,t,n:all.filter(f=>f.veredito===k).length})).filter(x=>x.n);const tot=C.reduce((a,x)=>a+x.n,0);const T={};C.forEach(x=>{T[x.l]=x.n;});return {C,tot,T};}
+const VCOL={bad:"var(--bad)",warn:"var(--warn)",ok:"var(--ok)",br:"var(--brand)"};
+function vBar(st){if(!st.tot)return '<span class="note">Ainda sem vereditos</span>';return `<div class="vbar" role="img" aria-label="${esc(st.C.map(x=>x.l+": "+x.n).join(", "))}">${st.C.map(x=>`<i style="width:${(x.n/st.tot*100).toFixed(1)}%;background:${VCOL[x.t]}"></i>`).join("")}</div><div class="vleg">${st.C.map(x=>`<span class="pill ${x.t}">${esc(x.l)} · ${x.n}</span>`).join("")}</div>`;}
+function fbTag(f){return isQ(f)?'<span class="pill br">Pergunta</span>':`<span class="pill ${(VERD.find(z=>z[0]===f.veredito)||[])[2]||""}">${esc(verdLabel(f))}</span>`;}
+function fbDate(f){const d=new Date(f.enviadoEm||f.updatedAt||f.d||"");return isNaN(d)?String(f.d||""):d.toLocaleDateString("pt-PT",{day:"numeric",month:"short"});}
 function hFb(){
   const mode=S.fbMode||"resumo";
-  const seg=`<div class="seg" role="group" aria-label="Vista"><button type="button" data-act="fbmode" data-v="resumo" aria-pressed="${mode==="resumo"}">Resumo por sessão</button><button type="button" data-act="fbmode" data-v="lista" aria-pressed="${mode==="lista"}">Lista detalhada</button></div>`;
-  return seg+(mode==="lista"?hFbLista():hFbResumo());
+  return `<div class="ftool"><div class="seg" role="group" aria-label="Vista"><button type="button" data-act="fbmode" data-v="resumo" aria-pressed="${mode==="resumo"}">Resumo por sessão</button><button type="button" data-act="fbmode" data-v="lista" aria-pressed="${mode==="lista"}">Lista para moderar</button></div></div>`+(mode==="lista"?hFbLista():hFbResumo());
 }
+function ideaChain(i){const c=[i],seen=new Set([i.id]);let o=i;while(o.origem&&S.ideias.get(o.origem)&&!seen.has(o.origem)){o=S.ideias.get(o.origem);seen.add(o.id);c.unshift(o);}return c;}
 function hFbResumo(){
-  const sel=(S.fbS&&S.fbS.length?S.fbS:[1]).map(Number);
-  const chips=[1,2,3,4].map(n=>`<button type="button" class="chipp" data-act="fbsess" data-v="${n}" aria-pressed="${sel.includes(n)}">${n}.ª sessão${n===4?" (novas)":""}</button>`).join("");
-  const ideas=[...S.ideias.values()].filter(i=>sel.includes(Number(i.sessao))).sort((a,b)=>Number(a.sessao)-Number(b.sessao)||(a.titulo||"").localeCompare(b.titulo||"","pt"));
-  const avaliadas=ideas.filter(i=>fbAll(i.id).length).length;
-  const card=i=>{
-    const origem=i.origem&&S.ideias.get(i.origem);
-    const vis=fbAll(i.id).filter(f=>!fbOculto(f));
-    const T=fbTally(i.id);
-    const antes=origem?fbTally(origem.id):null;
-    return `<article class="card" style="margin-bottom:12px"><div class="card-h"><div style="min-width:0"><b>${esc(i.titulo||"(sem título)")}</b> <span class="note">· ${esc(sessLabel(i))}</span>
-      <div class="note" style="margin-top:2px">${esc((i.par||[]).join(", "))}</div>
-      ${origem?`<div class="note" style="margin-top:4px">Evolução: retomada de “${esc(origem.titulo||"")}” (${esc(sessLabel(origem))})</div>`:""}</div></div>
-      <div class="row" style="gap:6px;flex-wrap:wrap;margin:6px 0">${fbTallyHtml(T)}</div>
-      <p style="margin:0 0 6px">${esc(fbApoio(T))}</p>
-      ${antes?`<div class="note" style="margin:0 0 6px">Antes: ${Object.keys(antes).length?Object.entries(antes).map(([k,v])=>esc(k)+" · "+v).join(", "):"sem vereditos"}</div>`:""}
-      ${vis.length?`<ul class="fbul" style="margin:0 0 6px;padding:0;list-style:none">${vis.map(f=>`<li class="fb"><b>${esc(f.jurado||"Júri")}</b> ${isQ(f)?'<span class="pill br">Pergunta</span>':""} <span class="note">${esc(String(f.enviadoEm||"").slice(0,10))}</span><p class="txt" style="margin:2px 0 0">${esc(f.comentario||"")}</p></li>`).join("")}</ul>`:'<p class="note" style="margin:0 0 6px">Sem comentários visíveis.</p>'}
-      <details><summary class="note" style="cursor:pointer">Ver todos os feedbacks (${fbAll(i.id).length})</summary><ul class="fbul" style="padding:0;list-style:none">${fbAll(i.id).map(f=>fbItem(f,true)).join("")||'<li class="note">Ainda sem feedback.</li>'}</ul></details></article>`;
+  const sel=(S.fbS&&S.fbS.length?S.fbS:[1,2,3,4]).map(Number);
+  const ids=[...S.ideias.values()],usados=new Set(ids.map(x=>x.origem).filter(Boolean));
+  const chains=ids.filter(i=>!usados.has(i.id)).map(ideaChain).filter(c=>c.some(x=>sel.includes(Number(x.sessao))))
+    .sort((a,b)=>Number(a[a.length-1].sessao)-Number(b[b.length-1].sessao)||(a[a.length-1].titulo||"").localeCompare(b[b.length-1].titulo||"","pt"));
+  const nRes=chains.reduce((a,c)=>a+c.filter(x=>x.resumoFb).length,0),nSteps=chains.reduce((a,c)=>a+c.length,0);
+  const step=(x,last)=>{
+    const n=Number(x.sessao)||1,st=vStats(x.id),all=fbAll(x.id),open=!!(S.fbOpen&&S.fbOpen[x.id]),ed=!!(S.fbEd&&S.fbEd[x.id]);
+    return `<li class="tl-i" style="--sc:var(--s${Math.min(4,n)})"><div class="tl-h"><b>${n}.ª sessão</b>${x.titulo!==last.titulo?`<span class="note">como “${esc(x.titulo||"")}”</span>`:""}<span class="note">· ${all.length} ${all.length===1?"feedback":"feedbacks"}</span></div>
+      <div>${vBar(st)}</div>
+      ${x.resumoFb?`<p class="fres">${esc(x.resumoFb)}</p>`:`<p class="fres auto">${esc(fbApoio(st.T))} (Resumo por escrever.)</p>`}
+      ${S.isOwner?(ed?`<div class="fres-e"><label class="l">Resumo cumulativo até à ${n}.ª sessão<textarea class="field" rows="4" data-b="ideias|${esc(x.id)}|resumoFb" placeholder="O que o júri disse até aqui, em tom construtivo.">${esc(x.resumoFb||"")}</textarea></label><div class="row" style="justify-content:flex-end;margin-top:6px"><button type="button" class="btn sm pri" data-act="fbed" data-id="${esc(x.id)}">Concluir</button></div></div>`:`<div><button type="button" class="btn sm" data-act="fbed" data-id="${esc(x.id)}">${x.resumoFb?"Editar resumo":"Escrever resumo"}</button></div>`):""}
+      ${all.length?`<details class="fc-d" data-fdet="${esc(x.id)}" ${open?"open":""}><summary>Ver os ${all.length} feedbacks desta sessão</summary><ul class="feed">${all.map(f=>{const oc=fbOculto(f);return feedLi({who:f.jurado||"Júri",tag:fbTag(f),time:fbDate(f),txt:f.comentario,extra:`<div class="fi-x"><span class="pill ${oc?"bad":"ok"}">${oc?"Oculto aos membros":"Visível aos membros"}</span>${f.ocultoMembros===undefined?'<span class="note">sugestão automática</span>':""}<button type="button" class="btn sm ghost" data-act="fbvis" data-id="${esc(f.id)}">${oc?"Mostrar":"Ocultar"}</button></div>`});}).join("")}</ul></details>`:""}
+    </li>`;
   };
-  return `<div class="card" style="margin-bottom:12px"><div class="card-h"><h2>Resumo do feedback</h2><span class="src">${ideas.length} ideias · ${avaliadas} com feedback</span></div>
-    <p class="note" style="margin:0 0 8px">Escolhe uma sessão, ou duas para ver a evolução das ideias retomadas. O resumo mostra os vereditos e os comentários visíveis aos membros; o detalhe de cada feedback abre-se em baixo de cada ideia.</p>
-    <div class="row" style="flex-wrap:wrap;gap:6px">${chips}</div></div>
-    ${ideas.length?ideas.map(card).join(""):empty("Sem ideias nestas sessões","Escolhe outra sessão.")}`;
+  const card=c=>{const last=c[c.length-1],n=Number(last.sessao)||1;const ppl=(last.par||[]).filter(Boolean);
+    return `<article class="fcard" style="--sc:var(--s${Math.min(4,n)})"><div class="fc-h"><h3>${esc(last.titulo||"(sem título)")}</h3><span class="pill">${c.map(x=>x.sessao+".ª").join(" → ")} sessão</span></div>
+      ${ppl.length?`<div class="fc-p"><span class="stack2">${avs(ppl,24)}</span>${esc(ppl.join(", "))}</div>`:""}
+      <ol class="tl">${c.map(x=>step(x,last)).join("")}</ol></article>`;};
+  return `<div class="card" style="margin-bottom:12px;display:grid;gap:10px"><div><h2 style="margin:0">Resumo do feedback por ideia</h2><p class="note" style="margin:4px 0 0">Cada ideia mostra, sessão a sessão, o resumo cumulativo do que o júri disse. As ideias retomadas aparecem juntas, com a evolução. Filtra pelas sessões que queres ver.</p></div>
+    <div class="schips" role="group" aria-label="Sessões">${[1,2,3,4].map(n=>`<button type="button" data-act="fbsess" data-v="${n}" aria-pressed="${sel.includes(n)}">${n}.ª sessão${n===4?" (novas)":""}</button>`).join("")}</div></div>
+  <div class="kpis3"><div class="k"><span>Ideias</span><b>${chains.length}</b></div><div class="k"><span>Retomadas</span><b>${chains.filter(c=>c.length>1).length}</b></div><div class="k"><span>Resumos escritos</span><b>${nRes}/${nSteps}</b></div></div>
+  ${chains.length?chains.map(card).join(""):empty("Sem ideias nestas sessões","Escolhe outra sessão.")}`;
 }
 function hFbLista(){
-  const F=[...S.feedback.values()].filter(f=>f.tipo!=="pendente"&&(isQ(f)?f.comentario:f.veredito)).sort((a,b)=>String(b.enviadoEm||b.updatedAt||"").localeCompare(String(a.enviadoEm||a.updatedAt||"")));
-  const fl=S.fbF||"todos";
+  const F=[...S.feedback.values()].filter(f=>isQ(f)?f.comentario:f.veredito).sort((a,b)=>String(b.enviadoEm||b.updatedAt||"").localeCompare(String(a.enviadoEm||a.updatedAt||"")));
+  const fl=S.fbF||"todos",lim=S.fbLim||200;
   const L=F.filter(f=>fl==="todos"||(fl==="ocultos"&&fbOculto(f))||(fl==="visiveis"&&!fbOculto(f))||(fl==="sugeridos"&&f.ocultoMembros===undefined));
-  const pend=F.filter(f=>f.ocultoMembros===undefined).length;
+  const pend=F.filter(f=>f.ocultoMembros===undefined).length,nOc=F.filter(fbOculto).length;
   const sel=(v,l)=>`<option value="${v}" ${fl===v?"selected":""}>${l}</option>`;
-  return `<div class="itool"><select class="field sm" data-fbf aria-label="Mostrar">${sel("todos","Todos ("+F.length+")")}${sel("visiveis","Visíveis aos membros")}${sel("ocultos","Ocultos aos membros")}${sel("sugeridos","Ainda sem confirmar ("+pend+")")}</select>
-    <button type="button" class="btn sm pri" data-act="fbconf" ${pend?"":"disabled"}>Confirmar as sugestões (${pend})</button></div>
-  <p class="note" style="margin:0 0 10px">Os membros veem só os feedbacks visíveis. A sugestão esconde comentários genéricos (ex.: "pergunta", "estudo isto", "Não", só a etiqueta da sessão). Confirma ou troca cada linha. O júri e tu continuam a ver tudo.</p>
-  <div class="tw"><table><thead><tr><th>Jurado</th><th>Ideia</th><th>Veredito / tipo</th><th>Comentário</th><th>Membros</th><th></th></tr></thead><tbody>
-  ${L.slice(0,400).map(f=>{const i=S.ideias.get(f.ideiaId);const oc=fbOculto(f);const sug=f.ocultoMembros===undefined;return `<tr><td>${esc(f.jurado||"?")}</td><td class="note">${esc(i?i.titulo:"(ideia apagada)")}</td><td>${isQ(f)?'<span class="pill br">Pergunta</span>':`<span class="pill ${(VERD.find(z=>z[0]===f.veredito)||[])[2]||""}">${esc(verdLabel(f))}</span>`}</td><td class="t">${esc(f.comentario||"–")}</td><td><span class="pill ${oc?"bad":"ok"}">${oc?"Oculto":"Visível"}</span>${sug?' <span class="note">sugestão</span>':""}</td><td><button type="button" class="btn sm ghost" data-act="fbvis" data-id="${esc(f.id)}">${oc?"Mostrar":"Ocultar"}</button></td></tr>`;}).join("")}
-  </tbody></table></div>${L.length>400?`<p class="note">A mostrar 400 de ${L.length}. Usa o filtro para ver o resto.</p>`:""}`;
+  const conf=pend?(S.fbArm?`<span class="note">Vais confirmar ${pend} sugestões.</span><button type="button" class="btn sm pri" data-act="fbconf">Sim, confirmar</button><button type="button" class="btn sm" data-act="fbcancel">Cancelar</button>`:`<button type="button" class="btn sm pri" data-act="fbconf">Confirmar ${pend} sugestões</button>`):'<span class="pill ok">Tudo confirmado</span>';
+  return `<div class="kpis3 k4" style="--n:4"><div class="k"><span>Feedbacks</span><b>${F.length}</b></div><div class="k"><span>Visíveis aos membros</span><b>${F.length-nOc}</b></div><div class="k"><span>Ocultos</span><b>${nOc}</b></div><div class="k"><span>Por confirmar</span><b>${pend}</b></div></div>
+  <div class="ftool"><select class="field sm" data-fbf aria-label="Mostrar">${sel("todos","Todos")}${sel("visiveis","Visíveis aos membros")}${sel("ocultos","Ocultos aos membros")}${sel("sugeridos","Por confirmar")}</select>${conf}<span class="cnt">${L.length} feedbacks</span></div>
+  <p class="note" style="margin:0 0 10px">Os membros só veem os feedbacks visíveis. A sugestão automática esconde comentários genéricos (por exemplo "pergunta", "Não" ou só a etiqueta da sessão). O júri e tu continuam a ver tudo.</p>
+  ${L.length?`<div class="tw"><table class="mt"><thead><tr><th>Jurado</th><th>Ideia</th><th>Veredito</th><th>Comentário</th><th>Membros</th><th><span class="sr">Ação</span></th></tr></thead><tbody>
+  ${L.slice(0,lim).map(f=>{const i=S.ideias.get(f.ideiaId);const oc=fbOculto(f);return `<tr><td data-l="Jurado"><span class="who2">${av(f.jurado||"?",24)}${esc(f.jurado||"?")}</span></td><td data-l="Ideia">${ideaLink(f.ideiaId,i?i.titulo:"(ideia apagada)")}</td><td data-l="Veredito">${fbTag(f)}</td><td data-l="Comentário" class="t" style="white-space:pre-wrap;overflow-wrap:anywhere">${esc(f.comentario||"–")}</td><td data-l="Membros"><span class="pill ${oc?"bad":"ok"}">${oc?"Oculto":"Visível"}</span>${f.ocultoMembros===undefined?' <span class="note">sugestão</span>':""}</td><td><button type="button" class="btn sm ghost" data-act="fbvis" data-id="${esc(f.id)}">${oc?"Mostrar":"Ocultar"}</button></td></tr>`;}).join("")}
+  </tbody></table></div>${L.length>lim?`<div class="more"><button type="button" class="btn sm" data-act="fbmore">Mostrar mais ${Math.min(200,L.length-lim)}</button></div>`:""}`
+  :empty("Nada neste filtro","Escolhe outro filtro.")}`;
 }
 function hIdeias(){
   const f=S.f,all=[...S.ideias.values()];
@@ -1511,15 +1572,15 @@ function vJuri(){
   h+=ideas.length?`<div class="stack">${ideas.map(i=>juryIdea(i,jur,J)).join("")}</div>`:empty("Ainda sem ideias deste par","O problema e a solução aparecem aqui sozinhos assim que o Vitor os registar.");
   return h;
 }
-function juryRoster(){const set=new Set(JURI_DEF);[...S.sessoes.values()].forEach(x=>(x.juri||[]).forEach(n=>n&&set.add(n)));[...S.feedback.values()].forEach(f=>f.jurado&&set.add(f.jurado));return [...set].sort((a,b)=>a.localeCompare(b,"pt"));}
+function juryOficial(){const set=new Set(JURI_DEF);[...S.sessoes.values()].forEach(x=>(x.juri||[]).forEach(n=>n&&set.add(n)));return [...set].filter(n=>!/@/.test(n)).sort((a,b)=>a.localeCompare(b,"pt"));}
 function juryWho(){
-  const R=juryRoster();
-  return `<div class="jhero"><div class="eyebrow">Bootcamp de Inovação 26/27 · Júri</div><h1>Quem és?</h1><div style="opacity:.9;margin-top:2px">Escolhe o teu nome antes de veres as ideias. É com ele que ficam registados os teus comentários e perguntas.</div></div>
-  <div class="card" style="margin-bottom:14px"><h2>Sou…</h2>
-    <div class="who">${R.map(n=>`<button type="button" class="whobtn" data-act="jset" data-v="${esc(n)}">${esc(n)}</button>`).join("")}</div>
-    <details style="margin-top:6px"><summary class="note" style="cursor:pointer">Não estou na lista</summary>
-      <form class="row" data-form="jname" autocomplete="off" style="flex-wrap:nowrap;margin-top:8px"><input class="field" name="n" required maxlength="60" placeholder="Nome e apelido" aria-label="O teu nome"><button class="btn pri" type="submit">Entrar</button></form></details>
-    <p class="note" style="margin:8px 0 0">Fica guardado neste dispositivo. Podes trocar de nome no topo do painel.</p></div>`;
+  const R=juryOficial();
+  return `<div class="jhero"><div class="eyebrow">Bootcamp de Inovação 26/27 · Júri</div><h1>Quem és?</h1><div style="opacity:.92;margin-top:2px;max-width:60ch">Escolhe o teu nome antes de veres as ideias. É com ele que ficam registados os teus vereditos, comentários e perguntas.</div></div>
+  <div class="card" style="margin-bottom:14px;display:grid;gap:12px"><h2 style="margin:0">Escolhe o teu nome</h2>
+    <div class="wgrid">${R.map(n=>`<button type="button" class="wcard" data-act="jset" data-v="${esc(n)}">${av(n,32)}<span>${esc(n)}</span></button>`).join("")}</div>
+    <details><summary class="note" style="cursor:pointer;min-height:32px;display:inline-flex;align-items:center">Não estou na lista</summary>
+      <form class="row" data-form="jname" autocomplete="off" style="flex-wrap:wrap;margin-top:8px"><label class="l" style="flex:1 1 220px">O teu nome<input class="field" name="n" required maxlength="60" placeholder="Nome e apelido"></label><button class="btn pri" type="submit" style="align-self:flex-end">Entrar</button></form></details>
+    <p class="note" style="margin:0">Fica guardado neste dispositivo. Podes trocar de nome no topo do painel.</p></div>`;
 }
 function liveBadge(){if(S.dbState!=="on")return "";const t=S.lastSync?new Date(S.lastSync).toLocaleTimeString("pt-PT",{hour:"2-digit",minute:"2-digit",second:"2-digit"}):"";return `<span class="livebadge"><i></i><span>Ao vivo${t?" · atualizado às "+t:""}</span></span>`;}
 function hhmm(f){const t=f.enviadoEm||f.updatedAt;return t?new Date(t).toLocaleTimeString("pt-PT",{hour:"2-digit",minute:"2-digit"}):"";}

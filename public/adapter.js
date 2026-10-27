@@ -149,23 +149,29 @@
   }
   function juryGate(){
     const d = document.createElement("div");
-    d.id = "inov-jgate";
-    d.setAttribute("style", "position:fixed;inset:0;z-index:10000;background:#f4f6fb;display:grid;place-items:center;padding:16px");
-    d.innerHTML = `<form id="inov-jform" autocomplete="off" style="background:#fff;border:1px solid #d9dfe9;border-radius:14px;padding:28px;max-width:360px;width:100%;display:grid;gap:12px;font-family:inherit">
-      <div style="font-weight:800;letter-spacing:.06em;font-size:12px;color:#5b6b82">INOVAÇÃO 26/27 · JUNITEC</div>
-      <h1 style="margin:0;font-size:22px;color:#1b2433">Painel do júri</h1>
-      <p style="margin:0;color:#5b6b82;font-size:14px">Escreve o código de acesso do júri.</p>
-      <input id="inov-jcode" type="password" required placeholder="Código de acesso" aria-label="Código de acesso do júri" style="padding:10px 12px;border:1px solid #c5cede;border-radius:8px;font-size:16px">
-      <button type="submit" style="padding:10px 12px;border:0;border-radius:8px;background:#1d4ed8;color:#fff;font-weight:700;font-size:15px;cursor:pointer">Entrar</button>
-      <p id="inov-jerr" hidden style="margin:0;color:#b42318;font-size:14px">Código errado.</p></form>`;
+    d.className = "jgate"; d.id = "inov-jgate";
+    d.innerHTML = `<form id="inov-jform" class="card" autocomplete="off" novalidate>
+      <div class="bar" aria-hidden="true"></div>
+      <div><div class="eyebrow">Inovação 26/27 · JUNITEC</div><h1 style="margin:4px 0 0">Painel do júri</h1></div>
+      <p class="note" style="margin:0">Para avaliares as ideias, escreve o código de acesso que recebeste do coordenador.</p>
+      <label class="l" for="inov-jcode">Código de acesso<input class="field" id="inov-jcode" type="password" autocomplete="off" required aria-describedby="inov-jerr"></label>
+      <p id="inov-jerr" role="alert" style="margin:0;color:var(--bad);font-weight:600" hidden></p>
+      <button type="submit" class="btn pri">Entrar</button></form>`;
     document.body.appendChild(d);
+    const inp = d.querySelector("#inov-jcode"), err = d.querySelector("#inov-jerr"), btn = d.querySelector("button[type=submit]");
+    setTimeout(() => inp.focus(), 50);
     d.querySelector("#inov-jform").addEventListener("submit", async e => {
       e.preventDefault();
-      const v = d.querySelector("#inov-jcode").value.trim(); if (!v) return;
-      try { localStorage.setItem(LS_CODE, v); } catch (err) {}
+      const v = inp.value.trim();
+      if (!v) { err.textContent = "Escreve o código de acesso."; err.hidden = false; inp.focus(); return; }
+      btn.disabled = true; btn.textContent = "A verificar…"; err.hidden = true;
+      try { localStorage.setItem(LS_CODE, v); } catch (x) {}
       coordP = null;
-      if (await checkAccess()) location.reload();
-      else { try { localStorage.removeItem(LS_CODE); } catch (err) {} coordP = null; d.querySelector("#inov-jerr").hidden = false; }
+      if (await checkAccess()) { location.reload(); return; }
+      try { localStorage.removeItem(LS_CODE); } catch (x) {}
+      coordP = null;
+      err.textContent = "Código errado. Confirma-o com o coordenador e tenta outra vez.";
+      err.hidden = false; btn.disabled = false; btn.textContent = "Entrar"; inp.select();
     });
   }
   if (!isCoordPath()) checkAccess().then(ok => { if (!ok) {

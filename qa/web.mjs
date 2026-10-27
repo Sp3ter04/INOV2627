@@ -46,7 +46,7 @@ ok(await J.locator('[data-go="kpis"],[data-go="defs"]').count()===0,"júri sem v
 ok(await J.locator("#inov-jgate").count()===1,"júri sem código vê o ecrã de código");
 await J.fill("#inov-jcode","1fh73r");await J.click("#inov-jform button");await W(1500);
 ok(await J.locator("#inov-jgate").count()===0,"código do júri aceite");
-ok(await J.locator(".whobtn",{hasText:"Lourenço Ponces Duarte"}).count()===1,"lista de júris inclui Lourenço Ponces Duarte");
+ok(await J.locator(".wcard",{hasText:"Lourenço Ponces Duarte"}).count()===1,"lista de júris inclui Lourenço Ponces Duarte");
 ok(await J.locator('[data-act="verd"],form[data-form="liveidea"]').count()===0,"júri não vê ideias antes de escolher quem é");
 await J.click("summary:has-text('Não estou na lista')");
 await J.fill('form[data-form="jname"] input[name="n"]',"Jurado Web");await J.click('form[data-form="jname"] button');await W(400);
