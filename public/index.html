@@ -492,11 +492,8 @@ const P_COLOR={"a contactar":"var(--line-2)","contactado":"var(--warn)","em nego
 const ART_URL="https://claude.ai/artifact/XdLsd2YFxzJyojWf3gqUBU";
 const JURI_DEF=["Gabriela Gomes","António Sarafana","Miguel Faustino","Tiago Romão","Lourenço Ponces Duarte","Miguel Gomes","Vitor Clara"];
 const VERD=[["matar","Difícil","bad"],["mercado","Analisar o mercado","warn"],["gosto","Gosto","ok"],["outro","Personalizado","br"]];
-function canHub(){
-  if(S.isOwner)return true;
-  const em=String(S.me&&S.me.email||"").toLowerCase(),loc=em.split("@")[0],nm=norm(S.me&&S.me.name||"").trim().replace(/\s+/g,".");
-  return inList(S.cfg.hubAcesso);
-}
+/* Só o coordenador (Vítor) tem a vista do Bootcamp; todos os outros veem o painel do júri. */
+function canHub(){return !!S.isOwner;}
 function inList(list){
   const em=String(S.me&&S.me.email||"").toLowerCase(),loc=em.split("@")[0],nm=norm(S.me&&S.me.name||"").trim().replace(/\s+/g,".");
   return (list||[]).some(x=>{x=String(x).toLowerCase().trim();if(!x)return false;return x.includes("@")?!!em&&x===em:(!!loc&&x===loc)||(!!nm&&x===nm);});
