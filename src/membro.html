@@ -31,6 +31,12 @@ details{border-top:1px solid var(--line);padding-top:8px;margin-top:10px}summary
 .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
 .msg{padding:10px 12px;border-radius:8px;margin:10px 0;background:var(--brand-soft)}.msg.err{background:var(--bad-soft);color:var(--bad)}
 .note{color:var(--muted);font-size:.88rem}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 10px}.chips button{min-height:36px;padding:4px 12px;border-radius:99px;font-weight:600}.chips button[aria-pressed=true]{background:var(--brand-soft);color:var(--brand);border-color:var(--brand)}
+.sum{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:0 0 14px}.sum div{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:10px 12px}.sum b{display:block;font:800 1.35rem/1.1 var(--display)}.sum span{font-size:.78rem;color:var(--muted)}
+.ch{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.ch h3{font-size:1.08rem}.sb{flex:none}
+.ps2{display:grid;grid-template-columns:1fr 1fr;gap:12px}.ps2>div{background:var(--surface-2);border-radius:8px;padding:8px 12px}
+.acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+@media (max-width:620px){.ps2{grid-template-columns:1fr}.sum{grid-template-columns:1fr 1fr 1fr}}
 @media (max-width:520px){.tabs{flex-direction:column}}
 </style></head><body>
 <div id="app"></div>
@@ -60,12 +66,17 @@ function fbHtml(i){const l=st.fb.filter(f=>f.ideiaId===i.id).sort((a,b)=>String(
 function ideaCard(i,mine){
   const sg=st.sug.filter(s=>s.ideiaId===i.id).sort((a,b)=>String(b.em).localeCompare(String(a.em))),ma=st.mat.filter(m=>m.ideiaId===i.id);
   const nfb=st.fb.filter(f=>f.ideiaId===i.id).length;
-  return `<article class="card" id="i-${esc(i.id)}"><h3>${esc(i.titulo||"(sem título)")}</h3>
-  <div class="meta">${i.sessao||"?"}.ª sessão · ${stars(i.gosto)} <span class="pp">${(i.par||[]).map(av).join("")}</span> <span>${esc((i.par||[]).join(", "))}</span></div>
-  <div class="lab">Problema</div><p class="txt">${esc(i.problema||"—")}</p><div class="lab">Solução</div><p class="txt">${esc(i.solucao||"—")}</p>
-  <details><summary>Feedback (${nfb})</summary>${fbHtml(i)}</details>
-  ${mine?`<div class="row"><button class="pri" data-a="open" data-id="${esc(i.id)}" data-k="mat">Juntar PDF / documento</button><button data-a="open" data-id="${esc(i.id)}" data-k="sug">Sugerir melhoria do problema e da solução</button></div><details data-k="mat"><summary>Materiais (${ma.length})</summary>${matHtml(i,ma)}</details>
-  <details data-k="sug"><summary>Sugerir alteração${sg.length?` · ${sg.length} enviada${sg.length>1?"s":""}`:""}</summary>${sugHtml(i,sg)}</details>`:""}</article>`;}
+  const q=[i.titulo,i.problema,i.solucao,(i.par||[]).join(" ")].join(" ").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+  const pend=st.sug.filter(s=>s.ideiaId===i.id&&s.tipo==="participar"&&s.email===st.ses.user.email);
+  return `<article class="card" id="i-${esc(i.id)}" data-q="${esc(q)}"><div class="ch"><h3>${esc(i.titulo||"(sem título)")}</h3><span class="pill sb">${i.sessao||"?"}.ª sessão</span></div>
+  <div class="meta">${stars(i.gosto)} <span class="pp">${(i.par||[]).map(av).join("")}</span> <span>${esc((i.par||[]).join(", "))}</span>${i.criadaPor?' <span class="pill">ideia nova</span>':""}${ma.length?` <span class="pill">📎 ${ma.length}</span>`:""}</div>
+  <div class="ps2"><div><div class="lab" style="margin-top:4px">Problema</div><p class="txt">${esc(i.problema||"—")}</p></div><div><div class="lab" style="margin-top:4px">Solução</div><p class="txt">${esc(i.solucao||"—")}</p></div></div>
+  <details><summary>Feedback do júri (${nfb})</summary>${fbHtml(i)}</details>
+  ${!mine&&ma.length?`<details><summary>Ficheiros (${ma.length})</summary>${ma.map(m=>`<div class="fb"><button class="lnk" data-a="dl" data-p="${esc(m.path)}">📄 ${esc(m.ficheiro)}</button> <span class="pill">${esc(m.tipo)}</span> <span class="note">${esc(m.nome)}</span></div>`).join("")}</details>`:""}
+  ${!mine?(pend.length?`<p class="note" style="margin:10px 0 0">Pedido para participar: <span class="pill ${pend[pend.length-1].estado==="aceite"?"ok":pend[pend.length-1].estado==="rejeitada"?"bad":"warn"}">${esc(pend[pend.length-1].estado||"pendente")}</span></p>`
+    :`<details data-k="part"><summary>Ajudaste nesta ideia? Pedir para participar</summary><label for="h-${esc(i.id)}">Como ajudaste a desenvolver esta ideia?</label><textarea id="h-${esc(i.id)}" placeholder="Ex.: fiz 3 entrevistas a clínicas e a pesquisa de concorrentes"></textarea><div class="row"><button class="pri" data-a="part" data-id="${esc(i.id)}">Enviar pedido ao coordenador</button></div></details>`):""}
+  ${mine?`<div class="acts"><button class="pri" data-a="open" data-id="${esc(i.id)}" data-k="mat">Juntar PDF / documento</button><button data-a="open" data-id="${esc(i.id)}" data-k="sug">Sugerir melhoria do problema e da solução</button></div><details data-k="mat"><summary>Materiais (${ma.length})</summary>${matHtml(i,ma)}</details>
+  <details data-k="sug"><summary>Sugestões de melhoria${sg.length?` · ${sg.length} enviada${sg.length>1?"s":""}`:""}</summary>${sugHtml(i,sg)}</details>`:""}</article>`;}
 function matHtml(i,ma){return (ma.length?ma.map(m=>`<div class="fb"><button class="lnk" data-a="dl" data-p="${esc(m.path)}">${esc(m.ficheiro)}</button> <span class="pill">${esc(m.tipo)}</span> <span class="note">${esc(m.nome)} · ${(m.em||"").slice(0,10)}</span>${m.email===st.ses.user.email?` <button class="lnk" data-a="rm" data-id="${esc(m.id)}" data-p="${esc(m.path)}">Remover</button>`:""}</div>`).join(""):`<p class="note">Ainda sem ficheiros.</p>`)+
   `<label for="t-${esc(i.id)}">Tipo</label><select id="t-${esc(i.id)}"><option>Pesquisa</option><option>Validação de mercado</option><option>Outro</option></select>
   <label for="f-${esc(i.id)}">Ficheiro (PDF, Word, Excel, PowerPoint, imagem… até 25 MB)</label><input type="file" id="f-${esc(i.id)}" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.csv,.txt,.png,.jpg,.jpeg"><div class="row"><button class="pri" data-a="up" data-id="${esc(i.id)}">Enviar ficheiro</button></div>`;}
@@ -73,44 +84,51 @@ function sugHtml(i,sg){return sg.map(s=>`<div class="fb"><span class="pill ${s.e
   `<label for="p-${esc(i.id)}">Problema</label><textarea id="p-${esc(i.id)}">${esc(i.problema||"")}</textarea>
   <label for="s-${esc(i.id)}">Solução</label><textarea id="s-${esc(i.id)}">${esc(i.solucao||"")}</textarea>
   <label for="n-${esc(i.id)}">Porquê? (opcional)</label><input id="n-${esc(i.id)}"><div class="row"><button class="pri" data-a="sug" data-id="${esc(i.id)}">Enviar sugestão ao coordenador</button></div><p class="note">A descrição só muda depois de o coordenador aceitar.</p>`;}
-function novoHtml(){const ms=Object.keys(st.fotos).filter(n=>n!==st.nome).sort(),mx=Math.max(1,...st.ideias.map(i=>i.sessao||1));
-  return `<div class="card" id="novo"><h2>Nova ideia</h2><label for="nt">Título</label><input id="nt" maxlength="120">
+const SESS_NOVA=4;
+function novoHtml(){const ms=Object.keys(st.fotos).filter(n=>n!==st.nome).sort();
+  return `<div class="card" id="novo"><div class="ch"><h2>Nova ideia</h2><span class="pill">${SESS_NOVA}.ª sessão de ideação</span></div><p class="note">As ideias novas entram na ${SESS_NOVA}.ª sessão de ideação e o júri pode dar-lhes feedback.</p><label for="nt">Título</label><input id="nt" maxlength="120">
   <label for="np">Problema</label><textarea id="np"></textarea><label for="ns">Solução</label><textarea id="ns"></textarea>
-  <label for="nse">Sessão de ideação</label><input id="nse" type="number" min="1" value="${mx}">
   <div class="lab">Outras pessoas na ideia (opcional)</div><div class="row">${ms.map(n=>`<label style="margin:0;font-weight:400"><input type="checkbox" class="npar" value="${esc(n)}" style="width:auto;min-height:0"> ${esc(n)}</label>`).join("")}</div>
   <div class="row"><button class="pri" data-a="novook">Criar ideia</button><button data-a="novono">Cancelar</button></div><p class="note">Depois de criada, podes juntar PDFs e documentos à ideia.</p></div>`;}
 function render(){const A=$("#app");
   if(!st.ses){A.innerHTML=`<div class="wrap login"><div class="card"><h1>Inovação 26/27</h1><p class="note">Área dos membros</p>${st.msg?`<div class="msg err" role="alert">${esc(st.msg)}</div>`:""}
-   <form id="lf"><label for="em">Email</label><input id="em" type="email" autocomplete="username" required placeholder="nome@junitec.pt"><label for="pw">Palavra-passe</label><input id="pw" type="password" autocomplete="current-password" required><div class="row"><button class="pri" style="flex:1">Entrar</button></div></form></div></div>`;
+   <form id="lf"><label for="em">Email</label><input id="em" type="text" inputmode="email" autocapitalize="none" spellcheck="false" autocomplete="username" required placeholder="nome@junitec.pt"><label for="pw">Palavra-passe</label><input id="pw" type="password" autocomplete="current-password" required><div class="row"><button class="pri" style="flex:1">Entrar</button></div></form></div></div>`;
    $("#lf").onsubmit=async e=>{e.preventDefault();let em=$("#em").value.trim().toLowerCase();if(!em.includes("@"))em+=DOM;try{setSes(await auth("token?grant_type=password",{email:em,password:$("#pw").value}));st.msg=null;await start();}catch(x){st.msg="Email ou palavra-passe incorretos.";render();}};return;}
   if((st.ses.user.user_metadata||{}).must_change){A.innerHTML=`<div class="wrap login"><div class="card"><h1>Escolhe a tua palavra-passe</h1><p class="note">Por segurança, tens de definir uma nova palavra-passe antes de continuar (mínimo 8 caracteres).</p>${st.msg?`<div class="msg err" role="alert">${esc(st.msg)}</div>`:""}
    <form id="cf"><label for="n1">Nova palavra-passe</label><input id="n1" type="password" minlength="8" autocomplete="new-password" required><label for="n2">Repetir</label><input id="n2" type="password" minlength="8" autocomplete="new-password" required><div class="row"><button class="pri" style="flex:1">Guardar</button></div></form></div></div>`;
    $("#cf").onsubmit=async e=>{e.preventDefault();const a=$("#n1").value,b=$("#n2").value,em=st.ses.user.email;if(a!==b){st.msg="As palavras-passe não coincidem.";return render();}if(a.length<8||a===em.split("@")[0]||a===em){st.msg="Escolhe uma palavra-passe diferente do email e com 8 ou mais caracteres.";return render();}
     try{await fresh();const u=await auth("user",{password:a,data:{must_change:false}},"PUT");st.ses.user=u;st.msg=null;await start();}catch(x){st.msg=x.message;render();}};return;}
-  const mine=st.ideias.filter(i=>(i.par||[]).includes(st.nome)).sort(ordem),all=[...st.ideias].sort(ordem),list=st.tab==="minhas"?mine:all;
+  const mine=st.ideias.filter(i=>(i.par||[]).includes(st.nome)).sort(ordem),all=[...st.ideias].sort(ordem),base=st.tab==="minhas"?mine:all,list=base.filter(i=>!st.fs||Number(i.sessao)===st.fs);
+  const ses=[...new Set(base.map(i=>Number(i.sessao)||0))].filter(Boolean).sort(),myS=st.sug.filter(s=>s.email===st.ses.user.email),pendN=myS.filter(s=>(s.estado||"pendente")==="pendente").length,fbN=st.fb.filter(f=>mine.some(i=>i.id===f.ideiaId)).length;
   A.innerHTML=`<div class="bar"><span class="pp" style="margin-left:6px">${av(st.nome)}</span><div class="sp"><b>${esc(st.nome||st.ses.user.email)}</b><small>Inovação 26/27</small></div><button data-a="pw" class="lnk">Palavra-passe</button><button data-a="out">Sair</button></div>
   <div class="wrap">${st.msg?`<div class="msg ${st.err?"err":""}" role="status">${esc(st.msg)}</div>`:""}
   <div class="tabs" role="group"><button data-a="tab" data-t="minhas" aria-pressed="${st.tab==="minhas"}">As minhas ideias (${mine.length})</button><button data-a="tab" data-t="todas" aria-pressed="${st.tab==="todas"}">Todas as ideias (${all.length})</button></div>
-  <div class="row" style="margin:0 0 12px"><button class="pri" data-a="novo">+ Nova ideia</button></div>${st.novo?novoHtml():""}
-  <p class="note">Ordenadas por estrelas, depois pelas mais recentes. Podes ler o feedback de todas; só podes sugerir alterações e juntar ficheiros às tuas.</p>
+  ${st.tab==="minhas"?`<div class="sum"><div><b>${mine.length}</b><span>ideias tuas</span></div><div><b>${fbN}</b><span>feedbacks do júri</span></div><div><b>${pendN}</b><span>pedidos por decidir</span></div></div>`:""}
+  <div class="row" style="margin:0 0 12px;align-items:center"><button class="pri" data-a="novo">+ Nova ideia</button><span class="note">${st.tab==="minhas"?"Junta ficheiros e sugere melhorias às tuas ideias.":"Lê tudo, incluindo o feedback. Se ajudaste numa ideia, pede para participar."}</span></div>${st.novo?novoHtml():""}
+  <input id="q" type="search" placeholder="Procurar ideias, problemas, pessoas…" aria-label="Procurar ideias" style="margin:0 0 10px">
+  ${ses.length>1?`<div class="chips" role="group" aria-label="Sessão"><button data-a="fs" data-v="0" aria-pressed="${!st.fs}">Todas as sessões</button>${ses.map(k=>`<button data-a="fs" data-v="${k}" aria-pressed="${st.fs===k}">${k}.ª sessão</button>`).join("")}</div>`:""}
   ${st.load?`<p>A carregar…</p>`:list.length?list.map(i=>ideaCard(i,(i.par||[]).includes(st.nome))).join(""):`<div class="card"><p>Não tens ideias associadas ainda.</p></div>`}</div>`;}
 const flash=(m,e)=>{st.msg=m;st.err=!!e;render();window.scrollTo(0,0);};
 document.addEventListener("click",async ev=>{const b=ev.target.closest("[data-a]");if(!b)return;const a=b.dataset.a,id=b.dataset.id,open=[...document.querySelectorAll("details[open]")].map(d=>d.closest("article")&&d.closest("article").id+"|"+d.querySelector("summary").textContent.slice(0,6));
   const keep=()=>{open.forEach(k=>{const[aid,s]=k.split("|");const art=document.getElementById(aid);if(art)art.querySelectorAll("details").forEach(d=>{if(d.querySelector("summary").textContent.startsWith(s))d.open=true;});});};
   try{
-  if(a==="tab"){st.tab=b.dataset.t;st.msg=null;render();}
+  if(a==="tab"){st.tab=b.dataset.t;st.fs=0;st.msg=null;render();}
   else if(a==="novo"){st.novo=true;st.msg=null;st.tab="minhas";render();document.getElementById("novo").scrollIntoView();}
   else if(a==="novono"){st.novo=false;render();}
   else if(a==="novook"){const t=$("#nt").value.trim(),p=$("#np").value.trim(),so=$("#ns").value.trim();if(!t||!p){flash("Preenche pelo menos o título e o problema.",1);return;}
     const nid=Math.random().toString(36).slice(2,14),now=new Date().toISOString(),par=[st.nome,...[...document.querySelectorAll(".npar:checked")].map(c=>c.value)];
-    const d={id:nid,titulo:t,problema:p,solucao:so,par,sessao:Math.max(1,parseInt($("#nse").value)||1),etapa:"ideacao",gosto:0,aval:{},decisao:"",criadaPor:st.ses.user.email,createdAt:now,updatedAt:now};
+    const d={id:nid,titulo:t,problema:p,solucao:so,par,sessao:SESS_NOVA,etapa:"ideacao",gosto:0,aval:{},decisao:"",criadaPor:st.ses.user.email,createdAt:now,updatedAt:now};
     await rest("docs",{method:"POST",body:JSON.stringify({col:"ideias",id:nid,data:d})});st.ideias.push(d);st.novo=false;st.tab="minhas";flash("Ideia criada. Já podes juntar ficheiros.");}
   else if(a==="open"){const art=b.closest("article"),dt=art.querySelector('details[data-k="'+b.dataset.k+'"]');dt.open=true;dt.scrollIntoView({behavior:"smooth",block:"center"});}
   else if(a==="out"){try{await fetch(U+"/auth/v1/logout",{method:"POST",headers:hdr()});}catch(e){}st.ses=null;lsSet(null);render();}
   else if(a==="pw"){const u=Object.assign({},st.ses.user);u.user_metadata=Object.assign({},u.user_metadata,{must_change:true});st.ses.user=u;render();}
   else if(a==="sug"){const p=$("#p-"+id).value.trim(),s=$("#s-"+id).value.trim(),n=$("#n-"+id).value.trim(),i=st.ideias.find(x=>x.id===id);if(p===(i.problema||"").trim()&&s===(i.solucao||"").trim()){flash("Não alteraste nada.",1);return;}
-    const sid="s"+Date.now().toString(36)+Math.random().toString(36).slice(2,6),d={id:sid,email:st.ses.user.email,nome:st.nome,ideiaId:id,titulo:i.titulo,problema:p,solucao:s,nota:n,estado:"pendente",em:new Date().toISOString()};
+    const sid="s"+Date.now().toString(36)+Math.random().toString(36).slice(2,6),d={id:sid,tipo:"descricao",email:st.ses.user.email,nome:st.nome,ideiaId:id,titulo:i.titulo,problema:p,solucao:s,nota:n,estado:"pendente",em:new Date().toISOString()};
     await rest("docs",{method:"POST",body:JSON.stringify({col:"sugestoes",id:sid,data:d})});st.sug.push(d);flash("Sugestão enviada. O coordenador vai ver e responder.");}
+  else if(a==="part"){const n=$("#h-"+id).value.trim(),i=st.ideias.find(x=>x.id===id);if(!n){flash("Explica em poucas palavras como ajudaste.",1);return;}
+    const sid="p"+Date.now().toString(36)+Math.random().toString(36).slice(2,6),d={id:sid,tipo:"participar",email:st.ses.user.email,nome:st.nome,ideiaId:id,titulo:i.titulo,nota:n,estado:"pendente",em:new Date().toISOString()};
+    await rest("docs",{method:"POST",body:JSON.stringify({col:"sugestoes",id:sid,data:d})});st.sug.push(d);flash("Pedido enviado. Se o coordenador aceitar, passas a fazer parte da ideia.");}
+  else if(a==="fs"){st.fs=Number(b.dataset.v)||0;render();}
   else if(a==="up"){const f=$("#f-"+id).files[0];if(!f){flash("Escolhe primeiro um ficheiro.",1);return;}if(f.size>26214400){flash("Ficheiro acima de 25 MB.",1);return;}
     await fresh();const path=id+"/"+Date.now().toString(36)+"-"+f.name.normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^A-Za-z0-9._-]+/g,"_");
     const r=await fetch(U+"/storage/v1/object/materiais/"+path,{method:"POST",headers:hdr({"Content-Type":f.type||"application/octet-stream","x-upsert":"false"}),body:f});if(!r.ok)throw new Error("Não foi possível enviar o ficheiro.");
@@ -119,6 +137,7 @@ document.addEventListener("click",async ev=>{const b=ev.target.closest("[data-a]
   else if(a==="dl"){await fresh();const r=await fetch(U+"/storage/v1/object/sign/materiais/"+b.dataset.p,{method:"POST",headers:hdr({"Content-Type":"application/json"}),body:JSON.stringify({expiresIn:300})});const j=await r.json();if(!r.ok)throw new Error("Sem acesso ao ficheiro.");window.open(U+"/storage/v1"+j.signedURL,"_blank","noopener");}
   else if(a==="rm"){if(!confirm("Remover este ficheiro?"))return;await fresh();await fetch(U+"/storage/v1/object/materiais/"+b.dataset.p,{method:"DELETE",headers:hdr()});await rest("docs?col=eq.materiais&id=eq."+encodeURIComponent(id),{method:"DELETE"});st.mat=st.mat.filter(m=>m.id!==id);st.msg="Ficheiro removido.";st.err=false;render();keep();}
   }catch(x){flash(x.message||"Erro.",1);}});
+document.addEventListener("input",e=>{if(e.target.id!=="q")return;const q=e.target.value.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");document.querySelectorAll("article[data-q]").forEach(c=>{c.hidden=!!q&&!c.dataset.q.includes(q);});});
 async function start(){try{await loadAll();}catch(x){st.load=false;st.msg="Não foi possível carregar os dados.";st.err=true;}render();}
 (async()=>{const s=lsGet();if(s&&s.r){try{setSes(await auth("token?grant_type=refresh_token",{refresh_token:s.r}));await start();return;}catch(e){lsSet(null);}}render();})();
 </script></body></html>

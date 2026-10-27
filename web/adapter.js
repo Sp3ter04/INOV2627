@@ -36,7 +36,7 @@
   const enc = encodeURIComponent;
 
   /* ---------- db ---------- */
-  const POLL = { live: 3000, ideias: 4000, feedback: 4000, sessoes: 6000, config: 15000, fotos: 120000 };
+  const POLL = { sugestoes: 8000, materiais: 10000, live: 3000, ideias: 4000, feedback: 4000, sessoes: 6000, config: 15000, fotos: 120000 };
   const subs = new Map(); // col -> Set of {id|null, cb, last}
   function snapCol(rows){ return { docs: rows.map(r => ({ id: r.id, data: () => r.data })) }; }
   async function fetchCol(col){ return await req("docs?select=id,data&col=eq." + enc(col)) || []; }
@@ -83,6 +83,18 @@
     };
   }
   const db = Object.freeze({ collection });
+
+  /* ---------- ficheiros dos membros (Supabase Storage, bucket "materiais") ---------- */
+  window.INOV_FILE = async function(path){
+    const w = window.open("about:blank", "_blank");
+    const h = { apikey: KEY, Authorization: "Bearer " + KEY, "Content-Type": "application/json" };
+    const c = getCode(); if (c) h["x-inov-code"] = c;
+    const r = await fetch(SB + "/storage/v1/object/sign/materiais/" + String(path).split("/").map(enc).join("/"), { method: "POST", headers: h, body: JSON.stringify({ expiresIn: 600 }) });
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok || !j.signedURL) { if (w) w.close(); throw new Error("sem acesso"); }
+    const url = SB + "/storage/v1" + j.signedURL;
+    if (w) w.location.href = url; else location.href = url;
+  };
 
   /* ---------- coordenador ---------- */
   let coordP = null;

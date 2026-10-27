@@ -3,6 +3,15 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Nunito+Sans:opsz,wght@6..12,400;6..12,600;6..12,700&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
 /* Layout: barra lateral com os 3 pilares (como o CRM); cada pilar abre em separadores; números primeiro, detalhe depois. */
+.matb{border-top:1px solid var(--line);padding-top:10px;margin-top:10px;display:grid;gap:6px}
+.matl{list-style:none;margin:0;padding:0;display:grid;gap:6px}.matl li{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.sgcard{margin-bottom:12px;display:grid;gap:10px}.sgcard.done{opacity:.75}.sgt{font-weight:700;font-family:var(--display)}
+.sgd p{margin:2px 0 0;white-space:pre-wrap}.sgd.same{opacity:.7}.sgc{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px}
+.sgc>div{background:var(--surface-2);border:1px solid var(--line);border-radius:var(--r);padding:8px 10px}.sgc .new{border-color:var(--ok);background:var(--ok-soft)}
+.sgc small{font-weight:800;color:var(--muted);text-transform:uppercase;font-size:11px;letter-spacing:.04em}
+@media (max-width:640px){.sgc{grid-template-columns:1fr}}
+.jfilt{display:grid;gap:10px}
+.sgk{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:14px}.sgk .card{margin:0}.sgk b{display:block;font:800 26px/1.1 var(--display)}
 :root{
   --bg:#f3f6fa; --surface:#ffffff; --surface-2:#f7f9fc; --fg:#122033; --muted:#5a6a80; --line:#dbe3ee; --line-2:#c3cfdf;
   --brand:#175dab; --brand-2:#6cc6f0; --brand-soft:#e6f0fb; --on-brand:#ffffff;
@@ -156,6 +165,7 @@ td .ps b{display:block;font-family:var(--display);font-size:10.5px;letter-spacin
 .stars{display:inline-flex;gap:1px}
 .stars button{all:unset;cursor:pointer;font-size:15px;line-height:1;color:var(--line-2);padding:0 1px}
 .stars button.on{color:#e0a100}
+.stars>span{font-size:15px;line-height:1;color:var(--line-2);padding:0 1px}.stars>span.on{color:#e0a100}
 .stars button:focus-visible{outline:2px solid var(--brand)}
 .dec{display:inline-flex;border:1px solid var(--line-2);border-radius:6px;overflow:hidden}
 .dec button{all:unset;cursor:pointer;font-size:12px;font-weight:700;padding:3px 8px;color:var(--muted);border-right:1px solid var(--line-2);white-space:nowrap}
@@ -454,7 +464,7 @@ const CRM_URL="https://claude.ai/artifact/MsdAABAFPKvqq7ANo4yDMP";
 function isJuriRoute(){return window.INOV_ISJURI?window.INOV_ISJURI():(location.hash==="#juri"||/\/juri\/?$/.test(location.pathname));}
 const S={view:"geral",tab:{hub:"ideias",apollo:"resumo",ud:"resumo",kpi:"perfis"},cfg:clone(DEFAULT_CFG),cfgLoaded:false,
   ideias:new Map(),kpi:new Map(),startups:new Map(),contactos:new Map(),mbr:new Map(),crm:null,db:null,sample:null,dbState:"pending",
-  sessoes:new Map(),pedidos:new Map(),feedback:new Map(),live:new Map(),fotos:new Map(),isOwner:false,userKnown:false,mode:isJuriRoute()?"juri":"app",jTab:"avaliar",room:null,lastSync:0,me:{email:"",name:""},preview:false,draft:{},jurado:"",follow:true,jPar:null,liveN:null,
+  sessoes:new Map(),pedidos:new Map(),feedback:new Map(),sugestoes:new Map(),materiais:new Map(),jSess:0,live:new Map(),fotos:new Map(),isOwner:false,userKnown:false,mode:isJuriRoute()?"juri":"app",jTab:"avaliar",room:null,lastSync:0,me:{email:"",name:""},preview:false,draft:{},jurado:"",follow:true,jPar:null,liveN:null,
   f:{sess:0,q:"",dec:"",par:"",etapa:""},open:null,stSel:null,mes:"",quick:{sessao:1,a:"",b:""},pendingRender:false,aiBusy:false};
 try{const v=JSON.parse(localStorage.getItem("inov-ui")||"{}");if(v.view)S.view=v.view;if(v.tab)Object.assign(S.tab,v.tab);if(v.sess)S.quick.sessao=v.sess;if(v.ord)S.f.ord=v.ord;}catch(e){}
 try{S.jurado=localStorage.getItem("inov-jurado")||"";}catch(e){}
@@ -544,7 +554,7 @@ async function boot(){
   if(S.isOwner)db.collection("crm").onSnapshot(snap=>{const m=new Map();snap.docs.forEach(d=>{if(d.id.startsWith("kpi_")){const v=d.data();if(v)m.set(d.id,Object.assign({id:d.id},clone(v)));}});
     for(const [k,st] of saveQ)if(k.startsWith("crm/kpi_")&&pend(st)){const id=k.slice(4);const cur=S.kpi.get(id);if(cur)m.set(id,cur);}
     S.kpi=m;softRender();},()=>{});
-  ["ideias","sessoes","feedback","live","fotos","startups","contactos","mbr"].concat(S.isOwner?["pedidos"]:[]).forEach(listen);
+  ["ideias","sessoes","feedback","live","fotos","startups","contactos","mbr","materiais"].concat(S.isOwner?["pedidos","sugestoes"]:[]).forEach(listen);
   softRender();
   try{const sm=await window.claude.use("sample");if(sm){S.sample=sm;softRender();}}catch(e){}
   try{const rm=await window.claude.use("room");if(rm){S.room=rm;rm.on("chg",applyRemote,()=>{});}}catch(e){}
@@ -709,9 +719,9 @@ function vHub(){
   const all=[...S.ideias.values()];const sts=activeStartups();
   const cnt=f=>all.filter(i=>rank(i.etapa)>=rank(f)).length;
   const t=S.tab.hub;
-  const body={ideias:hIdeias,dup:hDup,live:hLive,c1:()=>hFase("c1"),c2:()=>hFase("c2"),sd:()=>hFase("sd"),startups:hStartups,hist:hHist}[t]||hIdeias;
+  const body={ideias:hIdeias,sug:hSug,dup:hDup,live:hLive,c1:()=>hFase("c1"),c2:()=>hFase("c2"),sd:()=>hFase("sd"),startups:hStartups,hist:hHist}[t]||hIdeias;
   return `<div class="head"><div><div class="eyebrow">Pilar 1 · Inovação interna</div><h1>Bootcamp</h1>${liveBadge()}<div class="sub">Do Bootcamp às 3 startups: ideias, Challenges, Selection Day e acompanhamento até ao Unicorn Day.</div></div></div>
-  ${tabs("hub",[["ideias","Sessões de ideação",all.length],["dup","Ideias repetidas",dupPairs().length||null],["live","Sessão ao vivo",null],["c1","Challenge I",cnt("c1")],["c2","Challenge II",cnt("c2")],["sd","Selection Day",cnt("sd")],["startups","Startups",sts.length],["hist","Histórico",null]])}
+  ${tabs("hub",[["ideias","Sessões de ideação",all.length],["sug","Sugestões dos membros",sugPend().length||null],["dup","Ideias repetidas",dupPairs().length||null],["live","Sessão ao vivo",null],["c1","Challenge I",cnt("c1")],["c2","Challenge II",cnt("c2")],["sd","Selection Day",cnt("sd")],["startups","Startups",sts.length],["hist","Histórico",null]])}
   ${body()}`;
 }
 /* ---------- Ideias repetidas: propor pares, confirmar e juntar (fica a mais recente, pessoas sem repetidos, feedbacks somados) ---------- */
@@ -774,6 +784,56 @@ function dupMerge(aId,bId){
   save("ideias",keep.id);if(S.dupMan&&[S.dupMan.a,S.dupMan.b].includes(old.id))S.dupMan=null;
   remove("ideias",old.id);toast(`Juntadas em “${keep.titulo||""}” · ${keep.par.length} pessoas.`);
 }
+/* ================= Membros: ficheiros, sugestões e pedidos para participar ================= */
+function fbSess(iid){const i=S.ideias.get(iid);return S.jTab==="todas"&&i&&i.sessao?Number(i.sessao):(liveState().sessao||1);}
+function starsRO(i){const g=i.gosto||0;return `<span class="stars" role="img" aria-label="${g} de 5 estrelas">${[1,2,3,4,5].map(k=>`<span class="${k<=g?"on":""}" style="cursor:default">★</span>`).join("")}</span>`;}
+function sessLabel(i){return `${i.sessao||"?"}.ª sessão de ideação`;}
+function matsOf(iid){return [...S.materiais.values()].filter(m=>m.ideiaId===iid).sort((a,b)=>String(b.em||"").localeCompare(String(a.em||"")));}
+function fsize(n){n=Number(n)||0;return n>1048576?(n/1048576).toFixed(1).replace(".",",")+" MB":Math.max(1,Math.round(n/1024))+" KB";}
+function matBlock(iid,coord){const L=matsOf(iid);if(!L.length&&!coord)return "";
+  return `<div class="matb"><span class="eyebrow">Ficheiros dos membros · ${L.length}</span>${L.length?`<ul class="matl">${L.map(m=>`<li><button type="button" class="btn sm" data-act="matopen" data-p="${esc(m.path)}" title="Abrir ${esc(m.ficheiro)}">📄 ${esc(m.ficheiro)}</button><span class="pill">${esc(m.tipo||"Outro")}</span><span class="note">${esc(m.nome||"")} · ${esc(String(m.em||"").slice(0,10))} · ${fsize(m.tamanho)}</span></li>`).join("")}</ul>`:'<p class="note" style="margin:0">Ainda sem ficheiros. Os membros juntam-nos na área dos membros.</p>'}</div>`;}
+function sugPend(){return [...S.sugestoes.values()].filter(x=>(x.estado||"pendente")==="pendente");}
+function ideaBadges(i){const nm=matsOf(i.id).length,ns=S.isOwner?sugPend().filter(x=>x.ideiaId===i.id).length:0;
+  return `${i.criadaPor?'<span class="pill br" title="Criada por um membro">membro</span>':""}${nm?`<span class="pill" title="Ficheiros">📎 ${nm}</span>`:""}${ns?`<span class="pill warn" title="Sugestões por decidir">${ns} sugest${ns>1?"ões":"ão"}</span>`:""}`;}
+function sugCard(x){
+  const i=S.ideias.get(x.ideiaId),pend=(x.estado||"pendente")==="pendente",part=x.tipo==="participar";
+  const diff=(l,a,b)=>norm(a||"")===norm(b||"")?`<div class="sgd same"><span class="eyebrow">${l} · sem alteração</span><p>${esc(a||"—")}</p></div>`:`<div class="sgd"><span class="eyebrow">${l}</span><div class="sgc"><div><small>Atual</small><p>${esc(a||"—")}</p></div><div class="new"><small>Proposto</small><p>${esc(b||"—")}</p></div></div></div>`;
+  return `<article class="card sgcard ${pend?"":"done"}"><div class="card-h"><div class="row" style="gap:8px;flex-wrap:nowrap;min-width:0">${av(x.nome,32)}<div style="min-width:0"><b>${esc(x.nome||x.email)}</b> <span class="note">${part?"pede para participar em":"sugere melhorar"}</span><div class="sgt">${esc(i?i.titulo:x.titulo||"(ideia apagada)")}${i?` <span class="note">· ${esc(sessLabel(i))}</span>`:""}</div></div></div>
+    <span class="pill ${pend?"warn":x.estado==="aceite"?"ok":"bad"}">${pend?"por decidir":esc(x.estado)}</span></div>
+    ${part?`<p style="margin:0"><b>Como ajudou:</b> ${esc(x.nota||"—")}</p>${i?`<p class="note" style="margin:0">Pessoas atuais: ${esc((i.par||[]).join(", ")||"—")}</p>`:""}`
+      :`${diff("Problema",i&&i.problema,x.problema)}${diff("Solução",i&&i.solucao,x.solucao)}${x.nota?`<p style="margin:0"><b>Porquê:</b> ${esc(x.nota)}</p>`:""}`}
+    <div class="row" style="justify-content:space-between"><span class="note">${esc(String(x.em||"").slice(0,16).replace("T"," "))}${x.decididoEm?" · decidido a "+esc(String(x.decididoEm).slice(0,10)):""}</span>
+    ${pend&&i?`<span class="row"><button type="button" class="btn sm" data-act="sugno" data-id="${esc(x.id)}">Rejeitar</button><button type="button" class="btn sm pri" data-act="sugok" data-id="${esc(x.id)}">${part?"Aceitar na ideia":"Aceitar e atualizar a ideia"}</button></span>`:""}</div></article>`;}
+function hSug(){
+  const all=[...S.sugestoes.values()].sort((a,b)=>String(b.em||"").localeCompare(String(a.em||""))),pend=all.filter(x=>(x.estado||"pendente")==="pendente"),done=all.filter(x=>(x.estado||"pendente")!=="pendente");
+  const novas=[...S.ideias.values()].filter(i=>i.criadaPor).sort((a,b)=>String(b.createdAt||"").localeCompare(String(a.createdAt||"")));
+  const mats=[...S.materiais.values()].sort((a,b)=>String(b.em||"").localeCompare(String(a.em||"")));
+  return `<div class="sgk"><div class="card"><span class="eyebrow">Por decidir</span><b>${pend.length}</b></div><div class="card"><span class="eyebrow">Ideias novas dos membros</span><b>${novas.length}</b></div><div class="card"><span class="eyebrow">Ficheiros enviados</span><b>${mats.length}</b></div></div>
+  <p class="note" style="margin:0 0 10px">Os membros entram em <a href="/membro" target="_blank" rel="noopener">/membro</a>. Aceitar uma melhoria substitui o problema e a solução (o texto antigo fica guardado na ideia). Aceitar um pedido para participar junta a pessoa à ideia.</p>
+  ${pend.length?pend.map(sugCard).join(""):'<div class="card"><p class="note" style="margin:0">Nada por decidir.</p></div>'}
+  ${novas.length?`<div class="card"><div class="card-h"><h2>Ideias novas criadas pelos membros</h2><span class="src">entram na 4.ª sessão de ideação</span></div><ul class="tlist">${novas.map(i=>`<li><span class="stack2">${avs(i.par||[],26)}</span><span style="min-width:0"><b>${esc(i.titulo)}</b><span class="note" style="display:block">${esc((i.par||[]).join(", "))} · ${esc(String(i.createdAt||"").slice(0,10))}</span></span><button type="button" class="btn sm" data-act="sugver" data-id="${esc(i.id)}">Ver na lista</button></li>`).join("")}</ul></div>`:""}
+  ${mats.length?`<div class="card"><div class="card-h"><h2>Últimos ficheiros</h2></div><ul class="matl">${mats.slice(0,20).map(m=>{const i=S.ideias.get(m.ideiaId);return `<li><button type="button" class="btn sm" data-act="matopen" data-p="${esc(m.path)}">📄 ${esc(m.ficheiro)}</button><span class="pill">${esc(m.tipo||"Outro")}</span><span class="note">${esc(i?i.titulo:"")} · ${esc(m.nome||"")}</span></li>`;}).join("")}</ul></div>`:""}
+  ${done.length?`<details class="card"><summary><b>Já decididas (${done.length})</b></summary>${done.map(sugCard).join("")}</details>`:""}`;
+}
+function juryTodas(jur){
+  const J=[],all=[...S.ideias.values()],ses=[...new Set(all.map(i=>Number(i.sessao)||0))].filter(Boolean).sort();
+  const L=all.filter(i=>!S.jSess||Number(i.sessao)===S.jSess).sort((a,b)=>(b.gosto||0)-(a.gosto||0)||(b.sessao||0)-(a.sessao||0)||String(b.createdAt||"").localeCompare(String(a.createdAt||"")));
+  return `<div class="card jfilt" style="margin-bottom:14px"><div class="row" role="group" aria-label="Sessão"><button type="button" class="chip" data-act="jsess" data-v="0" aria-pressed="${!S.jSess}">Todas (${all.length})</button>${ses.map(k=>`<button type="button" class="chip" data-act="jsess" data-v="${k}" aria-pressed="${S.jSess===k}">${k}.ª sessão (${all.filter(i=>Number(i.sessao)===k).length})</button>`).join("")}</div>
+    <input class="field" id="jq" type="search" placeholder="Procurar por título, problema, solução ou pessoa" aria-label="Procurar ideias" autocomplete="off">
+    <p class="note" style="margin:0">Ordenadas por estrelas. Podes dar feedback a qualquer ideia, de qualquer sessão, e abrir os ficheiros que os membros juntaram.</p></div>
+  ${L.length?`<div class="stack" id="jtodas">${L.map(i=>juryIdea(i,jur,J)).join("")}</div>`:empty("Sem ideias","Ainda não há ideias nesta sessão.")}`;
+}
+document.addEventListener("input",e=>{if(e.target.id!=="jq")return;const q=norm(e.target.value.trim());document.querySelectorAll("#jtodas > .jcard").forEach(c=>{c.hidden=!!q&&!String(c.dataset.q||"").includes(q);});});
+document.addEventListener("click",e=>{const b=e.target.closest("[data-act]");if(!b)return;const a=b.dataset.act;
+  if(a==="matopen"){e.preventDefault();if(window.INOV_FILE)window.INOV_FILE(b.dataset.p).catch(()=>toast("Não foi possível abrir o ficheiro.",true));else toast("Os ficheiros só abrem na versão web.",true);}
+  else if(a==="jsess"){S.jSess=Number(b.dataset.v)||0;render();}
+  else if(a==="sugver"){S.view="hub";S.tab.hub="ideias";S.open=b.dataset.id;render();setTimeout(()=>{const el=document.querySelector(`[data-open="${b.dataset.id}"]`);if(el)el.scrollIntoView({block:"center"});},60);}
+  else if(a==="sugok"||a==="sugno"){const x=S.sugestoes.get(b.dataset.id);if(!x)return;const i=S.ideias.get(x.ideiaId);const now=new Date().toISOString();
+    if(a==="sugok"&&i){if(x.tipo==="participar"){i.par=[...new Set([...(i.par||[]),x.nome].filter(Boolean))];}
+      else{i.historico=[...(i.historico||[]),{problema:i.problema||"",solucao:i.solucao||"",em:now,por:x.nome||""}];i.problema=x.problema||"";i.solucao=x.solucao||"";}
+      save("ideias",i.id);}
+    x.estado=a==="sugok"?"aceite":"rejeitada";x.decididoEm=now;save("sugestoes",x.id);render();toast(a==="sugok"?(x.tipo==="participar"?`${x.nome} juntou-se à ideia.`:"Ideia atualizada."):"Sugestão rejeitada.");}
+});
 function memberOpts(){return `<datalist id="dl-membros">${S.cfg.membros.map(m=>`<option value="${esc(m)}">`).join("")}</datalist>`;}
 function hIdeias(){
   const f=S.f,all=[...S.ideias.values()];
@@ -808,10 +868,10 @@ function ideaRow(i){
   const open=S.open===i.id;
   const inC1=rank(i.etapa)>=1;
   return `<tr class="${open?"sel":""}"><td class="mono">${i.sessao}</td>
-  <td><button type="button" class="rowbtn" data-open="${i.id}" aria-expanded="${open}"><span class="chev" aria-hidden="true">${open?"▾":"▸"}</span>${i.tipo&&TIPO_COR[i.tipo]?`<span class="tag" style="--pc:${TIPO_COR[i.tipo]}">${TIPO_IDEIA.find(x=>x[0]===i.tipo)[1]}</span>`:""}<span class="t">${esc(i.titulo||"(sem título)")}</span>${i.problema?`<span class="ps"><b>Problema</b>${esc(i.problema)}</span>`:""}${i.solucao?`<span class="ps"><b>Solução</b>${esc(i.solucao)}</span>`:""}</button></td>
+  <td><button type="button" class="rowbtn" data-open="${i.id}" aria-expanded="${open}"><span class="chev" aria-hidden="true">${open?"▾":"▸"}</span>${i.tipo&&TIPO_COR[i.tipo]?`<span class="tag" style="--pc:${TIPO_COR[i.tipo]}">${TIPO_IDEIA.find(x=>x[0]===i.tipo)[1]}</span>`:""}<span class="t">${esc(i.titulo||"(sem título)")}</span>${ideaBadges(i)}${i.problema?`<span class="ps"><b>Problema</b>${esc(i.problema)}</span>`:""}${i.solucao?`<span class="ps"><b>Solução</b>${esc(i.solucao)}</span>`:""}</button></td>
   <td><div class="pcell">${(i.par||[]).filter(Boolean).map(p=>`<span class="pp">${av(p,26)}<span>${esc(p)}</span></span>`).join("")||'<span class="note">Sem grupo</span>'}</div></td><td>${stars(i)}</td><td>${tallyHtml(i.id)||'<span class="note">–</span>'}</td>
   <td>${rank(i.etapa)>1?`<span class="stage ${i.etapa}">${ETAPA_L[i.etapa]}</span>`:`<label class="row" style="gap:5px;font-size:12.5px"><input type="checkbox" data-act="toc1" data-id="${i.id}" ${inC1?"checked":""}>Passa</label>`}</td></tr>
-  ${open?`<tr class="detail"><td colspan="6">${ideaForm(i)}</td></tr>`:""}`;
+  ${open?`<tr class="detail"><td colspan="6">${ideaForm(i)}${matBlock(i.id,true)}</td></tr>`:""}`;
 }
 function ideaForm(i){
   const LOCK=new Set(["titulo","problema","solucao"]);
@@ -1283,13 +1343,13 @@ function vJuri(){
   const jur=S.jurado||"";
   const ideas=(cur.a||cur.b)?ideasOfPair(n,cur):[];
   let h=`<div class="jhero">
-    <div class="row" style="justify-content:space-between;align-items:flex-start"><div><div class="eyebrow">Bootcamp de Inovação 26/27 · Júri</div><h1>${n}.ª sessão de ideação</h1>${liveBadge()}
+    <div class="row" style="justify-content:space-between;align-items:flex-start"><div><div class="eyebrow">Bootcamp de Inovação 26/27 · Júri</div><h1>${S.jTab==="todas"?"Todas as ideias":n+".ª sessão de ideação"}</h1>${liveBadge()}
       <div style="opacity:.9;margin-top:2px">${fmtD(date)}${jur?` · a avaliar como <b>${esc(jur)}</b> <button type="button" class="btn sm ghost" data-act="jout">trocar</button>`:""}</div></div>
       ${canHub()?`<span class="row"><button type="button" class="btn sm ${S.preview?"pri":""}" data-act="jprev">${S.preview?"A ver como júri · sair":"Ver como o júri vê"}</button>${S.mode!=="juri"&&!S.preview?`<button type="button" class="btn sm" data-act="tohome">← Bootcamp</button>`:""}</span>`:""}</div>
-    <div class="jtabs" role="group" aria-label="Vista"><button type="button" data-act="jtab" data-v="avaliar" aria-pressed="${S.jTab!=="rank"}">Avaliar par a par</button><button type="button" data-act="jtab" data-v="rank" aria-pressed="${S.jTab==="rank"}">Ranking de todas as ideias</button></div>
-    ${S.jTab==="rank"?"":pares.length?`<div class="pairbar" role="group" aria-label="Pares">${pares.map(p=>`<button type="button" class="pairchip" data-act="jpar" data-v="${p.k}" aria-pressed="${p.k===S.jPar}"><span class="stack2">${avs(mem3(p),26)}</span>${mem3(p).map(m=>esc(first(m))).join(" &amp; ")}${p.k===(L.parAtual||0)?'<span class="now">agora</span>':""}</button>`).join("")}</div>`:""}
-    ${S.jTab!=="rank"&&(cur.a||cur.b)?`<div class="duo">${mem3(cur).map(m=>`<figure>${av(m,mem3(cur).length>2?92:116)}<figcaption>${esc(m)}</figcaption></figure>`).join('<span class="amp">&amp;</span>')}</div>`:""}
-    ${S.jTab!=="rank"&&!S.follow&&pares.length?`<div class="row" style="justify-content:center"><button type="button" class="btn sm" data-act="jfollow">Voltar ao par que está a apresentar</button></div>`:""}
+    <div class="jtabs" role="group" aria-label="Vista"><button type="button" data-act="jtab" data-v="avaliar" aria-pressed="${S.jTab!=="rank"&&S.jTab!=="todas"}">Avaliar par a par</button><button type="button" data-act="jtab" data-v="rank" aria-pressed="${S.jTab==="rank"}">Ranking da sessão</button><button type="button" data-act="jtab" data-v="todas" aria-pressed="${S.jTab==="todas"}">Todas as ideias</button></div>
+    ${S.jTab==="rank"||S.jTab==="todas"?"":pares.length?`<div class="pairbar" role="group" aria-label="Pares">${pares.map(p=>`<button type="button" class="pairchip" data-act="jpar" data-v="${p.k}" aria-pressed="${p.k===S.jPar}"><span class="stack2">${avs(mem3(p),26)}</span>${mem3(p).map(m=>esc(first(m))).join(" &amp; ")}${p.k===(L.parAtual||0)?'<span class="now">agora</span>':""}</button>`).join("")}</div>`:""}
+    ${S.jTab!=="rank"&&S.jTab!=="todas"&&(cur.a||cur.b)?`<div class="duo">${mem3(cur).map(m=>`<figure>${av(m,mem3(cur).length>2?92:116)}<figcaption>${esc(m)}</figcaption></figure>`).join('<span class="amp">&amp;</span>')}</div>`:""}
+    ${S.jTab!=="rank"&&S.jTab!=="todas"&&!S.follow&&pares.length?`<div class="row" style="justify-content:center"><button type="button" class="btn sm" data-act="jfollow">Voltar ao par que está a apresentar</button></div>`:""}
   </div>`;
   if(S.dbState!=="on")return h+empty("Sem ligação à base de dados","Abre este link com a tua conta Claude. Se o problema continuar, pede ao Vitor que te convide como Editor.");
   if(!jur){
@@ -1298,6 +1358,7 @@ function vJuri(){
       ${J.length?`<p class="note" style="margin:0">Ou escolhe:</p><div class="who">${J.map(n=>`<button type="button" class="whobtn" data-act="jset" data-v="${esc(n)}">${esc(n)}</button>`).join("")}</div>`:""}</div>`;
   }
   if(S.jTab==="rank")return h+juryRanking(n,s,J);
+  if(S.jTab==="todas")return h+juryTodas(jur);
   if(S.isOwner&&!S.preview)h+=pedidosCard();
   if(S.readOnly&&!S.isOwner)h+=mailAcesso(n);
   else if(!canEditSess(n)&&S.jurado&&S.dbState==="on")h+=pedidoForm(n);
@@ -1367,13 +1428,13 @@ function reuseSel(n,cur){
 function juryIdea(i,jur,J){
   const d=S.draft[i.id]||{veredito:"",custom:"",comentario:"",pergunta:""};
   const mine=jur?fbAll(i.id).filter(f=>f.jurado===jur).length:0;
-  const ed=canEditSess(i.sessao)&&!S.preview;const editing=ed&&S.jEdit===i.id;
+  const ed=canEditSess(i.sessao)&&!S.preview&&(S.isOwner||S.jTab!=="todas");const editing=ed&&S.jEdit===i.id;
   const head=editing?`<div class="form"><label class="l full">Título<input class="field" data-b="ideias|${i.id}|titulo" value="${esc(i.titulo||"")}"></label>
     <label class="l">Problema<textarea class="field" rows="3" data-b="ideias|${i.id}|problema">${esc(i.problema||"")}</textarea></label><label class="l">Solução<textarea class="field" rows="3" data-b="ideias|${i.id}|solucao">${esc(i.solucao||"")}</textarea></label>
     <div class="full row" style="justify-content:space-between"><button type="button" class="btn sm danger" data-act="delidea" data-id="${i.id}">Apagar ideia</button><button type="button" class="btn sm pri" data-act="jedit" data-id="">Concluir edição</button></div></div>`
     :`<div class="row" style="justify-content:space-between;flex-wrap:nowrap;align-items:flex-start"><h3>${esc(i.titulo||"(sem título)")}${i.origem&&S.ideias.get(i.origem)?`<small class="note" style="display:block;font-weight:400">↺ Retomada da sessão ${esc(S.ideias.get(i.origem).sessao)} (${esc(S.ideias.get(i.origem).titulo||"")})</small>`:""}</h3>${ed?`<span class="row" style="flex-wrap:nowrap"><button type="button" class="btn sm" data-act="jedit" data-id="${i.id}">Editar</button><button type="button" class="btn sm danger" data-act="delidea" data-id="${i.id}" aria-label="Apagar a ideia ${esc(i.titulo||"")}">Apagar</button></span>`:""}</div>
     <div class="ps"><div><span class="eyebrow">Problema</span><p>${esc(i.problema||"–")}</p></div><div><span class="eyebrow">Solução</span><p>${esc(i.solucao||"–")}</p></div></div>`;
-  return `<article class="jcard">${head}
+  return `<article class="jcard" data-q="${esc(norm([i.titulo,i.problema,i.solucao,(i.par||[]).join(" ")].join(" ")))}">${S.jTab==="todas"?`<div class="row" style="gap:6px"><span class="pill br">${esc(sessLabel(i))}</span><span class="stack2">${avs(i.par||[],24)}</span><span class="note">${esc((i.par||[]).join(", "))}</span>${starsRO(i)}</div>`:""}${head}
     ${jur?`<span class="eyebrow">Veredito + sugestões</span><div class="verd" role="group" aria-label="O teu veredito">${VERD.map(([k,l,t])=>`<button type="button" class="vb ${t} ${d.veredito===k?"on":""}" aria-pressed="${d.veredito===k}" data-act="verd" data-id="${i.id}" data-v="${k}">${l}</button>`).join("")}</div>
       ${d.veredito==="outro"?`<input class="field" data-fb="${i.id}" data-k="custom" value="${esc(d.custom||"")}" placeholder="O teu veredito (ex.: pivotar para B2B)" aria-label="Veredito personalizado">`:""}
       <textarea class="field" rows="2" data-fb="${i.id}" data-k="comentario" placeholder="Sugestões para o par (opcional) · Enter envia" aria-label="Sugestões">${esc(d.comentario||"")}</textarea>
@@ -1381,6 +1442,7 @@ function juryIdea(i,jur,J){
       <span class="eyebrow">Perguntas que vais fazer</span>
       <textarea class="field" rows="2" data-fb="${i.id}" data-k="pergunta" placeholder="Escreve uma pergunta para o par · Enter envia" aria-label="Pergunta">${esc(d.pergunta||"")}</textarea>
       <div class="row" style="justify-content:space-between"><span class="note">${mine?`Já enviaste ${mine} ${mine===1?"entrada":"entradas"} nesta ideia.`:""}</span><button type="button" class="btn" data-act="qsend" data-id="${i.id}" ${(d.pergunta||"").trim()?"":"disabled"}>Enviar pergunta</button></div>`:""}
+    ${matBlock(i.id,false)}
     ${fbList(i.id,J)}
   </article>`;
 }
@@ -1437,8 +1499,8 @@ async function sendFb(iid,btn,tipo){
   if(q?!(d.pergunta||"").trim():!d.veredito)return;
   if(!S.db){toast("Sem ligação à base de dados.",true);return;}
   const fid=fbId(iid,S.jurado);const now=new Date().toISOString();
-  const o=q?{id:fid,tipo:"pergunta",ideiaId:iid,jurado:S.jurado,sessao:liveState().sessao||1,veredito:"",custom:"",comentario:d.pergunta.trim(),d:TODAY(),enviadoEm:now,updatedAt:now}
-    :{id:fid,tipo:"veredito",ideiaId:iid,jurado:S.jurado,sessao:liveState().sessao||1,veredito:d.veredito,custom:d.veredito==="outro"?(d.custom||"").trim():"",comentario:(d.comentario||"").trim(),d:TODAY(),enviadoEm:now,updatedAt:now};
+  const o=q?{id:fid,tipo:"pergunta",ideiaId:iid,jurado:S.jurado,sessao:fbSess(iid),veredito:"",custom:"",comentario:d.pergunta.trim(),d:TODAY(),enviadoEm:now,updatedAt:now}
+    :{id:fid,tipo:"veredito",ideiaId:iid,jurado:S.jurado,sessao:fbSess(iid),veredito:d.veredito,custom:d.veredito==="outro"?(d.custom||"").trim():"",comentario:(d.comentario||"").trim(),d:TODAY(),enviadoEm:now,updatedAt:now};
   if(btn){btn.disabled=true;btn.textContent="A enviar…";}
   try{await S.db.collection("feedback").doc(fid).set(o);emitChange("feedback",fid,o);S.feedback.set(fid,o);
     if(q)d.pergunta="";else{d.veredito="";d.custom="";d.comentario="";}
