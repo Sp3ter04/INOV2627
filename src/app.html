@@ -986,7 +986,8 @@ function fbApoio(T){
   if(top[0]==="Difícil")return "Há desafios importantes a resolver; os comentários abaixo indicam por onde começar.";
   return "Os comentários abaixo dão o contexto desta ideia.";
 }
-function vStats(iid){const all=fbAll(iid).filter(f=>!isQ(f));const C=VERD.map(([k,l,t])=>({k,l,t,n:all.filter(f=>f.veredito===k).length})).filter(x=>x.n);const tot=C.reduce((a,x)=>a+x.n,0);const T={};C.forEach(x=>{T[x.l]=x.n;});return {C,tot,T};}
+function vStats(iid){return vStatsL(fbAll(iid));}
+function vStatsL(L){const all=L.filter(f=>!isQ(f));const C=VERD.map(([k,l,t])=>({k,l,t,n:all.filter(f=>f.veredito===k).length})).filter(x=>x.n);const tot=C.reduce((a,x)=>a+x.n,0);const T={};C.forEach(x=>{T[x.l]=x.n;});return {C,tot,T};}
 const VCOL={bad:"var(--bad)",warn:"var(--warn)",ok:"var(--ok)",br:"var(--brand)"};
 function vBar(st){if(!st.tot)return '<span class="note">Ainda sem vereditos</span>';return `<div class="vbar" role="img" aria-label="${esc(st.C.map(x=>x.l+": "+x.n).join(", "))}">${st.C.map(x=>`<i style="width:${(x.n/st.tot*100).toFixed(1)}%;background:${VCOL[x.t]}"></i>`).join("")}</div><div class="vleg">${st.C.map(x=>`<span class="pill ${x.t}">${esc(x.l)} · ${x.n}</span>`).join("")}</div>`;}
 function fbTag(f){return isQ(f)?'<span class="pill br">Pergunta</span>':`<span class="pill ${(VERD.find(z=>z[0]===f.veredito)||[])[2]||""}">${esc(verdLabel(f))}</span>`;}
@@ -996,29 +997,36 @@ function hFb(){
   return `<div class="ftool"><div class="seg" role="group" aria-label="Vista"><button type="button" data-act="fbmode" data-v="resumo" aria-pressed="${mode==="resumo"}">Resumo por sessão</button><button type="button" data-act="fbmode" data-v="lista" aria-pressed="${mode==="lista"}">Lista para moderar</button></div></div>`+(mode==="lista"?hFbLista():hFbResumo());
 }
 function ideaChain(i){const c=[i],seen=new Set([i.id]);let o=i;while(o.origem&&S.ideias.get(o.origem)&&!seen.has(o.origem)){o=S.ideias.get(o.origem);seen.add(o.id);c.unshift(o);}return c;}
+/* Resumo cumulativo guardado na ideia mais recente: resumoS = {"1": "...", "2": "..."} (um texto por sessão). */
+function resumoDe(x,n){const r=x.resumoS&&x.resumoS[String(n)];if(r)return r;return "";}
 function hFbResumo(){
   const sel=(S.fbS&&S.fbS.length?S.fbS:[1,2,3,4]).map(Number);
   const ids=[...S.ideias.values()],usados=new Set(ids.map(x=>x.origem).filter(Boolean));
-  const chains=ids.filter(i=>!usados.has(i.id)).map(ideaChain).filter(c=>c.some(x=>sel.includes(Number(x.sessao))))
-    .sort((a,b)=>Number(a[a.length-1].sessao)-Number(b[b.length-1].sessao)||(a[a.length-1].titulo||"").localeCompare(b[b.length-1].titulo||"","pt"));
-  const nRes=chains.reduce((a,c)=>a+c.filter(x=>x.resumoFb).length,0),nSteps=chains.reduce((a,c)=>a+c.length,0);
-  const step=(x,last)=>{
-    const n=Number(x.sessao)||1,st=vStats(x.id),all=fbAll(x.id),open=!!(S.fbOpen&&S.fbOpen[x.id]),ed=!!(S.fbEd&&S.fbEd[x.id]);
-    return `<li class="tl-i" style="--sc:var(--s${Math.min(4,n)})"><div class="tl-h"><b>${n}.ª sessão</b>${x.titulo!==last.titulo?`<span class="note">como “${esc(x.titulo||"")}”</span>`:""}<span class="note">· ${all.length} ${all.length===1?"feedback":"feedbacks"}</span></div>
+  const items=ids.filter(i=>!usados.has(i.id)).map(last=>{
+    const chain=ideaChain(last),fs=chain.flatMap(x=>fbAll(x.id).map(f=>({f,n:Number(f.sessao)||Number(x.sessao)||1})));
+    const ns=[...new Set(fs.map(o=>o.n).concat(chain.map(x=>Number(x.sessao)||1)))].sort((a,b)=>a-b);
+    return {last,chain,fs,ns};
+  }).filter(it=>it.ns.some(n=>sel.includes(n)))
+    .sort((a,b)=>b.ns.length-a.ns.length||Number(a.last.sessao)-Number(b.last.sessao)||(a.last.titulo||"").localeCompare(b.last.titulo||"","pt"));
+  const nSteps=items.reduce((a,it)=>a+it.ns.length,0),nRes=items.reduce((a,it)=>a+it.ns.filter(n=>resumoDe(it.last,n)).length,0);
+  const step=(it,n)=>{
+    const L=it.fs.filter(o=>o.n===n).map(o=>o.f),st=vStatsL(L),key=it.last.id+":"+n,open=!!(S.fbOpen&&S.fbOpen[key]),ed=!!(S.fbEd&&S.fbEd[key]),r=resumoDe(it.last,n);
+    const doc=it.chain.find(x=>Number(x.sessao)===n);
+    return `<li class="tl-i" style="--sc:var(--s${Math.min(4,n)})"><div class="tl-h"><b>${n}.ª sessão</b>${doc&&doc.titulo!==it.last.titulo?`<span class="note">como “${esc(doc.titulo||"")}”</span>`:""}<span class="note">· ${L.length} ${L.length===1?"feedback":"feedbacks"}</span></div>
       <div>${vBar(st)}</div>
-      ${x.resumoFb?`<p class="fres">${esc(x.resumoFb)}</p>`:`<p class="fres auto">${esc(fbApoio(st.T))} (Resumo por escrever.)</p>`}
-      ${S.isOwner?(ed?`<div class="fres-e"><label class="l">Resumo cumulativo até à ${n}.ª sessão<textarea class="field" rows="4" data-b="ideias|${esc(x.id)}|resumoFb" placeholder="O que o júri disse até aqui, em tom construtivo.">${esc(x.resumoFb||"")}</textarea></label><div class="row" style="justify-content:flex-end;margin-top:6px"><button type="button" class="btn sm pri" data-act="fbed" data-id="${esc(x.id)}">Concluir</button></div></div>`:`<div><button type="button" class="btn sm" data-act="fbed" data-id="${esc(x.id)}">${x.resumoFb?"Editar resumo":"Escrever resumo"}</button></div>`):""}
-      ${all.length?`<details class="fc-d" data-fdet="${esc(x.id)}" ${open?"open":""}><summary>Ver os ${all.length} feedbacks desta sessão</summary><ul class="feed">${all.map(f=>{const oc=fbOculto(f);return feedLi({who:f.jurado||"Júri",tag:fbTag(f),time:fbDate(f),txt:f.comentario,extra:`<div class="fi-x"><span class="pill ${oc?"bad":"ok"}">${oc?"Oculto aos membros":"Visível aos membros"}</span>${f.ocultoMembros===undefined?'<span class="note">sugestão automática</span>':""}<button type="button" class="btn sm ghost" data-act="fbvis" data-id="${esc(f.id)}">${oc?"Mostrar":"Ocultar"}</button></div>`});}).join("")}</ul></details>`:""}
+      ${r?`<p class="fres">${esc(r)}</p>`:`<p class="fres auto">${esc(fbApoio(st.T))} (Resumo por escrever.)</p>`}
+      ${S.isOwner?(ed?`<div class="fres-e"><label class="l">Resumo cumulativo até à ${n}.ª sessão<textarea class="field" rows="4" data-b="ideias|${esc(it.last.id)}|resumoS.${n}" placeholder="O que o júri disse até aqui, em tom construtivo.">${esc(r)}</textarea></label><div class="row" style="justify-content:flex-end;margin-top:6px"><button type="button" class="btn sm pri" data-act="fbed" data-id="${esc(key)}">Concluir</button></div></div>`:`<div><button type="button" class="btn sm" data-act="fbed" data-id="${esc(key)}">${r?"Editar resumo":"Escrever resumo"}</button></div>`):""}
+      ${L.length?`<details class="fc-d" data-fdet="${esc(key)}" ${open?"open":""}><summary>Ver os ${L.length} feedbacks desta sessão</summary><ul class="feed">${L.map(f=>{const oc=fbOculto(f);return feedLi({who:f.jurado||"Júri",tag:fbTag(f),time:fbDate(f),txt:String(f.comentario||"").replace(/^\[Sessão \d\]\s*/,""),extra:`<div class="fi-x"><span class="pill ${oc?"bad":"ok"}">${oc?"Oculto aos membros":"Visível aos membros"}</span>${f.ocultoMembros===undefined?'<span class="note">sugestão automática</span>':""}<button type="button" class="btn sm ghost" data-act="fbvis" data-id="${esc(f.id)}">${oc?"Mostrar":"Ocultar"}</button></div>`});}).join("")}</ul></details>`:""}
     </li>`;
   };
-  const card=c=>{const last=c[c.length-1],n=Number(last.sessao)||1;const ppl=(last.par||[]).filter(Boolean);
-    return `<article class="fcard" style="--sc:var(--s${Math.min(4,n)})"><div class="fc-h"><h3>${esc(last.titulo||"(sem título)")}</h3><span class="pill">${c.map(x=>x.sessao+".ª").join(" → ")} sessão</span></div>
+  const card=it=>{const last=it.last,n=it.ns[it.ns.length-1];const ppl=(last.par||[]).filter(Boolean);
+    return `<article class="fcard" style="--sc:var(--s${Math.min(4,n)})"><div class="fc-h"><h3>${esc(last.titulo||"(sem título)")}</h3><span class="pill">${it.ns.map(x=>x+".ª").join(" → ")} sessão</span></div>
       ${ppl.length?`<div class="fc-p"><span class="stack2">${avs(ppl,24)}</span>${esc(ppl.join(", "))}</div>`:""}
-      <ol class="tl">${c.map(x=>step(x,last)).join("")}</ol></article>`;};
-  return `<div class="card" style="margin-bottom:12px;display:grid;gap:10px"><div><h2 style="margin:0">Resumo do feedback por ideia</h2><p class="note" style="margin:4px 0 0">Cada ideia mostra, sessão a sessão, o resumo cumulativo do que o júri disse. As ideias retomadas aparecem juntas, com a evolução. Filtra pelas sessões que queres ver.</p></div>
+      <ol class="tl">${it.ns.map(x=>step(it,x)).join("")}</ol></article>`;};
+  return `<div class="card" style="margin-bottom:12px;display:grid;gap:10px"><div><h2 style="margin:0">Resumo do feedback por ideia</h2><p class="note" style="margin:4px 0 0">Cada ideia mostra, sessão a sessão, o resumo cumulativo do que o júri disse até ali. As ideias que passaram por várias sessões aparecem primeiro. Filtra pelas sessões que queres ver.</p></div>
     <div class="schips" role="group" aria-label="Sessões">${[1,2,3,4].map(n=>`<button type="button" data-act="fbsess" data-v="${n}" aria-pressed="${sel.includes(n)}">${n}.ª sessão${n===4?" (novas)":""}</button>`).join("")}</div></div>
-  <div class="kpis3"><div class="k"><span>Ideias</span><b>${chains.length}</b></div><div class="k"><span>Retomadas</span><b>${chains.filter(c=>c.length>1).length}</b></div><div class="k"><span>Resumos escritos</span><b>${nRes}/${nSteps}</b></div></div>
-  ${chains.length?chains.map(card).join(""):empty("Sem ideias nestas sessões","Escolhe outra sessão.")}`;
+  <div class="kpis3"><div class="k"><span>Ideias</span><b>${items.length}</b></div><div class="k"><span>Em várias sessões</span><b>${items.filter(it=>it.ns.length>1).length}</b></div><div class="k"><span>Resumos escritos</span><b>${nRes}/${nSteps}</b></div></div>
+  ${items.length?items.map(card).join(""):empty("Sem ideias nestas sessões","Escolhe outra sessão.")}`;
 }
 function hFbLista(){
   const F=[...S.feedback.values()].filter(f=>isQ(f)?f.comentario:f.veredito).sort((a,b)=>String(b.enviadoEm||b.updatedAt||"").localeCompare(String(a.enviadoEm||a.updatedAt||"")));
