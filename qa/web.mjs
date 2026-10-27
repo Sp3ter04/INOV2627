@@ -26,7 +26,7 @@ async function open(pathname,{code,w}={}){
   const c=await b.newContext({viewport:{width:w||1250,height:900}});
   await c.route(/fonts\.g/,r=>r.abort());
   await c.route(/supabase\.co/,handle);
-  await c.route(/^http:\/\/inov\.test\//,r=>{const u=new URL(r.request().url());let f=u.pathname==="/"||u.pathname.startsWith("/juri")||u.pathname.startsWith("/coordenador")?"index.html":u.pathname.slice(1);return r.fulfill({path:ROOT+"/public/"+f,contentType:f.endsWith(".js")?"application/javascript":"text/html"});});
+  await c.route(/^http:\/\/inov\.test\//,r=>{const u=new URL(r.request().url());let f=u.pathname==="/"||u.pathname.startsWith("/juri")||u.pathname.startsWith("/coordenador")?"app.html":u.pathname.slice(1);return r.fulfill({path:ROOT+"/public/"+f,contentType:f.endsWith(".js")?"application/javascript":"text/html"});});
   const p=await c.newPage();p.errs=[];p.on("pageerror",e=>p.errs.push(e.message));
   if(code)await c.addInitScript(`localStorage.setItem("inov-coord-code",${JSON.stringify(code)})`);
   await p.goto("http://inov.test"+pathname);await W(1500);return p;

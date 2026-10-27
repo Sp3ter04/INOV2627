@@ -5,27 +5,27 @@
     {"source":"/membro","destination":"/membro.html"},{"source":"/membro/","destination":"/membro.html"},
     {
       "source": "/juri",
-      "destination": "/index.html"
+      "destination": "/app.html"
     },
     {
       "source": "/juri/",
-      "destination": "/index.html"
+      "destination": "/app.html"
     },
     {
       "source": "/coordenador",
-      "destination": "/index.html"
+      "destination": "/app.html"
     },
     {
       "source": "/coordenador/",
-      "destination": "/index.html"
+      "destination": "/app.html"
     },
     {
       "source": "/coordenador/juri",
-      "destination": "/index.html"
+      "destination": "/app.html"
     },
     {
       "source": "/coordenador/juri/",
-      "destination": "/index.html"
+      "destination": "/app.html"
     }
   ],
   "headers": [
