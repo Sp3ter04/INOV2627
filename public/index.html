@@ -3,6 +3,30 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Nunito+Sans:opsz,wght@6..12,400;6..12,600;6..12,700&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
 /* Layout: barra lateral com os 3 pilares (como o CRM); cada pilar abre em separadores; números primeiro, detalhe depois. */
+.itool{position:sticky;top:0;z-index:4;background:var(--bg);padding:8px 0 10px;margin-bottom:6px;display:grid;gap:8px;border-bottom:1px solid var(--line)}
+.itool-r{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.itool-r #f-q{flex:1 1 260px;min-width:0}.itool-r .sp{flex:1}.itool-r select.field{width:auto}
+.seg{display:inline-flex;border:1px solid var(--line-2);border-radius:var(--r);overflow:hidden;background:var(--surface);flex-wrap:wrap}
+.seg button{all:unset;cursor:pointer;padding:7px 12px;font-size:13px;font-weight:700;color:var(--muted);display:inline-flex;gap:6px;align-items:center;border-right:1px solid var(--line)}
+.seg button:last-child{border-right:0}.seg button small{font:600 11px var(--mono);opacity:.7}
+.seg button[aria-pressed=true]{background:var(--brand);color:var(--on-brand)}.seg button:focus-visible{outline:2px solid var(--brand);outline-offset:-2px}
+:root{--s1:#0c8599;--s2:#3b5bdb;--s3:#c2255c;--s4:#e8590c}
+.ilist{display:grid;gap:10px}
+.ic{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--sc);border-radius:var(--r);padding:12px 14px;display:grid;gap:8px}
+.ic.open{box-shadow:0 2px 12px rgb(10 20 40 / .08);border-color:var(--sc)}
+.ic-h{display:flex;gap:10px;align-items:flex-start;flex-wrap:wrap}
+.ic-s{flex:none;font:800 12px/1 var(--display);color:#fff;background:var(--sc);border-radius:6px;padding:5px 7px;margin-top:2px}
+.ic-t{all:unset;cursor:pointer;font:700 16px/1.3 var(--display);display:flex;gap:6px;align-items:flex-start;min-width:0;flex:0 1 auto}
+.ic-t .chev{color:var(--muted);font-size:13px;margin-top:3px}.ic-t:hover span:last-child{text-decoration:underline}.ic-t:focus-visible{outline:2px solid var(--brand)}
+.ic-b{display:flex;gap:4px;flex-wrap:wrap;margin-top:2px}.ic-r{margin-left:auto;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.c1t{display:inline-flex;gap:6px;align-items:center;font-size:12.5px;font-weight:700;border:1px solid var(--line-2);border-radius:99px;padding:4px 10px;cursor:pointer;color:var(--muted)}
+.c1t input{margin:0}.c1t.on{background:var(--ok-soft);border-color:var(--ok);color:var(--ok)}
+.ic-m{display:flex;gap:10px 16px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+.ic-p{display:flex;gap:6px;flex-wrap:wrap}.chipp{display:inline-flex;gap:6px;align-items:center;font-size:12.5px;background:var(--surface-2);border:1px solid var(--line);border-radius:99px;padding:2px 10px 2px 2px}
+.ic-j{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.ic-ps{display:grid;grid-template-columns:1fr 1fr;gap:10px}.ic-ps>div{background:var(--surface-2);border-radius:8px;padding:8px 12px}
+.ic-ps b{display:block;font:800 10.5px var(--display);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}.ic-ps p{margin:2px 0 0;font-size:13.5px;line-height:1.5;white-space:pre-wrap}
+.ic-d{border-top:1px solid var(--line);padding-top:10px}
+@media (max-width:760px){.itool{position:static}.ic-ps{grid-template-columns:1fr}.ic-r{margin-left:0;width:100%}.seg button{padding:7px 9px}}
 .matb{border-top:1px solid var(--line);padding-top:10px;margin-top:10px;display:grid;gap:6px}
 .matl{list-style:none;margin:0;padding:0;display:grid;gap:6px}.matl li{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .sgcard{margin-bottom:12px;display:grid;gap:10px}.sgcard.done{opacity:.75}.sgt{font-weight:700;font-family:var(--display)}
@@ -852,26 +876,30 @@ function hIdeias(){
     <div class="card"><div class="card-h"><h2>Por membro</h2><span class="src">ideias em que participou · média de gosto</span></div>
       ${pares.length?`<div class="hbars mem">${pares.map(p=>{const a=all.filter(i=>(i.par||[]).includes(p));const g=avg(a.map(i=>i.gosto||null));return hbar(`<span class="who">${av(p,24)}<span>${esc(p)}</span></span>`,[[a.length,"var(--brand)","Ideias"]],a.length,Math.max(...pares.map(x=>all.filter(i=>(i.par||[]).includes(x)).length)),`${a.length}${g?" · "+nf(g)+"★":""}`);}).join("")}</div>`:'<p class="note">Aparece quando registares as primeiras ideias. Os nomes dos 12 membros ficam em Definições para os escolheres rapidamente.</p>'}</div>
   </div>
-  <div class="toolbar">
-    <input type="search" class="field" id="f-q" placeholder="Procurar título, problema, membro…" value="${esc(f.q)}">
-    <span class="sess">${[0,1,2,3,4].map(n=>`<button type="button" class="chip" data-fsess="${n}" aria-pressed="${f.sess===n}">${n?n+".ª":"Todas"}</button>`).join("")}</span>
+  <div class="itool">
+    <div class="itool-r"><input type="search" class="field" id="f-q" placeholder="Procurar título, problema, solução ou membro…" value="${esc(f.q)}" aria-label="Procurar ideias">
+    <span class="seg" role="group" aria-label="Sessão">${[0,1,2,3,4].map(n=>`<button type="button" data-fsess="${n}" aria-pressed="${f.sess===n}">${n?n+".ª sessão":"Todas"}<small>${n?all.filter(i=>i.sessao===n).length:all.length}</small></button>`).join("")}</span></div>
+    <div class="itool-r"><span class="note"><b>${list.length}</b> de ${all.length} ideias · clica no título para editar e ver ficheiros</span><span class="sp"></span>
     <select class="field" id="f-tipo"><option value="">Todos os tipos</option><option value="none" ${f.tipo==="none"?"selected":""}>Sem tipo</option>${TIPO_IDEIA.map(([k,l])=>`<option value="${k}" ${f.tipo===k?"selected":""}>${l}</option>`).join("")}</select>
     <select class="field" id="f-par"><option value="">Todos os membros</option>${pares.map(p=>`<option ${f.par===p?"selected":""}>${esc(p)}</option>`).join("")}</select>
-    <select class="field" id="f-ord" aria-label="Ordenar"><option value="">Mais recentes primeiro</option><option value="gosto" ${f.ord==="gosto"?"selected":""}>Mais estrelas primeiro</option></select>
+    <select class="field" id="f-ord" aria-label="Ordenar"><option value="">Mais recentes primeiro</option><option value="gosto" ${f.ord==="gosto"?"selected":""}>Mais estrelas primeiro</option></select></div>
   </div>
-  ${list.length?`<div class="tw"><table><thead><tr><th>S.</th><th>Ideia</th><th>Pessoas</th><th>Estrelas</th><th>Júri</th><th>Challenge I</th></tr></thead><tbody>
-  ${list.map(i=>ideaRow(i)).join("")}</tbody></table></div><p class="note" style="margin-top:8px">${list.length} de ${all.length} ideias. Clica no título para abrir a ficha completa.</p>`
+  ${list.length?`<div class="ilist">${list.map(i=>ideaRow(i)).join("")}</div>`
   :empty(all.length?"Nenhuma ideia com estes filtros":"Ainda não há ideias registadas","As ideias são registadas na vista do júri, durante cada sessão de ideação. No ano passado foram cerca de 200 ideias nas quatro sessões.")}`;
 }
 function stars(i){const g=i.gosto||0,mx=S.cfg.gostoMax||5;return `<span class="stars" role="group" aria-label="Gosto">${Array.from({length:mx},(_,k)=>`<button type="button" class="${k<g?"on":""}" data-act="gosto" data-id="${i.id}" data-v="${k+1}" aria-label="${k+1} de ${mx}">★</button>`).join("")}</span>`;}
 function ideaRow(i){
-  const open=S.open===i.id;
-  const inC1=rank(i.etapa)>=1;
-  return `<tr class="${open?"sel":""}"><td class="mono">${i.sessao}</td>
-  <td><button type="button" class="rowbtn" data-open="${i.id}" aria-expanded="${open}"><span class="chev" aria-hidden="true">${open?"▾":"▸"}</span>${i.tipo&&TIPO_COR[i.tipo]?`<span class="tag" style="--pc:${TIPO_COR[i.tipo]}">${TIPO_IDEIA.find(x=>x[0]===i.tipo)[1]}</span>`:""}<span class="t">${esc(i.titulo||"(sem título)")}</span>${ideaBadges(i)}${i.problema?`<span class="ps"><b>Problema</b>${esc(i.problema)}</span>`:""}${i.solucao?`<span class="ps"><b>Solução</b>${esc(i.solucao)}</span>`:""}</button></td>
-  <td><div class="pcell">${(i.par||[]).filter(Boolean).map(p=>`<span class="pp">${av(p,26)}<span>${esc(p)}</span></span>`).join("")||'<span class="note">Sem grupo</span>'}</div></td><td>${stars(i)}</td><td>${tallyHtml(i.id)||'<span class="note">–</span>'}</td>
-  <td>${rank(i.etapa)>1?`<span class="stage ${i.etapa}">${ETAPA_L[i.etapa]}</span>`:`<label class="row" style="gap:5px;font-size:12.5px"><input type="checkbox" data-act="toc1" data-id="${i.id}" ${inC1?"checked":""}>Passa</label>`}</td></tr>
-  ${open?`<tr class="detail"><td colspan="6">${ideaForm(i)}${matBlock(i.id,true)}</td></tr>`:""}`;
+  const open=S.open===i.id,inC1=rank(i.etapa)>=1,nfb=fbAll(i.id).length,ppl=(i.par||[]).filter(Boolean);
+  const tipo=i.tipo&&TIPO_COR[i.tipo]?`<span class="tag" style="--pc:${TIPO_COR[i.tipo]}">${TIPO_IDEIA.find(x=>x[0]===i.tipo)[1]}</span>`:"";
+  return `<article class="ic ${open?"open":""}" style="--sc:var(--s${Math.min(4,Number(i.sessao)||1)})">
+  <div class="ic-h"><span class="ic-s" title="${esc(sessLabel(i))}">${i.sessao||"?"}.ª</span>
+    <button type="button" class="ic-t" data-open="${i.id}" aria-expanded="${open}"><span class="chev" aria-hidden="true">${open?"▾":"▸"}</span>${tipo}<span>${esc(i.titulo||"(sem título)")}</span></button>
+    <span class="ic-b">${ideaBadges(i)}</span>
+    <span class="ic-r">${stars(i)}${rank(i.etapa)>1?`<span class="stage ${i.etapa}">${ETAPA_L[i.etapa]}</span>`:`<label class="c1t ${inC1?"on":""}"><input type="checkbox" data-act="toc1" data-id="${i.id}" ${inC1?"checked":""}>${inC1?"Passa ao Challenge I":"Challenge I"}</label>`}</span></div>
+  <div class="ic-m"><span class="ic-p">${ppl.length?ppl.map(p=>`<span class="chipp">${av(p,22)}${esc(p)}</span>`).join(""):'<span class="note">Sem grupo</span>'}</span>
+    <span class="ic-j">${tallyHtml(i.id)||'<span class="note">sem avaliações do júri</span>'}${nfb?`<span class="note">${nfb} entrada${nfb>1?"s":""}</span>`:""}</span></div>
+  ${i.problema||i.solucao?`<div class="ic-ps"><div><b>Problema</b><p>${esc(i.problema||"—")}</p></div><div><b>Solução</b><p>${esc(i.solucao||"—")}</p></div></div>`:""}
+  ${open?`<div class="ic-d">${ideaForm(i)}${matBlock(i.id,true)}</div>`:""}</article>`;
 }
 function ideaForm(i){
   const LOCK=new Set(["titulo","problema","solucao"]);
