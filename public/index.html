@@ -840,10 +840,10 @@ function sessLabel(i){return `${i.sessao||"?"}.ª sessão de ideação`;}
 function matsOf(iid){return [...S.materiais.values()].filter(m=>m.ideiaId===iid).sort((a,b)=>String(b.em||"").localeCompare(String(a.em||"")));}
 function fsize(n){n=Number(n)||0;return n>1048576?(n/1048576).toFixed(1).replace(".",",")+" MB":Math.max(1,Math.round(n/1024))+" KB";}
 function matBlock(iid,coord){const L=matsOf(iid);if(!L.length&&!coord)return "";
-  return `<div class="matb"><span class="eyebrow">Ficheiros dos membros · ${L.length}</span>${L.length?`<ul class="matl">${L.map(m=>`<li><button type="button" class="btn sm" data-act="matopen" data-p="${esc(m.path)}" title="Abrir ${esc(m.ficheiro)}">📄 ${esc(m.ficheiro)}</button><span class="pill">${esc(m.tipo||"Outro")}</span><span class="note">${esc(m.nome||"")} · ${esc(String(m.em||"").slice(0,10))} · ${fsize(m.tamanho)}</span></li>`).join("")}</ul>`:'<p class="note" style="margin:0">Ainda sem ficheiros. Os membros juntam-nos na área dos membros.</p>'}</div>`;}
+  return `<div class="matb"><span class="eyebrow">Ficheiros dos membros · ${L.length}</span>${L.length?`<ul class="matl">${L.map(m=>`<li><button type="button" class="btn sm" data-act="matopen" data-p="${esc(m.path)}" title="Abrir ${esc(m.ficheiro)}">${esc(m.ficheiro)}</button><span class="pill">${esc(m.tipo||"Outro")}</span><span class="note">${esc(m.nome||"")} · ${esc(String(m.em||"").slice(0,10))} · ${fsize(m.tamanho)}</span></li>`).join("")}</ul>`:'<p class="note" style="margin:0">Ainda sem ficheiros. Os membros juntam-nos na área dos membros.</p>'}</div>`;}
 function sugPend(){return [...S.sugestoes.values()].filter(x=>(x.estado||"pendente")==="pendente");}
 function ideaBadges(i){const nm=matsOf(i.id).length,ns=S.isOwner?sugPend().filter(x=>x.ideiaId===i.id).length:0;
-  return `${i.criadaPor?'<span class="pill br" title="Criada por um membro">membro</span>':""}${nm?`<span class="pill" title="Ficheiros">📎 ${nm}</span>`:""}${ns?`<span class="pill warn" title="Sugestões por decidir">${ns} sugest${ns>1?"ões":"ão"}</span>`:""}`;}
+  return `${i.criadaPor?'<span class="pill br" title="Criada por um membro">membro</span>':""}${nm?`<span class="pill" title="Ficheiros">${nm}</span>`:""}${ns?`<span class="pill warn" title="Sugestões por decidir">${ns} sugest${ns>1?"ões":"ão"}</span>`:""}`;}
 function sugCard(x){
   const i=S.ideias.get(x.ideiaId),pend=(x.estado||"pendente")==="pendente",part=x.tipo==="participar";
   const diff=(l,a,b)=>norm(a||"")===norm(b||"")?`<div class="sgd same"><span class="eyebrow">${l} · sem alteração</span><p>${esc(a||"—")}</p></div>`:`<div class="sgd"><span class="eyebrow">${l}</span><div class="sgc"><div><small>Atual</small><p>${esc(a||"—")}</p></div><div class="new"><small>Proposto</small><p>${esc(b||"—")}</p></div></div></div>`;
@@ -861,7 +861,7 @@ function hSug(){
   <p class="note" style="margin:0 0 10px">Os membros entram em <a href="/membro" target="_blank" rel="noopener">/membro</a>. Aceitar uma melhoria substitui o problema e a solução (o texto antigo fica guardado na ideia). Aceitar um pedido para participar junta a pessoa à ideia.</p>
   ${pend.length?pend.map(sugCard).join(""):'<div class="card"><p class="note" style="margin:0">Nada por decidir.</p></div>'}
   ${novas.length?`<div class="card"><div class="card-h"><h2>Ideias novas criadas pelos membros</h2><span class="src">entram na 4.ª sessão de ideação</span></div><ul class="tlist">${novas.map(i=>`<li><span class="stack2">${avs(i.par||[],26)}</span><span style="min-width:0"><b>${esc(i.titulo)}</b><span class="note" style="display:block">${esc((i.par||[]).join(", "))} · ${esc(String(i.createdAt||"").slice(0,10))}</span></span><button type="button" class="btn sm" data-act="sugver" data-id="${esc(i.id)}">Ver na lista</button></li>`).join("")}</ul></div>`:""}
-  ${mats.length?`<div class="card"><div class="card-h"><h2>Últimos ficheiros</h2></div><ul class="matl">${mats.slice(0,20).map(m=>{const i=S.ideias.get(m.ideiaId);return `<li><button type="button" class="btn sm" data-act="matopen" data-p="${esc(m.path)}">📄 ${esc(m.ficheiro)}</button><span class="pill">${esc(m.tipo||"Outro")}</span><span class="note">${esc(i?i.titulo:"")} · ${esc(m.nome||"")}</span></li>`;}).join("")}</ul></div>`:""}
+  ${mats.length?`<div class="card"><div class="card-h"><h2>Últimos ficheiros</h2></div><ul class="matl">${mats.slice(0,20).map(m=>{const i=S.ideias.get(m.ideiaId);return `<li><button type="button" class="btn sm" data-act="matopen" data-p="${esc(m.path)}">${esc(m.ficheiro)}</button><span class="pill">${esc(m.tipo||"Outro")}</span><span class="note">${esc(i?i.titulo:"")} · ${esc(m.nome||"")}</span></li>`;}).join("")}</ul></div>`:""}
   ${done.length?`<details class="card"><summary><b>Já decididas (${done.length})</b></summary>${done.map(sugCard).join("")}</details>`:""}`;
 }
 function juryTodas(jur){
@@ -1484,13 +1484,13 @@ function juryIdea(i,jur,J){
   const ed=canEditSess(i.sessao)&&!S.preview&&(S.isOwner||S.jTab!=="todas");const editing=ed&&S.jEdit===i.id;
   const ppl=(i.par||[]).filter(Boolean),nfb=fbAll(i.id).length,mats=matsOf(i.id);
   const qOpen=!!(d.pergunta||"").trim()||!!(S.qOpen&&S.qOpen[i.id]);
-  const ICON={matar:"✕",mercado:"🔍",gosto:"♥",outro:"✎"};
+  const ICON={matar:"✕",mercado:"?",gosto:"♥",outro:"✎"};
   const body=editing?`<div class="form"><label class="l full">Título<input class="field" data-b="ideias|${i.id}|titulo" value="${esc(i.titulo||"")}"></label>
     <label class="l">Problema<textarea class="field" rows="3" data-b="ideias|${i.id}|problema">${esc(i.problema||"")}</textarea></label><label class="l">Solução<textarea class="field" rows="3" data-b="ideias|${i.id}|solucao">${esc(i.solucao||"")}</textarea></label>
     <div class="full row" style="justify-content:space-between"><button type="button" class="btn sm danger" data-act="delidea" data-id="${i.id}">Apagar ideia</button><button type="button" class="btn sm pri" data-act="jedit" data-id="">Concluir edição</button></div></div>`
     :`<h3 class="jc-t">${esc(i.titulo||"(sem título)")}</h3>${i.origem&&S.ideias.get(i.origem)?`<p class="note" style="margin:-6px 0 0">↺ Retomada da ${esc(S.ideias.get(i.origem).sessao)}.ª sessão (${esc(S.ideias.get(i.origem).titulo||"")})</p>`:""}
     <div class="jc-ps"><div><b>Problema</b><p>${esc(i.problema||"—")}</p></div><div><b>Solução</b><p>${esc(i.solucao||"—")}</p></div></div>
-    ${mats.length?`<div class="jc-files"><span class="jc-lbl">📎 Ficheiros dos membros</span>${mats.map(m=>`<button type="button" class="fchip" data-act="matopen" data-p="${esc(m.path)}" title="${esc(m.tipo||"")} · ${esc(m.nome||"")}"><span class="fi">${esc((String(m.ficheiro).split(".").pop()||"").slice(0,4).toUpperCase())}</span><span class="fn">${esc(m.ficheiro)}</span><small>${esc(m.tipo||"")}</small></button>`).join("")}</div>`:""}`;
+    ${mats.length?`<div class="jc-files"><span class="jc-lbl">Ficheiros dos membros</span>${mats.map(m=>`<button type="button" class="fchip" data-act="matopen" data-p="${esc(m.path)}" title="${esc(m.tipo||"")} · ${esc(m.nome||"")}"><span class="fi">${esc((String(m.ficheiro).split(".").pop()||"").slice(0,4).toUpperCase())}</span><span class="fn">${esc(m.ficheiro)}</span><small>${esc(m.tipo||"")}</small></button>`).join("")}</div>`:""}`;
   return `<article class="jcard jc2" style="--sc:var(--s${Math.min(4,Number(i.sessao)||1)})" data-q="${esc(norm([i.titulo,i.problema,i.solucao,ppl.join(" ")].join(" ")))}">
   <div class="jc-top"><span class="jc-s">${esc(sessLabel(i))}</span><span class="jc-ppl">${ppl.map(p=>`<span class="chipp">${av(p,22)}${esc(p)}</span>`).join("")||'<span class="note">Sem grupo</span>'}</span>
     <span class="jc-meta">${starsRO(i)}${ed&&!editing?`<button type="button" class="btn sm ghost" data-act="jedit" data-id="${i.id}">Editar</button><button type="button" class="btn sm ghost danger" data-act="delidea" data-id="${i.id}" aria-label="Apagar a ideia ${esc(i.titulo||"")}">Apagar</button>`:""}</span></div>
@@ -1501,7 +1501,7 @@ function juryIdea(i,jur,J){
     ${d.veredito==="outro"?`<input class="field" data-fb="${i.id}" data-k="custom" value="${esc(d.custom||"")}" placeholder="O teu veredito (ex.: pivotar para B2B)" aria-label="Veredito personalizado">`:""}
     <div class="jc-comp"><textarea class="field" rows="2" data-fb="${i.id}" data-k="comentario" placeholder="${d.veredito?"Porquê? Sugestões para o par (opcional)":"Escolhe primeiro um veredito"} · Enter envia" aria-label="Sugestões">${esc(d.comentario||"")}</textarea>
       <button type="button" class="btn pri" data-act="fbsend" data-id="${i.id}" ${d.veredito?"":"disabled"}>Enviar</button></div>
-    <details class="jc-q" data-qid="${i.id}" ${qOpen?"open":""}><summary>❓ Fazer uma pergunta ao par</summary>
+    <details class="jc-q" data-qid="${i.id}" ${qOpen?"open":""}><summary>Fazer uma pergunta ao par</summary>
       <div class="jc-comp"><textarea class="field" rows="2" data-fb="${i.id}" data-k="pergunta" placeholder="Escreve a pergunta · Enter envia" aria-label="Pergunta">${esc(d.pergunta||"")}</textarea>
       <button type="button" class="btn" data-act="qsend" data-id="${i.id}" ${(d.pergunta||"").trim()?"":"disabled"}>Enviar pergunta</button></div></details>
   </section>`:""}
