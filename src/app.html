@@ -765,9 +765,9 @@ function vHub(){
   const all=[...S.ideias.values()];const sts=activeStartups();
   const cnt=f=>all.filter(i=>rank(i.etapa)>=rank(f)).length;
   const t=S.tab.hub;
-  const body={ideias:hIdeias,sug:hSug,dup:hDup,live:hLive,c1:()=>hFase("c1"),c2:()=>hFase("c2"),sd:()=>hFase("sd"),startups:hStartups,hist:hHist,ativ:hAtiv}[t]||hIdeias;
+  const body={ideias:hIdeias,sug:hSug,dup:hDup,live:hLive,c1:()=>hFase("c1"),c2:()=>hFase("c2"),sd:()=>hFase("sd"),startups:hStartups,hist:hHist,ativ:hAtiv,fb:hFb}[t]||hIdeias;
   return `<div class="head"><div><div class="eyebrow">Pilar 1 · Inovação interna</div><h1>Bootcamp</h1>${liveBadge()}<div class="sub">Do Bootcamp às 3 startups: ideias, Challenges, Selection Day e acompanhamento até ao Unicorn Day.</div></div></div>
-  ${tabs("hub",[["ideias","Sessões de ideação",all.length],["sug","Sugestões dos membros",sugPend().length||null],["dup","Ideias repetidas",dupPairs().length||null],["live","Sessão ao vivo",null],["c1","Challenge I",cnt("c1")],["c2","Challenge II",cnt("c2")],["sd","Selection Day",cnt("sd")],["startups","Startups",sts.length],["ativ","Atividade",null],["hist","Histórico",null]])}
+  ${tabs("hub",[["ideias","Sessões de ideação",all.length],["sug","Sugestões dos membros",sugPend().length||null],["dup","Ideias repetidas",dupPairs().length||null],["live","Sessão ao vivo",null],["c1","Challenge I",cnt("c1")],["c2","Challenge II",cnt("c2")],["sd","Selection Day",cnt("sd")],["startups","Startups",sts.length],["ativ","Atividade",null],["fb","Feedback do júri",null],["hist","Histórico",null]])}
   ${body()}`;
 }
 /* ---------- Ideias repetidas: propor pares, confirmar e juntar (fica a mais recente, pessoas sem repetidos, feedbacks somados) ---------- */
@@ -872,6 +872,8 @@ function juryTodas(jur){
 document.addEventListener("input",e=>{if(e.target.id!=="jq")return;const q=norm(e.target.value.trim());document.querySelectorAll("#jtodas > .jcard").forEach(c=>{c.hidden=!!q&&!String(c.dataset.q||"").includes(q);});});
 document.addEventListener("click",e=>{const b=e.target.closest("[data-act]");if(!b)return;const a=b.dataset.act;
   if(a==="matopen"){e.preventDefault();if(window.INOV_FILE)window.INOV_FILE(b.dataset.p).catch(()=>toast("Não foi possível abrir o ficheiro.",true));else toast("Os ficheiros só abrem na versão web.",true);}
+  else if(a==="fbvis"){const f=S.feedback.get(b.dataset.id);if(!f)return;f.ocultoMembros=!fbOculto(f);save("feedback",f.id);render();}
+  else if(a==="fbconf"){let n=0;[...S.feedback.values()].forEach(f=>{if(f.ocultoMembros===undefined&&(f.comentario||f.veredito)){f.ocultoMembros=fbSugOcultar(f);save("feedback",f.id);n++;}});render();toast(n+" feedbacks confirmados.");}
   else if(a==="atrole"){S.atRole=b.dataset.v||"";render();}
   else if(a==="jsess"){S.jSess=Number(b.dataset.v)||0;render();}
   else if(a==="sugver"){S.view="hub";S.tab.hub="ideias";S.open=b.dataset.id;render();setTimeout(()=>{const el=document.querySelector(`[data-open="${b.dataset.id}"]`);if(el)el.scrollIntoView({block:"center"});},60);}
@@ -903,7 +905,23 @@ function hAtiv(){
   <p class="note" style="margin:0 0 10px">O que os jurados e os membros fizeram, do mais recente para o mais antigo. Quando alguém altera um veredito ou apaga uma entrada, fica só a versão atual.</p>
   ${L.length?`<div class="card"><ul class="tlist">${L.slice(0,300).map(e=>`<li><span class="mono note" style="white-space:nowrap">${esc(dt(e.t))}</span><span style="min-width:0"><b>${esc(e.who)}</b> <span class="pill ${e.role==="Júri"?"br":e.role==="Membro"?"":"ok"}">${esc(e.role)}</span> ${esc(e.what)}<span class="note" style="display:block">${e.iid&&S.ideias.get(e.iid)?`<button type="button" class="lnk" data-act="sugver" data-id="${esc(e.iid)}">${esc(e.idea)}</button>`:esc(e.idea)}</span>${e.txt?`<span class="fbc">${esc(e.txt)}</span>`:""}</span></li>`).join("")}</ul></div>`:empty("Ainda sem atividade","Os veredictos do júri e as ações dos membros aparecem aqui.")}`;
 }
-document.addEventListener("change",e=>{const el=e.target;if(!el.dataset||el.dataset.atpessoa===undefined)return;S.atPessoa=el.value;render();});
+document.addEventListener("change",e=>{const el=e.target;if(!el.dataset)return;if(el.dataset.atpessoa!==undefined){S.atPessoa=el.value;render();}if(el.dataset.fbf!==undefined){S.fbF=el.value;render();}});
+/* Feedback: o que os membros veem. Quando ainda não foi confirmado, usa a sugestão automática. */
+function fbSugOcultar(f){const raw=String(f.comentario||"").trim();if(!raw)return false;const t=raw.replace(/^\[Sessão \d\]\s*/,"").trim();if(!t)return true;return t.length<=12||(!/\s/.test(t)&&t.length<=15);}
+function fbOculto(f){return f.ocultoMembros===undefined?fbSugOcultar(f):!!f.ocultoMembros;}
+function hFb(){
+  const F=[...S.feedback.values()].filter(f=>f.tipo!=="pendente"&&(isQ(f)?f.comentario:f.veredito)).sort((a,b)=>String(b.enviadoEm||b.updatedAt||"").localeCompare(String(a.enviadoEm||a.updatedAt||"")));
+  const fl=S.fbF||"todos";
+  const L=F.filter(f=>fl==="todos"||(fl==="ocultos"&&fbOculto(f))||(fl==="visiveis"&&!fbOculto(f))||(fl==="sugeridos"&&f.ocultoMembros===undefined));
+  const pend=F.filter(f=>f.ocultoMembros===undefined).length;
+  const sel=(v,l)=>`<option value="${v}" ${fl===v?"selected":""}>${l}</option>`;
+  return `<div class="itool"><select class="field sm" data-fbf aria-label="Mostrar">${sel("todos","Todos ("+F.length+")")}${sel("visiveis","Visíveis aos membros")}${sel("ocultos","Ocultos aos membros")}${sel("sugeridos","Ainda sem confirmar ("+pend+")")}</select>
+    <button type="button" class="btn sm pri" data-act="fbconf" ${pend?"":"disabled"}>Confirmar as sugestões (${pend})</button></div>
+  <p class="note" style="margin:0 0 10px">Os membros veem só os feedbacks visíveis. A sugestão esconde comentários genéricos (ex.: "pergunta", "estudo isto", "Não", só a etiqueta da sessão). Confirma ou troca cada linha. O júri e tu continuam a ver tudo.</p>
+  <div class="tw"><table><thead><tr><th>Jurado</th><th>Ideia</th><th>Veredito / tipo</th><th>Comentário</th><th>Membros</th><th></th></tr></thead><tbody>
+  ${L.slice(0,400).map(f=>{const i=S.ideias.get(f.ideiaId);const oc=fbOculto(f);const sug=f.ocultoMembros===undefined;return `<tr><td>${esc(f.jurado||"?")}</td><td class="note">${esc(i?i.titulo:"(ideia apagada)")}</td><td>${isQ(f)?'<span class="pill br">Pergunta</span>':`<span class="pill ${(VERD.find(z=>z[0]===f.veredito)||[])[2]||""}">${esc(verdLabel(f))}</span>`}</td><td class="t">${esc(f.comentario||"–")}</td><td><span class="pill ${oc?"bad":"ok"}">${oc?"Oculto":"Visível"}</span>${sug?' <span class="note">sugestão</span>':""}</td><td><button type="button" class="btn sm ghost" data-act="fbvis" data-id="${esc(f.id)}">${oc?"Mostrar":"Ocultar"}</button></td></tr>`;}).join("")}
+  </tbody></table></div>${L.length>400?`<p class="note">A mostrar 400 de ${L.length}. Usa o filtro para ver o resto.</p>`:""}`;
+}
 function hIdeias(){
   const f=S.f,all=[...S.ideias.values()];
   const q=norm(f.q);

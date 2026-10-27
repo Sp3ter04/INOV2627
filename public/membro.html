@@ -60,7 +60,8 @@ function ordem(a,b){return (b.gosto||0)-(a.gosto||0)||(b.sessao||0)-(a.sessao||0
 const VER={matar:["Matar","bad"],gosto:["Gosto","ok"],mercado:["Validar mercado","warn"],outro:["Outro","warn"]};
 function av(n){const f=st.fotos[n],ini=String(n||"?").split(" ").map(x=>x[0]||"").join("").slice(0,2);return f?`<img src="${esc(f)}" alt="${esc(n)}" title="${esc(n)}" loading="lazy" onerror="this.outerHTML='<i title=&quot;${esc(n)}&quot;>${esc(ini)}</i>'">`:`<i title="${esc(n)}">${esc(ini)}</i>`;}
 function stars(g){return `<span class="stars" role="img" aria-label="${g||0} de 5 estrelas">${[1,2,3,4,5].map(k=>`<span class="${k<=(g||0)?"on":""}">★</span>`).join("")}</span>`;}
-function fbHtml(i){const l=st.fb.filter(f=>f.ideiaId===i.id).sort((a,b)=>String(b.d||"").localeCompare(String(a.d||"")));
+function fbOc(f){if(f.ocultoMembros!==undefined)return !!f.ocultoMembros;const raw=String(f.comentario||"").trim();if(!raw)return false;const x=raw.replace(/^\[Sessão \d\]\s*/,"").trim();if(!x)return true;return x.length<=12||(!/\s/.test(x)&&x.length<=15);}
+function fbHtml(i){const l=st.fb.filter(f=>f.ideiaId===i.id&&!fbOc(f)).sort((a,b)=>String(b.d||"").localeCompare(String(a.d||"")));
   if(!l.length)return `<p class="note">Ainda sem feedback.</p>`;
   return l.map(f=>{const v=VER[f.veredito]||[f.veredito||"",""];return `<div class="fb"><b>${esc(f.jurado||"Júri")}</b> ${v[0]?`<span class="pill ${v[1]}">${esc(v[0])}${f.custom?": "+esc(f.custom):""}</span>`:""} <span class="note">${esc(f.d||"")}</span>${f.comentario?`<p class="txt" style="margin:4px 0 0">${esc(f.comentario)}</p>`:""}</div>`;}).join("");}
 function ideaCard(i,mine){
