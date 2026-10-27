@@ -872,6 +872,8 @@ function juryTodas(jur){
 document.addEventListener("input",e=>{if(e.target.id!=="jq")return;const q=norm(e.target.value.trim());document.querySelectorAll("#jtodas > .jcard").forEach(c=>{c.hidden=!!q&&!String(c.dataset.q||"").includes(q);});});
 document.addEventListener("click",e=>{const b=e.target.closest("[data-act]");if(!b)return;const a=b.dataset.act;
   if(a==="matopen"){e.preventDefault();if(window.INOV_FILE)window.INOV_FILE(b.dataset.p).catch(()=>toast("Não foi possível abrir o ficheiro.",true));else toast("Os ficheiros só abrem na versão web.",true);}
+  else if(a==="fbmode"){S.fbMode=b.dataset.v;render();}
+  else if(a==="fbsess"){const n=Number(b.dataset.v);let c=(S.fbS&&S.fbS.length?S.fbS:[1]).map(Number);if(c.includes(n))c=c.length>1?c.filter(x=>x!==n):c;else{c=[...c,n];if(c.length>2)c=c.slice(-2);}S.fbS=c;render();}
   else if(a==="fbvis"){const f=S.feedback.get(b.dataset.id);if(!f)return;f.ocultoMembros=!fbOculto(f);save("feedback",f.id);render();}
   else if(a==="fbconf"){let n=0;[...S.feedback.values()].forEach(f=>{if(f.ocultoMembros===undefined&&(f.comentario||f.veredito)){f.ocultoMembros=fbSugOcultar(f);save("feedback",f.id);n++;}});render();toast(n+" feedbacks confirmados.");}
   else if(a==="atrole"){S.atRole=b.dataset.v||"";render();}
@@ -909,7 +911,38 @@ document.addEventListener("change",e=>{const el=e.target;if(!el.dataset)return;i
 /* Feedback: o que os membros veem. Quando ainda não foi confirmado, usa a sugestão automática. */
 function fbSugOcultar(f){const raw=String(f.comentario||"").trim();if(!raw)return false;const t=raw.replace(/^\[Sessão \d\]\s*/,"").trim();if(!t)return true;return t.length<=12||(!/\s/.test(t)&&t.length<=15);}
 function fbOculto(f){return f.ocultoMembros===undefined?fbSugOcultar(f):!!f.ocultoMembros;}
+/* Resumo do feedback: por sessão (1 ou 2 sessões), com a evolução das ideias retomadas. Tom neutro e apoiante. */
+function fbTally(iid){const T={};fbAll(iid).filter(f=>!isQ(f)).forEach(f=>{const k=verdLabel(f);if(k)T[k]=(T[k]||0)+1;});return T;}
+function fbTallyHtml(T){const e=Object.entries(T);return e.length?e.map(([k,v])=>`<span class="pill">${esc(k)} · ${v}</span>`).join(""):'<span class="note">Ainda sem vereditos</span>';}
 function hFb(){
+  const mode=S.fbMode||"resumo";
+  const seg=`<div class="seg" role="group" aria-label="Vista"><button type="button" data-act="fbmode" data-v="resumo" aria-pressed="${mode==="resumo"}">Resumo por sessão</button><button type="button" data-act="fbmode" data-v="lista" aria-pressed="${mode==="lista"}">Lista detalhada</button></div>`;
+  return seg+(mode==="lista"?hFbLista():hFbResumo());
+}
+function hFbResumo(){
+  const sel=(S.fbS&&S.fbS.length?S.fbS:[1]).map(Number);
+  const chips=[1,2,3,4].map(n=>`<button type="button" class="chipp" data-act="fbsess" data-v="${n}" aria-pressed="${sel.includes(n)}">${n}.ª sessão${n===4?" (novas)":""}</button>`).join("");
+  const ideas=[...S.ideias.values()].filter(i=>sel.includes(Number(i.sessao))).sort((a,b)=>Number(a.sessao)-Number(b.sessao)||(a.titulo||"").localeCompare(b.titulo||"","pt"));
+  const avaliadas=ideas.filter(i=>fbAll(i.id).length).length;
+  const card=i=>{
+    const origem=i.origem&&S.ideias.get(i.origem);
+    const vis=fbAll(i.id).filter(f=>!fbOculto(f));
+    const T=fbTally(i.id);
+    const antes=origem?fbTally(origem.id):null;
+    return `<article class="card" style="margin-bottom:12px"><div class="card-h"><div style="min-width:0"><b>${esc(i.titulo||"(sem título)")}</b> <span class="note">· ${esc(sessLabel(i))}</span>
+      <div class="note" style="margin-top:2px">${esc((i.par||[]).join(", "))}</div>
+      ${origem?`<div class="note" style="margin-top:4px">Evolução: retomada de “${esc(origem.titulo||"")}” (${esc(sessLabel(origem))})</div>`:""}</div></div>
+      <div class="row" style="gap:6px;flex-wrap:wrap;margin:6px 0">${fbTallyHtml(T)}</div>
+      ${antes?`<div class="note" style="margin:0 0 6px">Antes: ${Object.keys(antes).length?Object.entries(antes).map(([k,v])=>esc(k)+" · "+v).join(", "):"sem vereditos"}</div>`:""}
+      ${vis.length?`<ul class="fbul" style="margin:0 0 6px;padding:0;list-style:none">${vis.map(f=>`<li class="fb"><b>${esc(f.jurado||"Júri")}</b> ${isQ(f)?'<span class="pill br">Pergunta</span>':""} <span class="note">${esc(String(f.enviadoEm||"").slice(0,10))}</span><p class="txt" style="margin:2px 0 0">${esc(f.comentario||"")}</p></li>`).join("")}</ul>`:'<p class="note" style="margin:0 0 6px">Sem comentários visíveis.</p>'}
+      <details><summary class="note" style="cursor:pointer">Ver todos os feedbacks (${fbAll(i.id).length})</summary><ul class="fbul" style="padding:0;list-style:none">${fbAll(i.id).map(f=>fbItem(f,true)).join("")||'<li class="note">Ainda sem feedback.</li>'}</ul></details></article>`;
+  };
+  return `<div class="card" style="margin-bottom:12px"><div class="card-h"><h2>Resumo do feedback</h2><span class="src">${ideas.length} ideias · ${avaliadas} com feedback</span></div>
+    <p class="note" style="margin:0 0 8px">Escolhe uma sessão, ou duas para ver a evolução das ideias retomadas. O resumo mostra os vereditos e os comentários visíveis aos membros; o detalhe de cada feedback abre-se em baixo de cada ideia.</p>
+    <div class="row" style="flex-wrap:wrap;gap:6px">${chips}</div></div>
+    ${ideas.length?ideas.map(card).join(""):empty("Sem ideias nestas sessões","Escolhe outra sessão.")}`;
+}
+function hFbLista(){
   const F=[...S.feedback.values()].filter(f=>f.tipo!=="pendente"&&(isQ(f)?f.comentario:f.veredito)).sort((a,b)=>String(b.enviadoEm||b.updatedAt||"").localeCompare(String(a.enviadoEm||a.updatedAt||"")));
   const fl=S.fbF||"todos";
   const L=F.filter(f=>fl==="todos"||(fl==="ocultos"&&fbOculto(f))||(fl==="visiveis"&&!fbOculto(f))||(fl==="sugeridos"&&f.ocultoMembros===undefined));
