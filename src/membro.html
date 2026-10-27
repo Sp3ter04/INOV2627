@@ -66,7 +66,7 @@ function fbHtml(i){const l=st.fb.filter(f=>f.ideiaId===i.id&&!fbOc(f)).sort((a,b
   return l.map(f=>{const v=VER[f.veredito]||[f.veredito||"",""];return `<div class="fb"><b>${esc(f.jurado||"Júri")}</b> ${v[0]?`<span class="pill ${v[1]}">${esc(v[0])}${f.custom?": "+esc(f.custom):""}</span>`:""} <span class="note">${esc(f.d||"")}</span>${f.comentario?`<p class="txt" style="margin:4px 0 0">${esc(f.comentario)}</p>`:""}</div>`;}).join("");}
 function ideaCard(i,mine){
   const sg=st.sug.filter(s=>s.ideiaId===i.id).sort((a,b)=>String(b.em).localeCompare(String(a.em))),ma=st.mat.filter(m=>m.ideiaId===i.id);
-  const nfb=st.fb.filter(f=>f.ideiaId===i.id).length;
+  const nfb=st.fb.filter(f=>f.ideiaId===i.id&&!fbOc(f)).length;
   const q=[i.titulo,i.problema,i.solucao,(i.par||[]).join(" ")].join(" ").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
   const pend=st.sug.filter(s=>s.ideiaId===i.id&&s.tipo==="participar"&&s.email===st.ses.user.email);
   return `<article class="card" id="i-${esc(i.id)}" data-q="${esc(q)}"><div class="ch"><h3>${esc(i.titulo||"(sem título)")}</h3><span class="pill sb">${i.sessao||"?"}.ª sessão</span></div>
