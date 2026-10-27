@@ -43,9 +43,6 @@
 .fchip .fn{font-weight:700;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:220px}.fchip small{color:var(--muted);font-size:11.5px}
 .jc-fb{background:var(--brand-soft);border-radius:10px;padding:12px;display:grid;gap:10px}
 .verd.v2 .vb{display:flex;gap:6px;align-items:center;justify-content:center;padding:10px 6px;background:var(--surface)}
-.verd.v2 .vi{font-size:15px;line-height:1}
-.verd.v2 .vb.bad .vi{color:var(--bad)}.verd.v2 .vb.warn .vi{color:var(--warn)}.verd.v2 .vb.ok .vi{color:var(--ok)}.verd.v2 .vb.br .vi{color:var(--brand)}
-.verd.v2 .vb.on .vi{color:inherit}
 .jc-comp{display:flex;gap:8px;align-items:flex-end}.jc-comp textarea{flex:1;min-width:0;background:var(--surface)}.jc-comp .btn{flex:none}
 .jc-q summary,.jc-hist summary{cursor:pointer;font-weight:700;font-size:13.5px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;min-height:32px}
 .jc-q[open] summary{margin-bottom:6px}.jc-hist{border-top:1px solid var(--line);padding-top:8px}
@@ -1484,8 +1481,7 @@ function juryIdea(i,jur,J){
   const ed=canEditSess(i.sessao)&&!S.preview&&(S.isOwner||S.jTab!=="todas");const editing=ed&&S.jEdit===i.id;
   const ppl=(i.par||[]).filter(Boolean),nfb=fbAll(i.id).length,mats=matsOf(i.id);
   const qOpen=!!(d.pergunta||"").trim()||!!(S.qOpen&&S.qOpen[i.id]);
-  const ICON={matar:"✕",mercado:"?",gosto:"♥",outro:"✎"};
-  const body=editing?`<div class="form"><label class="l full">Título<input class="field" data-b="ideias|${i.id}|titulo" value="${esc(i.titulo||"")}"></label>
+    const body=editing?`<div class="form"><label class="l full">Título<input class="field" data-b="ideias|${i.id}|titulo" value="${esc(i.titulo||"")}"></label>
     <label class="l">Problema<textarea class="field" rows="3" data-b="ideias|${i.id}|problema">${esc(i.problema||"")}</textarea></label><label class="l">Solução<textarea class="field" rows="3" data-b="ideias|${i.id}|solucao">${esc(i.solucao||"")}</textarea></label>
     <div class="full row" style="justify-content:space-between"><button type="button" class="btn sm danger" data-act="delidea" data-id="${i.id}">Apagar ideia</button><button type="button" class="btn sm pri" data-act="jedit" data-id="">Concluir edição</button></div></div>`
     :`<h3 class="jc-t">${esc(i.titulo||"(sem título)")}</h3>${i.origem&&S.ideias.get(i.origem)?`<p class="note" style="margin:-6px 0 0">↺ Retomada da ${esc(S.ideias.get(i.origem).sessao)}.ª sessão (${esc(S.ideias.get(i.origem).titulo||"")})</p>`:""}
@@ -1497,7 +1493,7 @@ function juryIdea(i,jur,J){
   ${body}
   ${jur?`<section class="jc-fb">
     <div class="jc-lbl">O teu veredito${myV?` <span class="pill ${(VERD.find(z=>z[0]===myV.veredito)||[])[2]||""}">já enviaste: ${esc(verdLabel(myV))}</span>`:""}</div>
-    <div class="verd v2" role="group" aria-label="O teu veredito">${VERD.map(([k,l,t])=>`<button type="button" class="vb ${t} ${d.veredito===k?"on":""}" aria-pressed="${d.veredito===k}" data-act="verd" data-id="${i.id}" data-v="${k}"><span class="vi" aria-hidden="true">${ICON[k]||""}</span>${l}</button>`).join("")}</div>
+    <div class="verd v2" role="group" aria-label="O teu veredito">${VERD.map(([k,l,t])=>`<button type="button" class="vb ${t} ${d.veredito===k?"on":""}" aria-pressed="${d.veredito===k}" data-act="verd" data-id="${i.id}" data-v="${k}">${l}</button>`).join("")}</div>
     ${d.veredito==="outro"?`<input class="field" data-fb="${i.id}" data-k="custom" value="${esc(d.custom||"")}" placeholder="O teu veredito (ex.: pivotar para B2B)" aria-label="Veredito personalizado">`:""}
     <div class="jc-comp"><textarea class="field" rows="2" data-fb="${i.id}" data-k="comentario" placeholder="${d.veredito?"Porquê? Sugestões para o par (opcional)":"Escolhe primeiro um veredito"} · Enter envia" aria-label="Sugestões">${esc(d.comentario||"")}</textarea>
       <button type="button" class="btn pri" data-act="fbsend" data-id="${i.id}" ${d.veredito?"":"disabled"}>Enviar</button></div>
