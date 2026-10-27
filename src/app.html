@@ -1085,6 +1085,18 @@ function ideaRow(i){
   ${i.problema||i.solucao?`<div class="ic-ps"><div><b>Problema</b><p>${esc(i.problema||"—")}</p></div><div><b>Solução</b><p>${esc(i.solucao||"—")}</p></div></div>`:""}
   ${open?`<div class="ic-d">${ideaForm(i)}${matBlock(i.id,true)}</div>`:""}</article>`;
 }
+/* Resumo cumulativo por ideia (Bootcamp): segue a cadeia até à versão mais recente e mostra/edita resumoS por sessão. */
+function resumoIdeia(i){
+  let last=i;for(let g=0;g<20;g++){const nx=[...S.ideias.values()].find(x=>x.origem===last.id);if(!nx)break;last=nx;}
+  const chain=ideaChain(last);
+  const steps=chain.map(x=>{const n=Number(x.sessao)||1,L=fbAll(x.id);return {n,x,L,st:vStatsL(L),r:resumoDe(last,n)};});
+  if(!steps.some(s=>s.L.length||s.r))return "";
+  return `<div class="full fres-box"><span class="l">Resumo do feedback do júri, sessão a sessão</span>
+    <ol class="tl">${steps.map(s=>`<li class="tl-i" style="--sc:var(--s${Math.min(4,s.n)})"><div class="tl-h"><b>${s.n}.ª sessão</b><span class="note">· ${s.L.length} ${s.L.length===1?"feedback":"feedbacks"}</span></div>
+      ${s.L.length?`<div>${vBar(s.st)}</div>`:""}
+      ${S.isOwner?`<label class="l full">Resumo até à ${s.n}.ª sessão<textarea class="field" rows="3" data-b="ideias|${esc(last.id)}|resumoS.${s.n}" placeholder="O que o júri disse até aqui, em tom construtivo.">${esc(s.r)}</textarea></label>`:(s.r?`<p class="fres">${esc(s.r)}</p>`:"")}
+      </li>`).join("")}</ol></div>`;
+}
 function ideaForm(i){
   const LOCK=new Set(["titulo","problema","solucao"]);
   const b=(k,l,ta,ph)=>{const ro=!S.isOwner&&LOCK.has(k)?" readonly":"";return `<label class="l ${ta?"full":""}">${l}${ta?`<textarea class="field"${ro} data-b="ideias|${i.id}|${k}" placeholder="${ph||""}">${esc(i[k]||"")}</textarea>`:`<input class="field"${ro} data-b="ideias|${i.id}|${k}" value="${esc(i[k]||"")}" placeholder="${ph||""}">`}</label>`;};
@@ -1096,6 +1108,7 @@ function ideaForm(i){
     ${b("problema","Problema",1)}${b("solucao","Solução",1)}
     ${b("fortes","Pontos fortes",1)}${b("fracos","Pontos fracos",1)}
     ${b("notas","Notas do coordenador",1,"O que investigar a seguir, perguntas, contactos…")}
+    ${resumoIdeia(i)}
     ${fbAll(i.id).length?`<div class="full"><span class="l">Feedback e perguntas do júri</span><ul class="fbul">${fbAll(i.id).map(f=>fbItem(f,false)).join("")}</ul></div>`:""}
     ${b("slides","Link dos slides",0,"https://…")}${b("site","Site / protótipo",0,"https://…")}
     <div class="row full" style="justify-content:space-between">${hist||'<span class="note">Ainda não passou por nenhuma fase avaliada.</span>'}<span class="row">${S.isOwner?`<button type="button" class="btn sm danger" data-act="delidea" data-id="${i.id}">Apagar ideia</button>`:""}<button type="button" class="btn sm" data-open="${i.id}">Fechar</button></span></div>
@@ -1669,7 +1682,7 @@ function juryIdea(i,jur,J){
       <div class="jc-comp"><textarea class="field" rows="2" data-fb="${i.id}" data-k="pergunta" placeholder="Escreve a pergunta · Enter envia" aria-label="Pergunta">${esc(d.pergunta||"")}</textarea>
       <button type="button" class="btn" data-act="qsend" data-id="${i.id}" ${(d.pergunta||"").trim()?"":"disabled"}>Enviar pergunta</button></div></details>
   </section>`:""}
-  <details class="jc-hist" ${nfb&&nfb<=4?"open":""}><summary>Feedback do júri <span class="cnt">${nfb}</span> ${tallyHtml(i.id)}</summary>${fbList(i.id,J)}</details>
+  <details class="jc-hist" ${nfb&&nfb<=4?"open":""}><summary>${starsRO(i)}${i.gosto?`<span class="note">${i.gosto}/5</span>`:'<span class="note">sem estrelas</span>'} ${tallyHtml(i.id)} <span class="note">Feedback do júri</span> <span class="cnt">${nfb}</span></summary>${fbList(i.id,J)}</details>
   </article>`;
 }
 document.addEventListener("toggle",e=>{const q=e.target&&e.target.dataset&&e.target.dataset.qid;if(!q)return;S.qOpen=S.qOpen||{};S.qOpen[q]=e.target.open;},true);
