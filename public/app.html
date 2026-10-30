@@ -1671,7 +1671,7 @@ function pedidosCard(){
 }
 function reusePick(){return S.reuse&&S.reuse.k===S.jPar?S.reuse.id:"";}
 function reuseSel(n,cur){
-  const past=[...S.ideias.values()].filter(i=>Number(i.sessao)<n).sort((a,b)=>(a.sessao-b.sessao)||String(a.titulo||"").localeCompare(String(b.titulo||""),"pt"));
+  const past=[...S.ideias.values()].filter(i=>Number(i.sessao)<=n).sort((a,b)=>(a.sessao-b.sessao)||String(a.titulo||"").localeCompare(String(b.titulo||""),"pt"));
   if(!past.length)return "";
   const mine=new Set(mem3(cur).filter(Boolean).map(norm)),sel=reusePick();
   const opt=i=>`<option value="${esc(i.id)}" ${i.id===sel?"selected":""}>${esc(i.titulo||"(sem título)")} · S${esc(i.sessao)} · ${esc((i.par||[]).filter(Boolean).map(first).join(", "))}</option>`;
