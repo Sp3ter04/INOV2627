@@ -527,8 +527,8 @@ const ETAPAS=["ideacao","c1","c2","sd","startup"];
 const ETAPA_L={ideacao:"Ideação",c1:"Challenge I",c2:"Challenge II",sd:"Selection Day",startup:"Startup"};
 const NEXT={c1:"c2",c2:"sd",sd:"startup"};
 const IDEIA_DEC=[["ma","Má","bad"],["investigar","Investigar","warn"],["boa","Muito boa","ok"]];
-const FASE_DEC={c1:[["abandonar","Abandonar","bad"],["investigar","Investigar mais","warn"],["avanca","Passa","ok"]],
-  c2:[["abandonar","Abandonar","bad"],["investigar","Investigar mais","warn"],["avanca","Passa","ok"]],
+const FASE_DEC={c1:[["abandonar","Abandonar","bad"],["investigar","Investigar mais","warn"],["avanca","Passa ao Challenge II","ok"]],
+  c2:[["abandonar","Abandonar","bad"],["investigar","Investigar mais","warn"],["avanca","Passa ao Selection Day","ok"]],
   sd:[["historico","Histórico","bad"],["investigar","Reserva","warn"],["startup","Vira startup","ok"]]};
 const TIPO_IDEIA=[["hw","Hardware"],["sw","Software"],["mix","Mix"]];
 const TIPO_COR={hw:"var(--p-hub)",sw:"var(--p-apollo)",mix:"var(--p-ud)"};
@@ -819,9 +819,9 @@ function vHub(){
   const all=[...S.ideias.values()];const sts=activeStartups();
   const cnt=f=>all.filter(i=>rank(i.etapa)>=rank(f)).length;
   const t=S.tab.hub;
-  const body={ideias:hIdeias,sug:hSug,dup:hDup,live:hLive,c1:()=>hFase("c1"),c2:()=>hFase("c2"),sd:()=>hFase("sd"),startups:hStartups,hist:hHist,ativ:hAtiv,fb:hFb}[t]||hIdeias;
+  const body={ideias:hIdeias,resumo:hResumo,sug:hSug,dup:hDup,live:hLive,c1:()=>hFase("c1"),c2:()=>hFase("c2"),sd:()=>hFase("sd"),startups:hStartups,hist:hHist,ativ:hAtiv,fb:hFb}[t]||hIdeias;
   return `<div class="head"><div><div class="eyebrow">Pilar 1 · Inovação interna</div><h1>Bootcamp</h1>${liveBadge()}<div class="sub">Do Bootcamp às 3 startups: ideias, Challenges, Selection Day e acompanhamento até ao Unicorn Day.</div></div></div>
-  ${tabs("hub",[["ideias","Sessões de ideação",all.length],["sug","Sugestões dos membros",sugPend().length||null],["dup","Ideias repetidas",dupPairs().length||null],["live","Sessão ao vivo",null],["c1","Challenge I",cnt("c1")],["c2","Challenge II",cnt("c2")],["sd","Selection Day",cnt("sd")],["startups","Startups",sts.length],["ativ","Atividade",null],["fb","Feedback do júri",null],["hist","Histórico",null]])}
+  ${tabs("hub",[["ideias","Sessões de ideação",all.length],["resumo","Resumo geral",null],["sug","Sugestões dos membros",sugPend().length||null],["dup","Ideias repetidas",dupPairs().length||null],["live","Sessão ao vivo",null],["c1","Challenge I",cnt("c1")],["c2","Challenge II",cnt("c2")],["sd","Selection Day",cnt("sd")],["startups","Startups",sts.length],["ativ","Atividade",null],["fb","Feedback do júri",null],["hist","Histórico",null]])}
   ${body()}`;
 }
 /* ---------- Ideias repetidas: propor pares, confirmar e juntar (fica a mais recente, pessoas sem repetidos, feedbacks somados) ---------- */
@@ -1060,6 +1060,44 @@ function hFbLista(){
   </tbody></table></div>${L.length>lim?`<div class="more"><button type="button" class="btn sm" data-act="fbmore">Mostrar mais ${Math.min(200,L.length-lim)}</button></div>`:""}`
   :empty("Nada neste filtro","Escolhe outro filtro.")}`;
 }
+/* Resumo geral das sessões de ideação: feedback por sessão e ideias que passaram aos Challenges */
+function hResumo(){
+  const all=[...S.ideias.values()];
+  const ses=[...new Set(all.map(i=>Number(i.sessao)||0))].filter(Boolean).sort((a,b)=>a-b);
+  const fsOf=i=>fbAll(i.id).map(f=>Number(f.sessao)||Number(i.sessao)||1);
+  const R=ses.map(n=>{const L=all.filter(i=>Number(i.sessao)===n),F=L.flatMap(i=>fbAll(i.id)),rated=L.filter(i=>(i.gosto||0)>0);
+    return {n,L,tot:L.length,com:L.filter(i=>fbAll(i.id).length).length,ver:F.filter(f=>!isQ(f)).length,per:F.filter(isQ).length,med:avg(rated.map(i=>i.gosto)),q4:L.filter(i=>(i.gosto||0)>=4).length,c1:L.filter(i=>rank(i.etapa)>=1).length};});
+  const T=k=>R.reduce((x,r)=>x+r[k],0),mx=Math.max(1,...R.map(r=>r.tot));
+  const passou=all.filter(i=>rank(i.etapa)>=1).sort((a,b)=>(b.gosto||0)-(a.gosto||0)||fbAll(b.id).length-fbAll(a.id).length||(a.titulo||"").localeCompare(b.titulo||"","pt"));
+  const fmtS=a=>!a.length?"–":a.length>2&&a.every((x,k)=>k===0||x===a[k-1]+1)?`${a[0]}.ª a ${a[a.length-1]}.ª`:a.map(x=>x+".ª").join(", ");
+  const med=m=>m==null?"–":nf(m);
+  return `<div class="tiles">
+    ${tile(all.length,"Ideias",`em ${ses.length} sessões`)}
+    ${tile(T("com"),"Com feedback",`${all.length-T("com")} sem feedback`)}
+    ${tile(T("ver"),"Vereditos",`${T("per")} perguntas`)}
+    ${tile(T("q4"),"Com 4★ ou mais",`${all.length?Math.round(T("q4")/all.length*100):0}% das ideias`)}
+    ${tile(passou.length,"Passaram ao Challenge",`${passou.filter(i=>rank(i.etapa)>=2).length} já no Challenge II ou além`)}
+  </div>
+  <div class="grid g2" style="margin-bottom:14px">
+    <div class="card"><div class="card-h"><h2>Por sessão de ideação</h2><span class="src">com feedback / ideias</span></div>
+      <div class="hbars">${R.map(r=>hbar(`${r.n}.ª sessão`,[[r.com,"var(--ok)","Com feedback"],[r.tot-r.com,"var(--line-2)","Sem feedback"]],r.tot,mx,`${r.com}/${r.tot}`)).join("")}</div>
+      <div class="legend"><span><i style="background:var(--ok)"></i>Com feedback</span><span><i style="background:var(--line-2)"></i>Sem feedback</span></div></div>
+    <div class="card"><div class="card-h"><h2>Em que sessões receberam feedback</h2><span class="src">nº de ideias · linhas: sessão da ideia</span></div>
+      <div class="tw"><table><thead><tr><th>Ideias da…</th>${ses.map(m=>`<th class="num" title="Feedback recebido na ${m}.ª sessão">na ${m}.ª</th>`).join("")}</tr></thead><tbody>
+      ${R.map(r=>`<tr><td style="white-space:nowrap"><b>${r.n}.ª</b> <span class="note">(${r.tot})</span></td>${ses.map(m=>{const c=r.L.filter(i=>fsOf(i).includes(m)).length;return `<td class="num">${c||"–"}</td>`;}).join("")}</tr>`).join("")}
+      </tbody></table></div>
+      <p class="note" style="margin:8px 0 0">“na 2.ª” = feedback recebido na 2.ª sessão. Ideias retomadas ou juntadas trazem o feedback das sessões anteriores.</p></div>
+  </div>
+  <div class="card" style="margin-bottom:14px"><div class="card-h"><h2>Resumo por sessão</h2><span class="src">a média só conta ideias com estrelas</span></div>
+    <div class="tw"><table><thead><tr><th>Sessão</th><th class="num">Ideias</th><th class="num">Com feedback</th><th class="num">Vereditos</th><th class="num">Perguntas</th><th class="num">Média ★</th><th class="num">Com 4★+</th><th class="num">Passaram ao Challenge</th></tr></thead><tbody>
+    ${R.map(r=>`<tr><td><b>${r.n}.ª</b></td><td class="num">${r.tot}</td><td class="num">${r.com}</td><td class="num">${r.ver}</td><td class="num">${r.per}</td><td class="num">${med(r.med)}</td><td class="num">${r.q4}</td><td class="num">${r.c1}</td></tr>`).join("")}
+    <tr><td><b>Total</b></td><td class="num"><b>${T("tot")}</b></td><td class="num"><b>${T("com")}</b></td><td class="num"><b>${T("ver")}</b></td><td class="num"><b>${T("per")}</b></td><td class="num"></td><td class="num"><b>${T("q4")}</b></td><td class="num"><b>${T("c1")}</b></td></tr>
+    </tbody></table></div></div>
+  <div class="card"><div class="card-h"><h2>Ideias que passaram ao Challenge</h2><span class="src">${passou.length} ideias · ordenadas por estrelas</span></div>
+    ${passou.length?`<div class="tw"><table><thead><tr><th>Ideia</th><th>Sessão</th><th>Grupo</th><th class="num">★</th><th>Feedback em</th><th class="num">Entradas</th><th>Fase</th></tr></thead><tbody>
+    ${passou.map(i=>`<tr><td data-l="Ideia">${ideaLink(i.id,i.titulo||"(sem título)")}</td><td data-l="Sessão">${esc(i.sessao||"?")}.ª</td><td data-l="Grupo" class="t">${esc((i.par||[]).filter(Boolean).join(", ")||"–")}</td><td data-l="★" class="num">${i.gosto||0}</td><td data-l="Feedback em">${fmtS([...new Set(fsOf(i))].sort((a,b)=>a-b))}</td><td data-l="Entradas" class="num">${fbAll(i.id).length}</td><td data-l="Fase"><span class="stage ${i.etapa}">${ETAPA_L[i.etapa]}</span></td></tr>`).join("")}
+    </tbody></table></div>`:empty("Ainda nenhuma ideia passou ao Challenge","Marca “Passa” nas ideias das sessões de ideação.")}</div>`;
+}
 function hIdeias(){
   const f=S.f,all=[...S.ideias.values()];
   const q=norm(f.q);
@@ -1099,14 +1137,14 @@ function resumoCard(i){
   const k=ks[ks.length-1],prev=ks.slice(0,-1);
   return `<div class="ic-res"><span class="eyebrow">Resumo do feedback do júri · até à ${esc(k)}.ª sessão</span><p>${esc(R[k])}</p>${prev.length?`<details class="ic-res-d"><summary>Ver evolução (${prev.length} ${prev.length>1?"sessões anteriores":"sessão anterior"})</summary>${prev.map(x=>`<p><b>${esc(x)}.ª sessão</b> · ${esc(R[x])}</p>`).join("")}</details>`:""}</div>`;
 }
-function ideaRow(i,extra){
+function ideaRow(i,extra,ctl){
   const open=S.open===i.id,inC1=rank(i.etapa)>=1,nfb=fbAll(i.id).length,ppl=(i.par||[]).filter(Boolean);
   const tipo=i.tipo&&TIPO_COR[i.tipo]?`<span class="tag" style="--pc:${TIPO_COR[i.tipo]}">${TIPO_IDEIA.find(x=>x[0]===i.tipo)[1]}</span>`:"";
   return `<article class="ic ${open?"open":""}" style="--sc:var(--s${Math.min(4,Number(i.sessao)||1)})">
   <div class="ic-h"><span class="ic-s" title="${esc(sessLabel(i))}">${i.sessao||"?"}.ª</span>
     <button type="button" class="ic-t" data-open="${i.id}" aria-expanded="${open}"><span class="chev" aria-hidden="true">${open?"▾":"▸"}</span>${tipo}<span>${esc(i.titulo||"(sem título)")}</span></button>
     <span class="ic-b">${ideaBadges(i)}</span>
-    <span class="ic-r">${stars(i)}${rank(i.etapa)>1?`<span class="stage ${i.etapa}">${ETAPA_L[i.etapa]}</span>`:`<label class="c1t ${inC1?"on":""}"><input type="checkbox" data-act="toc1" data-id="${i.id}" ${inC1?"checked":""}>${inC1?"Passa ao Challenge I":"Challenge I"}</label>`}</span></div>
+    <span class="ic-r">${stars(i)}${ctl!=null?ctl:rank(i.etapa)>1?`<span class="stage ${i.etapa}">${ETAPA_L[i.etapa]}</span>`:`<label class="c1t ${inC1?"on":""}"><input type="checkbox" data-act="toc1" data-id="${i.id}" ${inC1?"checked":""}>${inC1?"Passa ao Challenge I":"Challenge I"}</label>`}</span></div>
   <div class="ic-m"><span class="ic-p">${ppl.length?ppl.map(p=>`<span class="chipp">${av(p,22)}${esc(p)}</span>`).join(""):'<span class="note">Sem grupo</span>'}</span>
     <span class="ic-j">${tallyHtml(i.id)||'<span class="note">sem avaliações do júri</span>'}${nfb?`<span class="note">${nfb} entrada${nfb>1?"s":""}</span>`:""}</span></div>
   ${i.problema||i.solucao?`<div class="ic-ps"><div><b>Problema</b><p>${esc(i.problema||"—")}</p></div><div><b>Solução</b><p>${esc(i.solucao||"—")}</p></div></div>`:""}
@@ -1149,6 +1187,8 @@ function juryOptions(f){
 function crmEventFor(f){const c=crm();const key={c1:/challenge\s*(i\b|1)/i,c2:/challenge\s*(ii|2)/i,sd:/selection/i}[f];return c.eventos.find(e=>key.test(e.nome));}
 function faseCard(i,k,f,F,J,prev){
   const a=(i.aval&&i.aval[f])||{},open=S.open===i.id+f;
+  const nx=NEXT[f],onx=rank(i.etapa)>=rank(nx);
+  const ctl=f==="sd"?(rank(i.etapa)>rank(f)?`<span class="stage ${i.etapa}">${ETAPA_L[i.etapa]}</span>`:""):`<label class="c1t ${onx?"on":""}"><input type="checkbox" data-act="fnext" data-id="${i.id}" data-f="${f}" ${onx?"checked":""}>${onx?"Passa ao "+ETAPA_L[nx]:"Passar ao "+ETAPA_L[nx]}</label>`;
   const prevs=prev.map(q=>{const v=ideaAvg(i,q),d=i.aval&&i.aval[q]&&i.aval[q].decisao;return v!=null||d?`<span class="pill">${esc(S.cfg.fases[q].nome)}: ${v!=null?nf(v):"–"}${d?" · "+esc(d):""}</span>`:"";}).join("");
   return ideaRow(i,`<div class="ic-av">
     <div class="ic-av-h"><span class="eyebrow">${esc(F.nome)} · avaliação</span><span class="row">${prevs}<span class="note">${i._avg!=null?"#"+(k+1)+" · ":""}média <b class="score">${i._avg!=null?nf(i._avg):"–"}</b></span></span></div>
@@ -1159,7 +1199,7 @@ function faseCard(i,k,f,F,J,prev){
       <label class="l">Slides<input class="field" data-b="ideias|${i.id}|aval.${f}.slides" value="${esc(a.slides||"")}" placeholder="https://…"></label>
       <label class="l">Site / protótipo<input class="field" data-b="ideias|${i.id}|aval.${f}.site" value="${esc(a.site||"")}" placeholder="https://…"></label>
       ${a.slides||a.site?`<div class="full row">${a.slides?`<a href="${esc(href(a.slides))}" target="_blank" rel="noopener">Abrir slides ↗</a>`:""}${a.site?`<a href="${esc(href(a.site))}" target="_blank" rel="noopener">Abrir site ↗</a>`:""}</div>`:""}</div>`:""}
-  </div>`);
+  </div>`,ctl);
 }
 function hFase(f){
   const F=S.cfg.fases[f];const prev={c1:[],c2:["c1"],sd:["c1","c2"]}[f];
@@ -1878,6 +1918,10 @@ document.addEventListener("change",e=>{
   else if(el.dataset.sesab){const k=Number(el.dataset.sesab);const a=(S.cfg.sessAbertas||[]).map(Number).filter(x=>x!==k);if(el.checked)a.push(k);S.cfg.sessAbertas=a.sort();saveCfg();}
   else if(el.dataset.sesed){S.cfg.sessEditores=Object.assign({},S.cfg.sessEditores||{});S.cfg.sessEditores[el.dataset.sesed]=el.value.split("\n").map(x=>x.trim().toLowerCase()).filter(Boolean);saveCfg();}
   else if(el.dataset.cfglist){S.cfg[el.dataset.cfglist]=el.value.split("\n").map(s=>s.trim()).filter(Boolean);saveCfg();}
+  else if(el.dataset.act==="fnext"){const id=el.dataset.id,i=S.ideias.get(id),f=el.dataset.f,nx=NEXT[f];if(!i)return;const cur=(i.aval&&i.aval[f]&&i.aval[f].decisao)||"",on=rank(i.etapa)>=rank(nx);
+    if(!on){if(cur==="avanca")i.aval[f].decisao="";setFaseDec(id,f,"avanca");}
+    else if(cur==="avanca"&&rank(i.etapa)===rank(nx))setFaseDec(id,f,"avanca");
+    else{toast("Esta ideia já está mais à frente. Muda a decisão nessa fase.",true);render();}}
   else if(el.dataset.act==="toc1"){const i=S.ideias.get(el.dataset.id);i.etapa=el.checked?"c1":"ideacao";save("ideias",i.id);render();}
   else if(el.id==="f-dec"){S.f.dec=el.value;render();}
   else if(el.id==="f-par"){S.f.par=el.value;render();}
