@@ -560,7 +560,7 @@ function isJuriRoute(){return window.INOV_ISJURI?window.INOV_ISJURI():(location.
 const S={view:"geral",tab:{hub:"ideias",apollo:"resumo",ud:"resumo",kpi:"perfis"},cfg:clone(DEFAULT_CFG),cfgLoaded:false,
   ideias:new Map(),kpi:new Map(),startups:new Map(),contactos:new Map(),mbr:new Map(),crm:null,db:null,sample:null,dbState:"pending",
   sessoes:new Map(),pedidos:new Map(),feedback:new Map(),sugestoes:new Map(),materiais:new Map(),jSess:0,live:new Map(),fotos:new Map(),isOwner:false,userKnown:false,mode:isJuriRoute()?"juri":"app",jTab:"avaliar",room:null,lastSync:0,me:{email:"",name:""},preview:false,draft:{},jurado:"",follow:true,jPar:null,liveN:null,
-  f:{sess:0,q:"",dec:"",par:"",etapa:""},open:null,stSel:null,mes:"",quick:{sessao:1,a:"",b:""},pendingRender:false,aiBusy:false};
+  f:{sess:0,q:"",dec:"",par:"",etapa:"",est:[]},open:null,stSel:null,mes:"",quick:{sessao:1,a:"",b:""},pendingRender:false,aiBusy:false};
 try{const v=JSON.parse(localStorage.getItem("inov-ui")||"{}");if(v.view)S.view=v.view;if(v.tab)Object.assign(S.tab,v.tab);if(v.sess)S.quick.sessao=v.sess;if(v.ord)S.f.ord=v.ord;}catch(e){}
 try{S.jurado=localStorage.getItem("inov-jurado")||"";}catch(e){}
 window.addEventListener("hashchange",()=>{S.mode=isJuriRoute()?"juri":"app";render();window.scrollTo(0,0);});
@@ -1058,7 +1058,9 @@ function hFbLista(){
 function hIdeias(){
   const f=S.f,all=[...S.ideias.values()];
   const q=norm(f.q);
-  let list=all.filter(i=>(!f.sess||i.sessao===f.sess)&&(!f.tipo||(f.tipo==="none"?!i.tipo:i.tipo===f.tipo))&&(!f.par||(i.par||[]).includes(f.par))&&(!q||norm([i.titulo,i.problema,i.solucao,...(i.par||[])].join(" ")).includes(q)));
+  const base=all.filter(i=>(!f.sess||i.sessao===f.sess)&&(!f.tipo||(f.tipo==="none"?!i.tipo:i.tipo===f.tipo))&&(!f.par||(i.par||[]).includes(f.par))&&(!q||norm([i.titulo,i.problema,i.solucao,...(i.par||[])].join(" ")).includes(q)));
+  const est=Array.isArray(f.est)?f.est:[],gs=i=>Math.max(0,Math.min(5,Math.round(Number(i.gosto)||0)));
+  const list=est.length?base.filter(i=>est.includes(gs(i))):base.slice();
   list.sort(f.ord==="gosto"?(a,b)=>((b.gosto||0)-(a.gosto||0))||(score(b.id)-score(a.id))||(a.titulo||"").localeCompare(b.titulo||""):(a,b)=>(b.sessao-a.sessao)||(b.createdAt||"").localeCompare(a.createdAt||""));
   const perS=[1,2,3,4].map(n=>all.filter(i=>i.sessao===n));
   const maxS=Math.max(1,...perS.map(a=>a.length));
@@ -1076,6 +1078,7 @@ function hIdeias(){
     <div class="itool-r"><input type="search" class="field" id="f-q" placeholder="Procurar título, problema, solução ou membro…" value="${esc(f.q)}" aria-label="Procurar ideias">
     <span class="seg" role="group" aria-label="Sessão">${[0,1,2,3,4].map(n=>`<button type="button" data-fsess="${n}" aria-pressed="${f.sess===n}">${n?n+".ª sessão":"Todas"}<small>${n?all.filter(i=>i.sessao===n).length:all.length}</small></button>`).join("")}</span></div>
     <div class="itool-r"><span class="note"><b>${list.length}</b> de ${all.length} ideias · clica no título para editar e ver ficheiros</span><span class="sp"></span>
+    <span class="seg" role="group" aria-label="Estrelas (podes escolher várias)">${[5,4,3,2,1,0].map(n=>`<button type="button" data-fest="${n}" aria-pressed="${est.includes(n)}" title="${n?n+" estrela"+(n>1?"s":""):"Sem estrelas"}">${n?n+"★":"Sem ★"}<small>${base.filter(i=>gs(i)===n).length}</small></button>`).join("")}${est.length?`<button type="button" data-fest="all" title="Mostrar todas as estrelas">Limpar</button>`:""}</span>
     <select class="field" id="f-tipo"><option value="">Todos os tipos</option><option value="none" ${f.tipo==="none"?"selected":""}>Sem tipo</option>${TIPO_IDEIA.map(([k,l])=>`<option value="${k}" ${f.tipo===k?"selected":""}>${l}</option>`).join("")}</select>
     <select class="field" id="f-par"><option value="">Todos os membros</option>${pares.map(p=>`<option ${f.par===p?"selected":""}>${esc(p)}</option>`).join("")}</select>
     <select class="field" id="f-ord" aria-label="Ordenar"><option value="">Mais recentes primeiro</option><option value="gosto" ${f.ord==="gosto"?"selected":""}>Mais estrelas primeiro</option></select></div>
@@ -1590,7 +1593,7 @@ function vJuri(){
   let h=`<div class="jhero">
     <div class="row" style="justify-content:space-between;align-items:flex-start"><div><div class="eyebrow">Bootcamp de Inovação 26/27 · Júri</div><h1>${S.jTab==="todas"?"Todas as ideias":n+".ª sessão de ideação"}</h1>${liveBadge()}
       <div style="opacity:.9;margin-top:2px">${fmtD(date)}${jur?` · a avaliar como <b>${esc(jur)}</b> <button type="button" class="btn sm ghost" data-act="jout">trocar</button>`:""}</div></div>
-      ${canHub()?`<span class="row"><button type="button" class="btn sm ${S.preview?"pri":""}" data-act="jprev">${S.preview?"A ver como júri · sair":"Ver como o júri vê"}</button>${S.mode!=="juri"&&!S.preview?`<button type="button" class="btn sm" data-act="tohome">← Bootcamp</button>`:""}</span>`:""}</div>
+      ${canHub()||jur?`<span class="row">${canHub()&&norm(jur||"").trim()===norm(JURI_EDITOR)?`<button type="button" class="btn sm ${S.preview?"pri":""}" data-act="jprev">${S.preview?"A ver como júri · sair":"Ver como o júri vê"}</button>`:jur&&norm(jur).trim()!==norm(JURI_EDITOR)?`<span class="pill">A ver como júri</span>`:""}${canHub()&&S.mode!=="juri"&&!S.preview?`<button type="button" class="btn sm" data-act="tohome">← Bootcamp</button>`:""}</span>`:""}</div>
     <div class="jtabs" role="group" aria-label="Vista"><button type="button" data-act="jtab" data-v="avaliar" aria-pressed="${S.jTab!=="rank"&&S.jTab!=="todas"}">Avaliar par a par</button><button type="button" data-act="jtab" data-v="rank" aria-pressed="${S.jTab==="rank"}">Ranking da sessão</button><button type="button" data-act="jtab" data-v="todas" aria-pressed="${S.jTab==="todas"}">Todas as ideias</button></div>
     ${S.jTab==="rank"||S.jTab==="todas"?"":pares.length?`<div class="pairbar" role="group" aria-label="Pares">${pares.map(p=>`<button type="button" class="pairchip" data-act="jpar" data-v="${p.k}" aria-pressed="${p.k===S.jPar}"><span class="stack2">${avs(mem3(p),26)}</span>${mem3(p).map(m=>esc(first(m))).join(" &amp; ")}${p.k===(L.parAtual||0)?'<span class="now">agora</span>':""}</button>`).join("")}</div>`:""}
     ${S.jTab!=="rank"&&S.jTab!=="todas"&&(cur.a||cur.b)?`<div class="duo">${mem3(cur).map(m=>`<figure>${av(m,mem3(cur).length>2?92:116)}<figcaption>${esc(m)}</figcaption></figure>`).join('<span class="amp">&amp;</span>')}</div>`:""}
@@ -1788,7 +1791,7 @@ document.addEventListener("click",e=>{
   else if(a==="jgo"){S.jTab="avaliar";const k=Number(v);if(k>=0){S.jPar=k;S.follow=k===(liveState().parAtual||0);}render();window.scrollTo(0,0);}
   else if(a==="jpar"){S.jPar=Number(v);S.follow=S.jPar===(liveState().parAtual||0);render();}
   else if(a==="jfollow"){S.follow=true;render();}
-  else if(a==="jset"){S.jurado=v;S.draft={};try{localStorage.setItem("inov-jurado",v);}catch(e){}render();}
+  else if(a==="jset"){S.jurado=v;if(norm(v).trim()!==norm(JURI_EDITOR))S.preview=false;S.draft={};try{localStorage.setItem("inov-jurado",v);}catch(e){}render();}
   else if(a==="jout"){S.jurado="";S.draft={};try{localStorage.removeItem("inov-jurado");}catch(e){}render();}
   else if(a==="tohome"){history.replaceState(null,"",location.pathname+location.search);S.mode="app";S.view="hub";S.tab.hub="live";rememberUI();render();window.scrollTo(0,0);}
   else if(a==="openjuri"){location.hash="juri";}
@@ -1899,12 +1902,13 @@ document.addEventListener("submit",e=>{
   else if(k==="addct"){const id=uid();S.contactos.set(id,{id,startupId:f.dataset.id,nome:d.nome.trim(),empresa:(d.empresa||"").trim(),canal:d.canal,d:d.d||TODAY(),estado:"contactado",perdido:false,valor:"",notas:"",createdAt:new Date().toISOString()});save("contactos",id);render();toast("Contacto registado.");}
 });
 document.addEventListener("click",e=>{
-  const b=e.target.closest("[data-go],[data-tab],[data-open],[data-act],[data-fsess],[data-st]");if(!b)return;
+  const b=e.target.closest("[data-go],[data-tab],[data-open],[data-act],[data-fsess],[data-fest],[data-st]");if(!b)return;
   if(b.tagName==="INPUT")return;
   if(b.dataset.go){S.view=b.dataset.go;S.open=null;rememberUI();render();window.scrollTo(0,0);return;}
   if(b.dataset.tab){const [g,t]=b.dataset.tab.split(":");S.tab[g]=t;S.open=null;rememberUI();render();return;}
   if(b.dataset.open){S.open=S.open===b.dataset.open?null:b.dataset.open;render();return;}
   if(b.dataset.fsess!=null){S.f.sess=Number(b.dataset.fsess);render();return;}
+  if(b.dataset.fest!=null){const v=b.dataset.fest,c=Array.isArray(S.f.est)?S.f.est:[];S.f.est=v==="all"?[]:c.includes(Number(v))?c.filter(x=>x!==Number(v)):[...c,Number(v)];render();return;}
   if(b.dataset.st&&!b.dataset.act){S.view="hub";S.tab.hub="startups";S.stSel=b.dataset.st;rememberUI();render();return;}
   const a=b.dataset.act,id=b.dataset.id;
   if(a==="gosto"){const i=S.ideias.get(id);const v=Number(b.dataset.v);i.gosto=i.gosto===v?0:v;save("ideias",id);render();}
