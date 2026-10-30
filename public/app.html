@@ -63,6 +63,10 @@
 .tl-h{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}.tl-h b{font:800 14px var(--display)}
 .fres{margin:0;background:var(--brand-soft);border-radius:8px;padding:10px 12px;line-height:1.55;white-space:pre-wrap}
 .ic-res{margin:10px 0 0;background:var(--brand-soft);border-radius:8px;padding:10px 12px;line-height:1.55}
+.ic-av{margin-top:4px;padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:var(--surface-2);display:grid;gap:10px}
+.ic-av-h{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;justify-content:space-between}.ic-av-h .eyebrow{margin:0}
+.ic-av-n{display:flex;flex-wrap:wrap;gap:10px}.ic-av-n label{display:grid;gap:3px;font-size:12px;font-weight:700;color:var(--muted)}.ic-av-n .field.n{width:84px}
+.ic-av-d{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between}
 .ic-res p{margin:4px 0 0;white-space:pre-wrap}.ic-res-d{margin-top:8px}.ic-res-d summary{cursor:pointer;font-weight:700;font-size:13px}.ic-res-d p{margin:6px 0 0}
 .ic-notes{background:var(--warn-soft);overflow-wrap:anywhere}.ic-notes .eyebrow{color:var(--warn)}
 .fres.auto{background:var(--surface-2);border:1px dashed var(--line-2);color:var(--muted)}
@@ -1095,7 +1099,7 @@ function resumoCard(i){
   const k=ks[ks.length-1],prev=ks.slice(0,-1);
   return `<div class="ic-res"><span class="eyebrow">Resumo do feedback do júri · até à ${esc(k)}.ª sessão</span><p>${esc(R[k])}</p>${prev.length?`<details class="ic-res-d"><summary>Ver evolução (${prev.length} ${prev.length>1?"sessões anteriores":"sessão anterior"})</summary>${prev.map(x=>`<p><b>${esc(x)}.ª sessão</b> · ${esc(R[x])}</p>`).join("")}</details>`:""}</div>`;
 }
-function ideaRow(i){
+function ideaRow(i,extra){
   const open=S.open===i.id,inC1=rank(i.etapa)>=1,nfb=fbAll(i.id).length,ppl=(i.par||[]).filter(Boolean);
   const tipo=i.tipo&&TIPO_COR[i.tipo]?`<span class="tag" style="--pc:${TIPO_COR[i.tipo]}">${TIPO_IDEIA.find(x=>x[0]===i.tipo)[1]}</span>`:"";
   return `<article class="ic ${open?"open":""}" style="--sc:var(--s${Math.min(4,Number(i.sessao)||1)})">
@@ -1108,6 +1112,7 @@ function ideaRow(i){
   ${i.problema||i.solucao?`<div class="ic-ps"><div><b>Problema</b><p>${esc(i.problema||"—")}</p></div><div><b>Solução</b><p>${esc(i.solucao||"—")}</p></div></div>`:""}
   ${resumoCard(i)}
   ${S.isOwner&&String(i.notas||"").trim()?`<div class="ic-res ic-notes"><span class="eyebrow">Notas do coordenador</span><p>${esc(i.notas)}</p></div>`:""}
+  ${extra||""}
   ${open?`<div class="ic-d">${ideaForm(i)}${matBlock(i.id,true)}</div>`:""}</article>`;
 }
 /* Resumo cumulativo por ideia (Bootcamp): segue a cadeia até à versão mais recente e mostra/edita resumoS por sessão. */
@@ -1142,6 +1147,20 @@ function juryOptions(f){
   const c=crm();const names=new Set(c.pessoas.filter(p=>(p.tags||[]).some(t=>t==="júri"||t==="alumni"||t==="mentor"||t==="investidor")).map(p=>p.nome));
   return `<datalist id="dl-juri-${f}">${[...names].sort().map(n=>`<option value="${esc(n)}">`).join("")}</datalist>`;}
 function crmEventFor(f){const c=crm();const key={c1:/challenge\s*(i\b|1)/i,c2:/challenge\s*(ii|2)/i,sd:/selection/i}[f];return c.eventos.find(e=>key.test(e.nome));}
+function faseCard(i,k,f,F,J,prev){
+  const a=(i.aval&&i.aval[f])||{},open=S.open===i.id+f;
+  const prevs=prev.map(q=>{const v=ideaAvg(i,q),d=i.aval&&i.aval[q]&&i.aval[q].decisao;return v!=null||d?`<span class="pill">${esc(S.cfg.fases[q].nome)}: ${v!=null?nf(v):"–"}${d?" · "+esc(d):""}</span>`:"";}).join("");
+  return ideaRow(i,`<div class="ic-av">
+    <div class="ic-av-h"><span class="eyebrow">${esc(F.nome)} · avaliação</span><span class="row">${prevs}<span class="note">${i._avg!=null?"#"+(k+1)+" · ":""}média <b class="score">${i._avg!=null?nf(i._avg):"–"}</b></span></span></div>
+    ${J.length?`<div class="ic-av-n">${J.map(n=>`<label>${esc(n)}<input class="field n" type="number" step="0.5" min="${F.min}" max="${F.max}" data-b="ideias|${i.id}|aval.${f}.notas.${encodeURIComponent(n)}" data-type="num" value="${esc((a.notas||{})[n]??"")}" aria-label="Nota de ${esc(n)}"></label>`).join("")}</div>`:'<span class="note">Adiciona jurados acima para lhes dares uma nota por ideia.</span>'}
+    <div class="ic-av-d">${decBtns(FASE_DEC[f],a.decisao,"fdec",i.id,`data-f="${f}"`)}<button type="button" class="btn sm ghost" data-open="${i.id+f}" aria-expanded="${open}">${open?"Fechar":"Feedback, slides e site"}</button></div>
+    ${open?`<div class="form">
+      <label class="l full">Feedback do júri / opinião<textarea class="field" data-b="ideias|${i.id}|aval.${f}.feedback">${esc(a.feedback||"")}</textarea></label>
+      <label class="l">Slides<input class="field" data-b="ideias|${i.id}|aval.${f}.slides" value="${esc(a.slides||"")}" placeholder="https://…"></label>
+      <label class="l">Site / protótipo<input class="field" data-b="ideias|${i.id}|aval.${f}.site" value="${esc(a.site||"")}" placeholder="https://…"></label>
+      ${a.slides||a.site?`<div class="full row">${a.slides?`<a href="${esc(href(a.slides))}" target="_blank" rel="noopener">Abrir slides ↗</a>`:""}${a.site?`<a href="${esc(href(a.site))}" target="_blank" rel="noopener">Abrir site ↗</a>`:""}</div>`:""}</div>`:""}
+  </div>`);
+}
 function hFase(f){
   const F=S.cfg.fases[f];const prev={c1:[],c2:["c1"],sd:["c1","c2"]}[f];
   const list=[...S.ideias.values()].filter(i=>rank(i.etapa)>=rank(f));
@@ -1162,19 +1181,7 @@ function hFase(f){
     <span class="row">${crmJ.length?`<button type="button" class="btn sm" data-act="impjuri" data-f="${f}">Importar ${crmJ.length} confirmados do CRM</button>`:""}<label class="row note">Escala <input class="field n sm" type="number" data-cfg="fases.${f}.min" value="${F.min}"> a <input class="field n sm" type="number" data-cfg="fases.${f}.max" value="${F.max}"></label></span></div>
     <div class="row">${J.map((n,k)=>`<span class="pill br">${esc(n)} <button type="button" class="x" data-act="rmjuri" data-f="${f}" data-k="${k}" aria-label="Remover ${esc(n)}">×</button></span>`).join("")||'<span class="note">Adiciona os jurados para ganhares uma coluna de notas por cada um.</span>'}
       <form class="row" data-form="addjuri" data-f="${f}"><input class="field sm" list="dl-juri-${f}" name="n" placeholder="Nome do jurado" style="width:180px"><button class="btn sm" type="submit">Adicionar</button></form></div></div>
-  ${list.length?`<div class="tw"><table><thead><tr><th>#</th><th>Ideia</th>${prev.map(p=>`<th class="num">${S.cfg.fases[p].nome}</th>`).join("")}${J.map(n=>`<th class="num"><span class="jhead" title="${esc(n)}">${esc(n.split(" ")[0])}</span></th>`).join("")}<th class="num">Média</th><th>Decisão</th></tr></thead><tbody>
-  ${list.map((i,k)=>{const a=(i.aval&&i.aval[f])||{};const open=S.open===i.id+f;return `<tr class="${open?"sel":""}"><td class="rank">${i._avg!=null?k+1:""}</td>
-    <td><button type="button" class="rowbtn" data-open="${i.id+f}"><span class="t">${esc(i.titulo)}</span><span class="s">${esc((i.par||[]).filter(Boolean).join(" & "))}${a.slides?" · slides":""}</span></button></td>
-    ${prev.map(p=>{const v=ideaAvg(i,p);const d=i.aval&&i.aval[p]&&i.aval[p].decisao;return `<td class="num"><span class="score">${v!=null?nf(v):"–"}</span>${d?`<span class="s">${esc(d)}</span>`:""}</td>`;}).join("")}
-    ${J.map(n=>`<td class="num"><input class="field n" type="number" step="0.5" min="${F.min}" max="${F.max}" data-b="ideias|${i.id}|aval.${f}.notas.${encodeURIComponent(n)}" data-type="num" value="${esc((a.notas||{})[n]??"")}" aria-label="Nota de ${esc(n)}"></td>`).join("")}
-    <td class="num"><b class="score">${i._avg!=null?nf(i._avg):"–"}</b></td>
-    <td>${decBtns(FASE_DEC[f],a.decisao,"fdec",i.id,`data-f="${f}"`)}</td></tr>
-    ${open?`<tr class="detail"><td colspan="${4+prev.length+J.length}"><div class="form">
-      <label class="l full">Feedback do júri / opinião<textarea class="field" data-b="ideias|${i.id}|aval.${f}.feedback">${esc(a.feedback||"")}</textarea></label>
-      <label class="l">Slides<input class="field" data-b="ideias|${i.id}|aval.${f}.slides" value="${esc(a.slides||"")}" placeholder="https://…"></label>
-      <label class="l">Site / protótipo<input class="field" data-b="ideias|${i.id}|aval.${f}.site" value="${esc(a.site||"")}" placeholder="https://…"></label>
-      <div class="full row" style="justify-content:space-between"><span class="row">${a.slides?`<a href="${esc(href(a.slides))}" target="_blank" rel="noopener">Abrir slides ↗</a>`:""}${a.site?`<a href="${esc(href(a.site))}" target="_blank" rel="noopener">Abrir site ↗</a>`:""}<span class="note">Problema: ${esc(i.problema||"–")}</span></span><button type="button" class="btn sm" data-open="${i.id+f}">Fechar</button></div></div></td></tr>`:""}`;}).join("")}
-  </tbody></table></div>
+  ${list.length?`<div class="ilist">${list.map((i,k)=>faseCard(i,k,f,F,J,prev)).join("")}</div>
   <p class="note" style="margin-top:8px">Ordenado pela média. “${FASE_DEC[f][2][1]}” move a ideia para ${f==="sd"?"o acompanhamento como startup":ETAPA_L[NEXT[f]]}; as outras decisões ficam guardadas no histórico.</p>`
   :empty("Ainda não há ideias nesta fase",f==="c1"?"Marca “Passa” nas ideias das sessões de ideação para as trazeres para o Challenge I.":`As ideias chegam aqui quando marcas “Passa” em ${S.cfg.fases[{c2:"c1",sd:"c2"}[f]].nome}.`)}`;
 }
