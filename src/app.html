@@ -378,6 +378,7 @@ td .ps b{display:block;font-family:var(--display);font-size:10.5px;letter-spacin
 .pairchip .now{font-size:10px;background:#9fdcf7;color:#0b2a4a;border-radius:8px;padding:0 6px}
 .stack2{display:flex}.stack2 .av+.av{margin-left:-8px}
 .jcard{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+.jcard[hidden]{display:none}
 .jcard h3{font-size:16px}
 .ps{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 .ps p{margin:2px 0 0;white-space:pre-wrap;overflow-wrap:anywhere}
@@ -546,6 +547,9 @@ function inList(list){
   const em=String(S.me&&S.me.email||"").toLowerCase(),loc=em.split("@")[0],nm=norm(S.me&&S.me.name||"").trim().replace(/\s+/g,".");
   return (list||[]).some(x=>{x=String(x).toLowerCase().trim();if(!x)return false;return x.includes("@")?!!em&&x===em:(!!loc&&x===loc)||(!!nm&&x===nm);});
 }
+/* Editar título, problema e solução, e apagar ideias: só o coordenador e o júri "Vitor Clara" (os outros júris só dão feedback e fazem perguntas) */
+const JURI_EDITOR="Vitor Clara";
+function juryEditor(){return !!S.isOwner||norm(S.jurado||"").trim()===norm(JURI_EDITOR);}
 /* Quem pode registar, editar e apagar ideias na sessão ao vivo n (além do coordenador) */
 function canEditSess(n){return S.isOwner||!!S.canEdit||(!S.readOnly&&(S.cfg.sessAbertas||[]).map(Number).includes(Number(n)))||inList((S.cfg.sessEditores||{})[String(n)]);}
 const CRM_URL="https://claude.ai/artifact/MsdAABAFPKvqq7ANo4yDMP";
@@ -906,15 +910,20 @@ function hSug(){
   ${mats.length?`<div class="card"><div class="card-h"><h2>Últimos ficheiros</h2></div><ul class="matl">${mats.slice(0,20).map(m=>{const i=S.ideias.get(m.ideiaId);return `<li><button type="button" class="btn sm" data-act="matopen" data-p="${esc(m.path)}">${esc(m.ficheiro)}</button><span class="pill">${esc(m.tipo||"Outro")}</span><span class="note">${esc(i?i.titulo:"")} · ${esc(m.nome||"")}</span></li>`;}).join("")}</ul></div>`:""}
   ${done.length?`<details class="card"><summary><b>Já decididas (${done.length})</b></summary>${done.map(sugCard).join("")}</details>`:""}`;
 }
+/* Pesquisa em "Todas as ideias": todas as palavras têm de aparecer (título, problema, solução ou pessoa), sem acentos nem maiúsculas */
+function ideaHay(i){return norm([i.titulo,i.problema,i.solucao,(i.par||[]).filter(Boolean).join(" ")].join(" "));}
+function jqMatch(hay,q){return norm(q).split(/\s+/).filter(Boolean).every(t=>hay.includes(t));}
+function jqNote(n,tot,q){return q.trim()?(n?`${n} de ${tot} ideias`:"Nenhuma ideia encontrada."):"";}
 function juryTodas(jur){
   const J=[],all=[...S.ideias.values()],ses=[...new Set(all.map(i=>Number(i.sessao)||0))].filter(Boolean).sort();
   const L=all.filter(i=>!S.jSess||Number(i.sessao)===S.jSess).sort((a,b)=>(b.gosto||0)-(a.gosto||0)||(b.sessao||0)-(a.sessao||0)||String(b.createdAt||"").localeCompare(String(a.createdAt||"")));
   return `<div class="card jfilt" style="margin-bottom:14px"><div class="row" role="group" aria-label="Sessão"><button type="button" class="chip" data-act="jsess" data-v="0" aria-pressed="${!S.jSess}">Todas (${all.length})</button>${ses.map(k=>`<button type="button" class="chip" data-act="jsess" data-v="${k}" aria-pressed="${S.jSess===k}">${k}.ª sessão (${all.filter(i=>Number(i.sessao)===k).length})</button>`).join("")}</div>
-    <input class="field" id="jq" type="search" placeholder="Procurar por título, problema, solução ou pessoa" aria-label="Procurar ideias" autocomplete="off">
+    <input class="field" id="jq" type="search" placeholder="Procurar por título, problema, solução ou pessoa" aria-label="Procurar ideias" autocomplete="off" value="${esc(S.jq||"")}">
+    <p class="note" id="jq-n" role="status" style="margin:0;font-weight:700">${jqNote(L.filter(i=>jqMatch(ideaHay(i),S.jq||"")).length,L.length,S.jq||"")}</p>
     <p class="note" style="margin:0">Ordenadas por estrelas. Podes dar feedback a qualquer ideia, de qualquer sessão, e abrir os ficheiros que os membros juntaram.</p></div>
-  ${L.length?`<div class="stack" id="jtodas">${L.map(i=>juryIdea(i,jur,J)).join("")}</div>`:empty("Sem ideias","Ainda não há ideias nesta sessão.")}`;
+  ${L.length?`<div class="stack" id="jtodas">${L.map(i=>juryIdea(i,jur,J,!!(S.jq||"").trim()&&!jqMatch(ideaHay(i),S.jq))).join("")}</div>`:empty("Sem ideias","Ainda não há ideias nesta sessão.")}`;
 }
-document.addEventListener("input",e=>{if(e.target.id!=="jq")return;const q=norm(e.target.value.trim());document.querySelectorAll("#jtodas > .jcard").forEach(c=>{c.hidden=!!q&&!String(c.dataset.q||"").includes(q);});});
+document.addEventListener("input",e=>{if(e.target.id!=="jq")return;const q=e.target.value;S.jq=q;let n=0,tot=0;document.querySelectorAll("#jtodas > .jcard").forEach(c=>{tot++;const h=!!q.trim()&&!jqMatch(String(c.dataset.q||""),q);c.hidden=h;if(!h)n++;});const el=document.getElementById("jq-n");if(el)el.textContent=jqNote(n,tot,q);});
 document.addEventListener("click",e=>{const b=e.target.closest("[data-act]");if(!b)return;const a=b.dataset.act;
   if(a==="matopen"){e.preventDefault();if(window.INOV_FILE)window.INOV_FILE(b.dataset.p).catch(()=>toast("Não foi possível abrir o ficheiro.",true));else toast("Os ficheiros só abrem na versão web.",true);}
   else if(a==="fbmode"){S.fbMode=b.dataset.v;render();}
@@ -1667,9 +1676,9 @@ function reuseSel(n,cur){
   const ss=[...new Set(resto.map(i=>Number(i.sessao)))];
   return `<label class="l full">Retomar uma ideia de sessões anteriores (opcional)<select class="field" id="reuse" aria-describedby="reuse-h"><option value="">Ideia nova</option>${doPar.length?`<optgroup label="De quem está neste grupo">${doPar.map(opt).join("")}</optgroup>`:""}${ss.map(k=>`<optgroup label="Outras ideias · sessão ${k}">${resto.filter(i=>Number(i.sessao)===k).map(opt).join("")}</optgroup>`).join("")}</select><span class="note" id="reuse-h">Preenche o título, o problema e a solução. Podes editar antes de mostrar ao júri.</span></label>`;
 }
-function juryIdea(i,jur,J){
+function juryIdea(i,jur,J,hide){
   const d=S.draft[i.id]||{veredito:"",custom:"",comentario:"",pergunta:""};
-  const ed=canEditSess(i.sessao)&&!S.preview&&(S.isOwner||S.jTab!=="todas");const editing=ed&&S.jEdit===i.id;
+  const ed=juryEditor()&&!S.preview;const editing=ed&&S.jEdit===i.id;
   const ppl=(i.par||[]).filter(Boolean),nfb=fbAll(i.id).length,mats=matsOf(i.id);
   const qOpen=!!(d.pergunta||"").trim()||!!(S.qOpen&&S.qOpen[i.id]);
     const body=editing?`<div class="form"><label class="l full">Título<input class="field" data-b="ideias|${i.id}|titulo" value="${esc(i.titulo||"")}"></label>
@@ -1678,11 +1687,16 @@ function juryIdea(i,jur,J){
     :`<h3 class="jc-t">${esc(i.titulo||"(sem título)")}</h3>${i.origem&&S.ideias.get(i.origem)?`<p class="note" style="margin:-6px 0 0">↺ Retomada da ${esc(S.ideias.get(i.origem).sessao)}.ª sessão (${esc(S.ideias.get(i.origem).titulo||"")})</p>`:""}
     <div class="jc-ps"><div><b>Problema</b><p>${esc(i.problema||"—")}</p></div><div><b>Solução</b><p>${esc(i.solucao||"—")}</p></div></div>
     ${mats.length?`<div class="jc-files"><span class="jc-lbl">Ficheiros dos membros</span>${mats.map(m=>`<button type="button" class="fchip" data-act="matopen" data-p="${esc(m.path)}" title="${esc(m.tipo||"")} · ${esc(m.nome||"")}"><span class="fi">${esc((String(m.ficheiro).split(".").pop()||"").slice(0,4).toUpperCase())}</span><span class="fn">${esc(m.ficheiro)}</span><small>${esc(m.tipo||"")}</small></button>`).join("")}</div>`:""}`;
-  return `<article class="jcard jc2" style="--sc:var(--s${Math.min(4,Number(i.sessao)||1)})" data-q="${esc(norm([i.titulo,i.problema,i.solucao,ppl.join(" ")].join(" ")))}">
+  return `<article class="jcard jc2" ${hide?"hidden":""} style="--sc:var(--s${Math.min(4,Number(i.sessao)||1)})" data-q="${esc(ideaHay(i))}">
   <div class="jc-top"><span class="jc-s">${esc(sessLabel(i))}</span><span class="jc-ppl">${ppl.map(p=>`<span class="chipp">${av(p,22)}${esc(p)}</span>`).join("")||'<span class="note">Sem grupo</span>'}</span>
     <span class="jc-meta">${starsRO(i)}${ed&&!editing?`<button type="button" class="btn sm ghost" data-act="jedit" data-id="${i.id}">Editar</button><button type="button" class="btn sm ghost danger" data-act="delidea" data-id="${i.id}" aria-label="Apagar a ideia ${esc(i.titulo||"")}">Apagar</button>`:""}</span></div>
   ${body}
   ${jur?`<section class="jc-fb">
+    <div class="jc-lbl">O teu veredito</div>
+    <div class="verd v2" role="group" aria-label="O teu veredito">${VERD.map(([k,l,t])=>`<button type="button" class="vb ${t} ${d.veredito===k?"on":""}" aria-pressed="${d.veredito===k}" data-act="verd" data-id="${i.id}" data-v="${k}">${l}</button>`).join("")}</div>
+    ${d.veredito==="outro"?`<input class="field" data-fb="${i.id}" data-k="custom" value="${esc(d.custom||"")}" placeholder="O teu veredito (ex.: pivotar para B2B)" aria-label="Veredito personalizado">`:""}
+    <div class="jc-comp"><textarea class="field" rows="2" data-fb="${i.id}" data-k="comentario" placeholder="${d.veredito?"Porquê? Sugestões para o par (opcional)":"Escolhe primeiro um veredito"} · Enter envia" aria-label="Sugestões">${esc(d.comentario||"")}</textarea>
+      <button type="button" class="btn pri" data-act="fbsend" data-id="${i.id}" ${d.veredito?"":"disabled"}>Enviar</button></div>
     <details class="jc-q" data-qid="${i.id}" ${qOpen?"open":""}><summary>Fazer uma pergunta ao par</summary>
       <div class="jc-comp"><textarea class="field" rows="2" data-fb="${i.id}" data-k="pergunta" placeholder="Escreve a pergunta · Enter envia" aria-label="Pergunta">${esc(d.pergunta||"")}</textarea>
       <button type="button" class="btn" data-act="qsend" data-id="${i.id}" ${(d.pergunta||"").trim()?"":"disabled"}>Enviar pergunta</button></div></details>
@@ -1783,7 +1797,7 @@ document.addEventListener("click",e=>{
   else if(a==="pedok"||a==="pedno"){const id=b.dataset.id,p=S.pedidos.get(id);if(!p)return;
     if(a==="pedok"){const key=p.email||norm(p.nome).trim().replace(/\s+/g,".");S.cfg.sessEditores=Object.assign({},S.cfg.sessEditores||{});const l=(S.cfg.sessEditores[String(p.sessao)]||[]).slice();if(!l.includes(key))l.push(key);S.cfg.sessEditores[String(p.sessao)]=l;saveCfg();p.estado="aprovado";save("pedidos",id);toast("Aprovado. Convida a pessoa como Editor no menu Partilhar.");}
     else{remove("pedidos",id);toast("Pedido recusado.");}render();}
-  else if(a==="jedit"){S.jEdit=b.dataset.id||null;render();}
+  else if(a==="jedit"){if(b.dataset.id&&!juryEditor())return;S.jEdit=b.dataset.id||null;render();}
   else if(a==="fbsend")sendFb(b.dataset.id,b,"veredito");
   else if(a==="qsend")sendFb(b.dataset.id,b,"pergunta");
   else if(a==="fbdel")delFb(b.dataset.v);
@@ -1901,7 +1915,7 @@ document.addEventListener("click",e=>{
   else if(a==="duptxt"){S.dupTxt=S.dupTxt||{};S.dupTxt[b.dataset.k]=b.dataset.v;render();}
   else if(a==="dupno"){const L=S.cfg.dupIgnorar=Array.isArray(S.cfg.dupIgnorar)?S.cfg.dupIgnorar:[];if(!L.includes(b.dataset.k))L.push(b.dataset.k);save("config","main");render();toast("Par marcado como ideias diferentes.");}
   else if(a==="dupok"){const x=S.ideias.get(b.dataset.a),y=S.ideias.get(b.dataset.b);if(!x||!y)return;const pl=dupPlan(x,y);confirmDlg("Juntar estas duas ideias?",`Fica “${pl.keep.titulo||""}” (${pl.keep.sessao}.ª sessão) com ${pl.par.length} pessoas e mais ${pl.fb} feedback(s). “${pl.old.titulo||""}” (${pl.old.sessao}.ª sessão) deixa de aparecer em separado; fica registada dentro da ideia que fica.`,()=>dupMerge(x.id,y.id),"Juntar");}
-  else if(a==="delidea"){const it=S.ideias.get(id);confirmDlg("Apagar esta ideia?",`“${it&&it.titulo||""}” e as notas dos júris desaparecem. Não dá para desfazer.`,()=>{S.open=null;if(S.jEdit===id)S.jEdit=null;
+  else if(a==="delidea"){if(!juryEditor())return;const it=S.ideias.get(id);confirmDlg("Apagar esta ideia?",`“${it&&it.titulo||""}” e as notas dos júris desaparecem. Não dá para desfazer.`,()=>{S.open=null;if(S.jEdit===id)S.jEdit=null;
     if(S.isOwner)for(const f of [...S.feedback.values()])if(f.ideiaId===id)remove("feedback",f.id);remove("ideias",id);toast("Ideia apagada.");});}
   else if(a==="impjuri"){const f=b.dataset.f;const ev=crmEventFor(f);const J=S.cfg.fases[f].juri=S.cfg.fases[f].juri||[];let n=0;(ev.juri||[]).filter(j=>j.estado==="confirmado").forEach(j=>{if(!J.includes(j.nome)){J.push(j.nome);n++;}});saveCfg();render();toast(n?`${n} jurados importados.`:"Já estavam todos.");}
   else if(a==="rmjuri"){S.cfg.fases[b.dataset.f].juri.splice(Number(b.dataset.k),1);saveCfg();render();}
