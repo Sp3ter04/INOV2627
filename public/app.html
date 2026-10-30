@@ -1675,10 +1675,12 @@ function reuseSel(n,cur){
   if(!past.length)return "";
   const mine=new Set(mem3(cur).filter(Boolean).map(norm)),sel=reusePick();
   const opt=i=>`<option value="${esc(i.id)}" ${i.id===sel?"selected":""}>${esc(i.titulo||"(sem título)")} · S${esc(i.sessao)} · ${esc((i.par||[]).filter(Boolean).map(first).join(", "))}</option>`;
-  const doPar=past.filter(i=>(i.par||[]).some(m=>mine.has(norm(m))));
-  const resto=past.filter(i=>!doPar.includes(i));
+  /* Todas as ideias da sessão atual primeiro (de qualquer grupo, com ou sem feedback); depois as do grupo em sessões anteriores; depois as restantes */
+  const cs=past.filter(i=>Number(i.sessao)===Number(n)),prev=past.filter(i=>Number(i.sessao)<Number(n));
+  const doPar=prev.filter(i=>(i.par||[]).some(m=>mine.has(norm(m))));
+  const resto=prev.filter(i=>!doPar.includes(i));
   const ss=[...new Set(resto.map(i=>Number(i.sessao)))];
-  return `<label class="l full">Retomar uma ideia de sessões anteriores (opcional)<select class="field" id="reuse" aria-describedby="reuse-h"><option value="">Ideia nova</option>${doPar.length?`<optgroup label="De quem está neste grupo">${doPar.map(opt).join("")}</optgroup>`:""}${ss.map(k=>`<optgroup label="Outras ideias · sessão ${k}">${resto.filter(i=>Number(i.sessao)===k).map(opt).join("")}</optgroup>`).join("")}</select><span class="note" id="reuse-h">Preenche o título, o problema e a solução. Podes editar antes de mostrar ao júri.</span></label>`;
+  return `<label class="l full">Retomar uma ideia de sessões anteriores (opcional)<select class="field" id="reuse" aria-describedby="reuse-h"><option value="">Ideia nova</option>${cs.length?`<optgroup label="Todas as ideias da ${esc(n)}.ª sessão">${cs.map(opt).join("")}</optgroup>`:""}${doPar.length?`<optgroup label="De quem está neste grupo">${doPar.map(opt).join("")}</optgroup>`:""}${ss.map(k=>`<optgroup label="Outras ideias · sessão ${k}">${resto.filter(i=>Number(i.sessao)===k).map(opt).join("")}</optgroup>`).join("")}</select><span class="note" id="reuse-h">Preenche o título, o problema e a solução. Podes editar antes de mostrar ao júri.</span></label>`;
 }
 function juryIdea(i,jur,J,hide){
   const d=S.draft[i.id]||{veredito:"",custom:"",comentario:"",pergunta:""};
