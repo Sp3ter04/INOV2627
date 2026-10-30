@@ -547,9 +547,10 @@ function inList(list){
   const em=String(S.me&&S.me.email||"").toLowerCase(),loc=em.split("@")[0],nm=norm(S.me&&S.me.name||"").trim().replace(/\s+/g,".");
   return (list||[]).some(x=>{x=String(x).toLowerCase().trim();if(!x)return false;return x.includes("@")?!!em&&x===em:(!!loc&&x===loc)||(!!nm&&x===nm);});
 }
-/* Editar título, problema e solução, e apagar ideias: só o coordenador e o júri "Vitor Clara" (os outros júris só dão feedback e fazem perguntas) */
+/* Na vista do júri, editar título, problema e solução e apagar ideias: só o júri "Vitor Clara", mesmo com o código de coordenador (os outros só dão feedback e fazem perguntas). Na vista de coordenador (Bootcamp) o coordenador continua a poder editar. */
 const JURI_EDITOR="Vitor Clara";
-function juryEditor(){return !!S.isOwner||norm(S.jurado||"").trim()===norm(JURI_EDITOR);}
+function juryEditor(){return norm(S.jurado||"").trim()===norm(JURI_EDITOR);}
+function canEditIdeas(){return juryEditor()||(!!S.isOwner&&S.mode!=="juri");}
 /* Quem pode registar, editar e apagar ideias na sessão ao vivo n (além do coordenador) */
 function canEditSess(n){return S.isOwner||!!S.canEdit||(!S.readOnly&&(S.cfg.sessAbertas||[]).map(Number).includes(Number(n)))||inList((S.cfg.sessEditores||{})[String(n)]);}
 const CRM_URL="https://claude.ai/artifact/MsdAABAFPKvqq7ANo4yDMP";
@@ -1919,7 +1920,7 @@ document.addEventListener("click",e=>{
   else if(a==="duptxt"){S.dupTxt=S.dupTxt||{};S.dupTxt[b.dataset.k]=b.dataset.v;render();}
   else if(a==="dupno"){const L=S.cfg.dupIgnorar=Array.isArray(S.cfg.dupIgnorar)?S.cfg.dupIgnorar:[];if(!L.includes(b.dataset.k))L.push(b.dataset.k);save("config","main");render();toast("Par marcado como ideias diferentes.");}
   else if(a==="dupok"){const x=S.ideias.get(b.dataset.a),y=S.ideias.get(b.dataset.b);if(!x||!y)return;const pl=dupPlan(x,y);confirmDlg("Juntar estas duas ideias?",`Fica “${pl.keep.titulo||""}” (${pl.keep.sessao}.ª sessão) com ${pl.par.length} pessoas e mais ${pl.fb} feedback(s). “${pl.old.titulo||""}” (${pl.old.sessao}.ª sessão) deixa de aparecer em separado; fica registada dentro da ideia que fica.`,()=>dupMerge(x.id,y.id),"Juntar");}
-  else if(a==="delidea"){if(!juryEditor())return;const it=S.ideias.get(id);confirmDlg("Apagar esta ideia?",`“${it&&it.titulo||""}” e as notas dos júris desaparecem. Não dá para desfazer.`,()=>{S.open=null;if(S.jEdit===id)S.jEdit=null;
+  else if(a==="delidea"){if(!canEditIdeas())return;const it=S.ideias.get(id);confirmDlg("Apagar esta ideia?",`“${it&&it.titulo||""}” e as notas dos júris desaparecem. Não dá para desfazer.`,()=>{S.open=null;if(S.jEdit===id)S.jEdit=null;
     if(S.isOwner)for(const f of [...S.feedback.values()])if(f.ideiaId===id)remove("feedback",f.id);remove("ideias",id);toast("Ideia apagada.");});}
   else if(a==="impjuri"){const f=b.dataset.f;const ev=crmEventFor(f);const J=S.cfg.fases[f].juri=S.cfg.fases[f].juri||[];let n=0;(ev.juri||[]).filter(j=>j.estado==="confirmado").forEach(j=>{if(!J.includes(j.nome)){J.push(j.nome);n++;}});saveCfg();render();toast(n?`${n} jurados importados.`:"Já estavam todos.");}
   else if(a==="rmjuri"){S.cfg.fases[b.dataset.f].juri.splice(Number(b.dataset.k),1);saveCfg();render();}
