@@ -64,6 +64,7 @@
 .fres{margin:0;background:var(--brand-soft);border-radius:8px;padding:10px 12px;line-height:1.55;white-space:pre-wrap}
 .ic-res{margin:10px 0 0;background:var(--brand-soft);border-radius:8px;padding:10px 12px;line-height:1.55}
 .ic-res p{margin:4px 0 0;white-space:pre-wrap}.ic-res-d{margin-top:8px}.ic-res-d summary{cursor:pointer;font-weight:700;font-size:13px}.ic-res-d p{margin:6px 0 0}
+.ic-notes{background:var(--warn-soft);overflow-wrap:anywhere}.ic-notes .eyebrow{color:var(--warn)}
 .fres.auto{background:var(--surface-2);border:1px dashed var(--line-2);color:var(--muted)}
 .fres-e textarea{width:100%;min-height:96px}
 .schips{display:flex;flex-wrap:wrap;gap:6px}.schips button{all:unset;box-sizing:border-box;cursor:pointer;min-height:36px;padding:6px 14px;border:1.5px solid var(--line-2);border-radius:99px;font-weight:700;font-size:13px;color:var(--muted);background:var(--surface)}.schips button[aria-pressed=true]{background:var(--brand);border-color:var(--brand);color:var(--on-brand)}.schips button:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
@@ -1093,6 +1094,7 @@ function ideaRow(i){
     <span class="ic-j">${tallyHtml(i.id)||'<span class="note">sem avaliações do júri</span>'}${nfb?`<span class="note">${nfb} entrada${nfb>1?"s":""}</span>`:""}</span></div>
   ${i.problema||i.solucao?`<div class="ic-ps"><div><b>Problema</b><p>${esc(i.problema||"—")}</p></div><div><b>Solução</b><p>${esc(i.solucao||"—")}</p></div></div>`:""}
   ${resumoCard(i)}
+  ${S.isOwner&&String(i.notas||"").trim()?`<div class="ic-res ic-notes"><span class="eyebrow">Notas do coordenador</span><p>${esc(i.notas)}</p></div>`:""}
   ${open?`<div class="ic-d">${ideaForm(i)}${matBlock(i.id,true)}</div>`:""}</article>`;
 }
 /* Resumo cumulativo por ideia (Bootcamp): segue a cadeia até à versão mais recente e mostra/edita resumoS por sessão. */
@@ -1116,7 +1118,6 @@ function ideaForm(i){
     <label class="l">Tipo<select class="field" data-b="ideias|${i.id}|tipo"><option value="">—</option>${TIPO_IDEIA.map(([k,l])=>`<option value="${k}" ${i.tipo===k?"selected":""}>${l}</option>`).join("")}</select></label>
     <div class="row"><label class="l" style="flex:1">Membro A<input class="field" list="dl-membros" data-b="ideias|${i.id}|par.0" value="${esc((i.par||[])[0]||"")}"></label><label class="l" style="flex:1">Membro B<input class="field" list="dl-membros" data-b="ideias|${i.id}|par.1" value="${esc((i.par||[])[1]||"")}"></label>${(i.par||[])[2]!==undefined?`<label class="l" style="flex:1">Membro C<input class="field" list="dl-membros" data-b="ideias|${i.id}|par.2" value="${esc((i.par||[])[2]||"")}"></label>`:""}<label class="l">Sessão<select class="field" data-b="ideias|${i.id}|sessao" data-type="num">${[1,2,3,4].map(n=>`<option ${i.sessao===n?"selected":""}>${n}</option>`).join("")}</select></label></div>
     ${b("problema","Problema",1)}${b("solucao","Solução",1)}
-    ${b("fortes","Pontos fortes",1)}${b("fracos","Pontos fracos",1)}
     ${b("notas","Notas do coordenador",1,"O que investigar a seguir, perguntas, contactos…")}
     ${resumoIdeia(i)}
     ${fbAll(i.id).length?`<div class="full"><span class="l">Feedback e perguntas do júri</span><ul class="fbul">${fbAll(i.id).map(f=>fbItem(f,false)).join("")}</ul></div>`:""}
