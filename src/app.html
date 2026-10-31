@@ -28,6 +28,7 @@
 .chipp[data-pid]{cursor:context-menu}
 .ic-p{display:flex;gap:6px;flex-wrap:wrap}.chipp{display:inline-flex;gap:6px;align-items:center;font-size:12.5px;background:var(--surface-2);border:1px solid var(--line);border-radius:99px;padding:2px 10px 2px 2px}
 .ic-j{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.ps-t{background:none;border:0;padding:3px 8px;font:inherit;font-size:12.5px;color:var(--muted);cursor:pointer;border-radius:6px;white-space:nowrap}.ps-t:hover,.ps-t:focus-visible{background:var(--surface-2);color:var(--ink,inherit)}
 .ic-ps{display:grid;grid-template-columns:1fr 1fr;gap:10px}.ic-ps>div{background:var(--surface-2);border-radius:8px;padding:8px 12px}
 .ic-ps b{display:block;font:800 10.5px var(--display);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}.ic-ps p{margin:2px 0 0;font-size:13.5px;line-height:1.5;white-space:pre-wrap}
 .ic-d{border-top:1px solid var(--line);padding-top:10px}
@@ -1127,20 +1128,20 @@ function resumoCard(i){
   const k=ks[ks.length-1],prev=ks.slice(0,-1);
   return `<div class="ic-res"><span class="eyebrow">Resumo do feedback do júri · até à ${esc(k)}.ª sessão</span><p>${esc(R[k])}</p>${prev.length?`<details class="ic-res-d"><summary>Ver evolução (${prev.length} ${prev.length>1?"sessões anteriores":"sessão anterior"})</summary>${prev.map(x=>`<p><b>${esc(x)}.ª sessão</b> · ${esc(R[x])}</p>`).join("")}</details>`:""}</div>`;
 }
-function ideaRow(i,extra,ctl){
-  const open=S.open===i.id,inC1=rank(i.etapa)>=1,nfb=fbAll(i.id).length,ppl=(i.par||[]).filter(Boolean);
+function ideaRow(i,extra,ctl,compact){
+  const open=S.open===i.id,psO=!compact||!!(S.psOpen&&S.psOpen.has(i.id)),inC1=rank(i.etapa)>=1,nfb=fbAll(i.id).length,ppl=(i.par||[]).filter(Boolean);
   const tipo=i.tipo&&TIPO_COR[i.tipo]?`<span class="tag" style="--pc:${TIPO_COR[i.tipo]}">${TIPO_IDEIA.find(x=>x[0]===i.tipo)[1]}</span>`:"";
   return `<article class="ic ${open?"open":""}" style="--sc:var(--s${Math.min(4,Number(i.sessao)||1)})">
   <div class="ic-h"><span class="ic-s" title="${esc(sessLabel(i))}">${i.sessao||"?"}.ª</span>
     <button type="button" class="ic-t" data-open="${i.id}" aria-expanded="${open}"><span class="chev" aria-hidden="true">${open?"▾":"▸"}</span>${tipo}<span>${esc(i.titulo||"(sem título)")}</span></button>
     <span class="ic-b">${ideaBadges(i)}</span>
     <span class="ic-r">${stars(i)}${ctl!=null?ctl:rank(i.etapa)>1?`<span class="stage ${i.etapa}">${ETAPA_L[i.etapa]}</span>`:`<label class="c1t ${inC1?"on":""}"><input type="checkbox" data-act="toc1" data-id="${i.id}" ${inC1?"checked":""}>${inC1?"Passa ao Challenge I":"Challenge I"}</label>`}</span></div>
-  <div class="ic-m"><span class="ic-p">${ppl.length?ppl.map(p=>`<span class="chipp" data-pid="${esc(i.id)}" data-pn="${esc(p)}"${pEd()?' title="Botão direito: remover da ideia"':""}>${av(p,22)}${esc(p)}</span>`).join(""):'<span class="note">Sem grupo</span>'}</span>
+  <div class="ic-m"><span class="ic-p">${ppl.length?ppl.map(p=>`<span class="chipp" data-pid="${esc(i.id)}" data-pn="${esc(p)}"${pEd()?' title="Botão direito: remover da ideia"':""}>${av(p,22)}${esc(p)}</span>`).join(""):'<span class="note">Sem grupo</span>'}${compact?`<button type="button" class="ps-t" data-act="psopen" data-id="${esc(i.id)}" aria-expanded="${psO}">problema/solução ${psO?"▾":"▸"}</button>`:""}</span>
     <span class="ic-j">${tallyHtml(i.id)||'<span class="note">sem avaliações do júri</span>'}${nfb?`<span class="note">${nfb} entrada${nfb>1?"s":""}</span>`:""}</span></div>
-  ${i.problema||i.solucao?`<div class="ic-ps"><div><b>Problema</b><p>${esc(i.problema||"—")}</p></div><div><b>Solução</b><p>${esc(i.solucao||"—")}</p></div></div>`:""}
+  ${psO?`${i.problema||i.solucao?`<div class="ic-ps"><div><b>Problema</b><p>${esc(i.problema||"—")}</p></div><div><b>Solução</b><p>${esc(i.solucao||"—")}</p></div></div>`:""}
   ${resumoCard(i)}
   ${S.isOwner&&String(i.notas||"").trim()?`<div class="ic-res ic-notes"><span class="eyebrow">Notas do coordenador</span><p>${esc(i.notas)}</p></div>`:""}
-  ${extra||""}
+  ${extra||""}`:""}
   ${open?`<div class="ic-d">${ideaForm(i)}${matBlock(i.id,true)}</div>`:""}</article>`;
 }
 /* Resumo cumulativo por ideia (Bootcamp): segue a cadeia até à versão mais recente e mostra/edita resumoS por sessão. */
@@ -1189,7 +1190,7 @@ function faseCard(i,k,f,F,J,prev){
       <label class="l">Slides<input class="field" data-b="ideias|${i.id}|aval.${f}.slides" value="${esc(a.slides||"")}" placeholder="https://…"></label>
       <label class="l">Site / protótipo<input class="field" data-b="ideias|${i.id}|aval.${f}.site" value="${esc(a.site||"")}" placeholder="https://…"></label>
       ${a.slides||a.site?`<div class="full row">${a.slides?`<a href="${esc(href(a.slides))}" target="_blank" rel="noopener">Abrir slides ↗</a>`:""}${a.site?`<a href="${esc(href(a.site))}" target="_blank" rel="noopener">Abrir site ↗</a>`:""}</div>`:""}</div>`:""}
-  </div>`,ctl);
+  </div>`,ctl,f==="c1"||f==="c2");
 }
 function hFase(f){
   const F=S.cfg.fases[f];const prev={c1:[],c2:["c1"],sd:["c1","c2"]}[f];
@@ -1972,6 +1973,7 @@ document.addEventListener("click",e=>{
   const a=b.dataset.act,id=b.dataset.id;
   if(a==="gosto"){const i=S.ideias.get(id);const v=Number(b.dataset.v);i.gosto=i.gosto===v?0:v;save("ideias",id);render();}
   else if(a==="idec"){const i=S.ideias.get(id);i.decisao=i.decisao===b.dataset.v?"":b.dataset.v;save("ideias",id);render();}
+  else if(a==="psopen"){const q=b.dataset.id;if(!S.psOpen)S.psOpen=new Set();if(S.psOpen.has(q))S.psOpen.delete(q);else S.psOpen.add(q);render();}
   else if(a==="fdec")setFaseDec(id,b.dataset.f,b.dataset.v);
   else if(a==="dupman"){const x=document.getElementById("dup-a").value,y=document.getElementById("dup-b").value;if(!x||!y||x===y){toast("Escolhe duas ideias diferentes.",true);return;}S.dupMan={a:x,b:y};render();}
   else if(a==="dupclear"){S.dupMan=null;render();}
