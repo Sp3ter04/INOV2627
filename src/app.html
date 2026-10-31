@@ -819,9 +819,9 @@ function vHub(){
   const all=[...S.ideias.values()];const sts=activeStartups();
   const cnt=f=>all.filter(i=>rank(i.etapa)>=rank(f)).length;
   const t=S.tab.hub;
-  const body={ideias:hIdeias,resumo:hResumo,sug:hSug,dup:hDup,live:hLive,c1:()=>hFase("c1"),c2:()=>hFase("c2"),sd:()=>hFase("sd"),startups:hStartups,hist:hHist,ativ:hAtiv,fb:hFb}[t]||hIdeias;
+  const body={ideias:hIdeias,sug:hSug,dup:hDup,live:hLive,c1:()=>hFase("c1"),c2:()=>hFase("c2"),sd:()=>hFase("sd"),startups:hStartups,hist:hHist,ativ:hAtiv,fb:hFb}[t]||hIdeias;
   return `<div class="head"><div><div class="eyebrow">Pilar 1 · Inovação interna</div><h1>Bootcamp</h1>${liveBadge()}<div class="sub">Do Bootcamp às 3 startups: ideias, Challenges, Selection Day e acompanhamento até ao Unicorn Day.</div></div></div>
-  ${tabs("hub",[["ideias","Sessões de ideação",all.length],["resumo","Resumo geral",null],["sug","Sugestões dos membros",sugPend().length||null],["dup","Ideias repetidas",dupPairs().length||null],["live","Sessão ao vivo",null],["c1","Challenge I",cnt("c1")],["c2","Challenge II",cnt("c2")],["sd","Selection Day",cnt("sd")],["startups","Startups",sts.length],["ativ","Atividade",null],["fb","Feedback do júri",null],["hist","Histórico",null]])}
+  ${tabs("hub",[["ideias","Sessões de ideação",all.length],["sug","Sugestões dos membros",sugPend().length||null],["dup","Ideias repetidas",dupPairs().length||null],["live","Sessão ao vivo",null],["c1","Challenge I",cnt("c1")],["c2","Challenge II",cnt("c2")],["sd","Selection Day",cnt("sd")],["startups","Startups",sts.length],["ativ","Atividade",null],["fb","Feedback do júri",null],["hist","Histórico",null]])}
   ${body()}`;
 }
 /* ---------- Ideias repetidas: propor pares, confirmar e juntar (fica a mais recente, pessoas sem repetidos, feedbacks somados) ---------- */
@@ -1061,43 +1061,6 @@ function hFbLista(){
   :empty("Nada neste filtro","Escolhe outro filtro.")}`;
 }
 /* Resumo geral das sessões de ideação: feedback por sessão e ideias que passaram aos Challenges */
-function hResumo(){
-  const all=[...S.ideias.values()];
-  const ses=[...new Set(all.map(i=>Number(i.sessao)||0))].filter(Boolean).sort((a,b)=>a-b);
-  const fsOf=i=>fbAll(i.id).map(f=>Number(f.sessao)||Number(i.sessao)||1);
-  const R=ses.map(n=>{const L=all.filter(i=>Number(i.sessao)===n),F=L.flatMap(i=>fbAll(i.id)),rated=L.filter(i=>(i.gosto||0)>0);
-    return {n,L,tot:L.length,com:L.filter(i=>fbAll(i.id).length).length,ver:F.filter(f=>!isQ(f)).length,per:F.filter(isQ).length,med:avg(rated.map(i=>i.gosto)),q4:L.filter(i=>(i.gosto||0)>=4).length,c1:L.filter(i=>rank(i.etapa)>=1).length};});
-  const T=k=>R.reduce((x,r)=>x+r[k],0),mx=Math.max(1,...R.map(r=>r.tot));
-  const passou=all.filter(i=>rank(i.etapa)>=1).sort((a,b)=>(b.gosto||0)-(a.gosto||0)||fbAll(b.id).length-fbAll(a.id).length||(a.titulo||"").localeCompare(b.titulo||"","pt"));
-  const fmtS=a=>!a.length?"–":a.length>2&&a.every((x,k)=>k===0||x===a[k-1]+1)?`${a[0]}.ª a ${a[a.length-1]}.ª`:a.map(x=>x+".ª").join(", ");
-  const med=m=>m==null?"–":nf(m);
-  return `<div class="tiles">
-    ${tile(all.length,"Ideias",`em ${ses.length} sessões`)}
-    ${tile(T("com"),"Com feedback",`${all.length-T("com")} sem feedback`)}
-    ${tile(T("ver"),"Vereditos",`${T("per")} perguntas`)}
-    ${tile(T("q4"),"Com 4★ ou mais",`${all.length?Math.round(T("q4")/all.length*100):0}% das ideias`)}
-    ${tile(passou.length,"Passaram ao Challenge",`${passou.filter(i=>rank(i.etapa)>=2).length} já no Challenge II ou além`)}
-  </div>
-  <div class="grid g2" style="margin-bottom:14px">
-    <div class="card"><div class="card-h"><h2>Por sessão de ideação</h2><span class="src">com feedback / ideias</span></div>
-      <div class="hbars">${R.map(r=>hbar(`${r.n}.ª sessão`,[[r.com,"var(--ok)","Com feedback"],[r.tot-r.com,"var(--line-2)","Sem feedback"]],r.tot,mx,`${r.com}/${r.tot}`)).join("")}</div>
-      <div class="legend"><span><i style="background:var(--ok)"></i>Com feedback</span><span><i style="background:var(--line-2)"></i>Sem feedback</span></div></div>
-    <div class="card"><div class="card-h"><h2>Em que sessões receberam feedback</h2><span class="src">nº de ideias · linhas: sessão da ideia</span></div>
-      <div class="tw"><table><thead><tr><th>Ideias da…</th>${ses.map(m=>`<th class="num" title="Feedback recebido na ${m}.ª sessão">na ${m}.ª</th>`).join("")}</tr></thead><tbody>
-      ${R.map(r=>`<tr><td style="white-space:nowrap"><b>${r.n}.ª</b> <span class="note">(${r.tot})</span></td>${ses.map(m=>{const c=r.L.filter(i=>fsOf(i).includes(m)).length;return `<td class="num">${c||"–"}</td>`;}).join("")}</tr>`).join("")}
-      </tbody></table></div>
-      <p class="note" style="margin:8px 0 0">“na 2.ª” = feedback recebido na 2.ª sessão. Ideias retomadas ou juntadas trazem o feedback das sessões anteriores.</p></div>
-  </div>
-  <div class="card" style="margin-bottom:14px"><div class="card-h"><h2>Resumo por sessão</h2><span class="src">a média só conta ideias com estrelas</span></div>
-    <div class="tw"><table><thead><tr><th>Sessão</th><th class="num">Ideias</th><th class="num">Com feedback</th><th class="num">Vereditos</th><th class="num">Perguntas</th><th class="num">Média ★</th><th class="num">Com 4★+</th><th class="num">Passaram ao Challenge</th></tr></thead><tbody>
-    ${R.map(r=>`<tr><td><b>${r.n}.ª</b></td><td class="num">${r.tot}</td><td class="num">${r.com}</td><td class="num">${r.ver}</td><td class="num">${r.per}</td><td class="num">${med(r.med)}</td><td class="num">${r.q4}</td><td class="num">${r.c1}</td></tr>`).join("")}
-    <tr><td><b>Total</b></td><td class="num"><b>${T("tot")}</b></td><td class="num"><b>${T("com")}</b></td><td class="num"><b>${T("ver")}</b></td><td class="num"><b>${T("per")}</b></td><td class="num"></td><td class="num"><b>${T("q4")}</b></td><td class="num"><b>${T("c1")}</b></td></tr>
-    </tbody></table></div></div>
-  <div class="card"><div class="card-h"><h2>Ideias que passaram ao Challenge</h2><span class="src">${passou.length} ideias · ordenadas por estrelas</span></div>
-    ${passou.length?`<div class="tw"><table><thead><tr><th>Ideia</th><th>Sessão</th><th>Grupo</th><th class="num">★</th><th>Feedback em</th><th class="num">Entradas</th><th>Fase</th></tr></thead><tbody>
-    ${passou.map(i=>`<tr><td data-l="Ideia">${ideaLink(i.id,i.titulo||"(sem título)")}</td><td data-l="Sessão">${esc(i.sessao||"?")}.ª</td><td data-l="Grupo" class="t">${esc((i.par||[]).filter(Boolean).join(", ")||"–")}</td><td data-l="★" class="num">${i.gosto||0}</td><td data-l="Feedback em">${fmtS([...new Set(fsOf(i))].sort((a,b)=>a-b))}</td><td data-l="Entradas" class="num">${fbAll(i.id).length}</td><td data-l="Fase"><span class="stage ${i.etapa}">${ETAPA_L[i.etapa]}</span></td></tr>`).join("")}
-    </tbody></table></div>`:empty("Ainda nenhuma ideia passou ao Challenge","Marca “Passa” nas ideias das sessões de ideação.")}</div>`;
-}
 function hIdeias(){
   const f=S.f,all=[...S.ideias.values()];
   const q=norm(f.q);
@@ -1209,6 +1172,20 @@ function hFase(f){
   const J=F.juri||[];const ev=crmEventFor(f);const crmJ=ev?(ev.juri||[]).filter(j=>j.estado==="confirmado").map(j=>j.nome):[];
   const scored=list.filter(i=>i._avg!=null);
   const passa=list.filter(i=>i.aval&&i.aval[f]&&["avanca","startup"].includes(i.aval[f].decisao)).length;
+  const allI=[...S.ideias.values()];
+  const membros=[...new Set(allI.flatMap(i=>i.par||[]))].sort();
+  const nM=m=>list.filter(i=>(i.par||[]).includes(m)).length;
+  const maxM=Math.max(1,...membros.map(nM));
+  const sessN=[...new Set(list.map(i=>Number(i.sessao)||1))].sort((x,y)=>x-y);
+  const maxSe=Math.max(1,...sessN.map(n=>list.filter(i=>(Number(i.sessao)||1)===n).length));
+  const gm=i=>Math.max(0,Math.min(5,Math.round(Number(i.gosto)||0)));
+  const blocoM=list.length?`<div class="grid g2" style="margin-bottom:14px">
+    <div class="card"><div class="card-h"><h2>Por membro</h2><span class="src">ideias em que participou · média de gosto</span></div>
+      ${membros.length?`<div class="hbars mem">${membros.map(m=>{const a=list.filter(i=>(i.par||[]).includes(m));const g=avg(a.map(i=>i.gosto||null));return hbar(`<span class="who">${av(m,24)}<span>${esc(m)}</span></span>`,[[a.length,"var(--brand)","Ideias"]],a.length,maxM,`${a.length}${g?" · "+nf(g)+"★":""}`);}).join("")}</div>`:'<p class="note">Sem membros registados nas ideias.</p>'}</div>
+    <div class="card"><div class="card-h"><h2>Sessão de origem</h2><span class="src">${list.length} ideias nesta fase</span></div>
+      <div class="hbars">${sessN.map(n=>{const a=list.filter(i=>(Number(i.sessao)||1)===n);return hbar(`${n}.ª sessão`,[[a.filter(i=>gm(i)>=4).length,"var(--ok)","4–5★"],[a.filter(i=>gm(i)===3).length,"var(--warn)","3★"],[a.filter(i=>gm(i)>=1&&gm(i)<=2).length,"var(--bad)","1–2★"],[a.filter(i=>!gm(i)).length,"var(--line-2)","Sem estrelas"]],a.length,maxSe);}).join("")}</div>
+      <div class="legend"><span><i style="background:var(--ok)"></i>4–5★</span><span><i style="background:var(--warn)"></i>3★</span><span><i style="background:var(--bad)"></i>1–2★</span><span><i style="background:var(--line-2)"></i>Sem estrelas</span></div></div>
+  </div>`:"";
   return `${juryOptions(f)}
   <div class="tiles">
     ${tile(list.length,"Ideias nesta fase",F.formato)}
@@ -1217,6 +1194,7 @@ function hFase(f){
     ${tile(passa,f==="sd"?"Viram startup":"Passam à fase seguinte",f==="sd"?"objetivo: 3":"")}
     ${tile(fmtD(F.data),"Data",ev?`no CRM: ${esc(ev.nome)}`:"")}
   </div>
+  ${blocoM}
   <div class="card" style="margin-bottom:14px"><div class="card-h"><h2>Júri do ${esc(F.nome)}</h2>
     <span class="row">${crmJ.length?`<button type="button" class="btn sm" data-act="impjuri" data-f="${f}">Importar ${crmJ.length} confirmados do CRM</button>`:""}<label class="row note">Escala <input class="field n sm" type="number" data-cfg="fases.${f}.min" value="${F.min}"> a <input class="field n sm" type="number" data-cfg="fases.${f}.max" value="${F.max}"></label></span></div>
     <div class="row">${J.map((n,k)=>`<span class="pill br">${esc(n)} <button type="button" class="x" data-act="rmjuri" data-f="${f}" data-k="${k}" aria-label="Remover ${esc(n)}">×</button></span>`).join("")||'<span class="note">Adiciona os jurados para ganhares uma coluna de notas por cada um.</span>'}
