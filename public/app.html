@@ -21,6 +21,11 @@
 .c1t{display:inline-flex;gap:6px;align-items:center;font-size:12.5px;font-weight:700;border:1px solid var(--line-2);border-radius:99px;padding:4px 10px;cursor:pointer;color:var(--muted)}
 .c1t input{margin:0}.c1t.on{background:var(--ok-soft);border-color:var(--ok);color:var(--ok)}
 .ic-m{display:flex;gap:10px 16px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+.pmenu{position:fixed;z-index:200;min-width:210px;background:var(--surface);border:1px solid var(--line-2,var(--line));border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.35);padding:6px}
+.pmenu .pm-h{font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);padding:4px 8px}
+.pmenu button{display:block;width:100%;text-align:left;background:none;border:0;border-radius:7px;padding:8px 10px;font:inherit;font-size:13px;font-weight:600;color:var(--bad,#c0392b);cursor:pointer}
+.pmenu button:hover,.pmenu button:focus-visible{background:var(--surface-2)}
+.chipp[data-pid]{cursor:context-menu}
 .ic-p{display:flex;gap:6px;flex-wrap:wrap}.chipp{display:inline-flex;gap:6px;align-items:center;font-size:12.5px;background:var(--surface-2);border:1px solid var(--line);border-radius:99px;padding:2px 10px 2px 2px}
 .ic-j{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
 .ic-ps{display:grid;grid-template-columns:1fr 1fr;gap:10px}.ic-ps>div{background:var(--surface-2);border-radius:8px;padding:8px 12px}
@@ -555,6 +560,28 @@ function inList(list){
 const JURI_EDITOR="Vitor Clara";
 function juryEditor(){return norm(S.jurado||"").trim()===norm(JURI_EDITOR);}
 function canEditIdeas(){return juryEditor()||(!!S.isOwner&&S.mode!=="juri");}
+function pEd(){return canEditIdeas()&&!S.preview;}
+let pmT=0;function pmClose(){const m=document.getElementById("pmenu");if(m)m.remove();}
+document.addEventListener("contextmenu",e=>{
+  const c=e.target.closest&&e.target.closest(".chipp[data-pid]");
+  if(!c){pmClose();return;}
+  if(!pEd())return;
+  const id=c.dataset.pid,nome=c.dataset.pn;e.preventDefault();pmClose();
+  const m=document.createElement("div");m.id="pmenu";m.className="pmenu";m.setAttribute("role","menu");
+  m.innerHTML=`<div class="pm-h">${esc(nome)}</div><button type="button" role="menuitem" data-pmrm>Remover da ideia</button>`;
+  document.body.appendChild(m);pmT=Date.now();
+  const w=m.offsetWidth,h=m.offsetHeight;m.style.left=Math.max(8,Math.min(e.clientX,innerWidth-w-8))+"px";m.style.top=Math.max(8,Math.min(e.clientY,innerHeight-h-8))+"px";
+  m.querySelector("[data-pmrm]").addEventListener("click",()=>{
+    pmClose();const i=S.ideias.get(id);if(!i||!pEd())return;
+    const k=(i.par||[]).indexOf(nome);if(k<0)return;
+    i.par=(i.par||[]).filter((x,j)=>j!==k);
+    save("ideias",id);render();toast(`${nome} removido(a) de «${i.titulo||"ideia"}».`);
+  });
+  m.querySelector("button").focus();
+});
+document.addEventListener("click",e=>{if(!e.target.closest||!e.target.closest("#pmenu"))pmClose();},true);
+document.addEventListener("keydown",e=>{if(e.key==="Escape")pmClose();});
+window.addEventListener("scroll",()=>{if(Date.now()-pmT>400)pmClose();},true);
 /* Quem pode registar, editar e apagar ideias na sessão ao vivo n (além do coordenador) */
 function canEditSess(n){return S.isOwner||!!S.canEdit||(!S.readOnly&&(S.cfg.sessAbertas||[]).map(Number).includes(Number(n)))||inList((S.cfg.sessEditores||{})[String(n)]);}
 const CRM_URL="https://claude.ai/artifact/MsdAABAFPKvqq7ANo4yDMP";
@@ -1108,7 +1135,7 @@ function ideaRow(i,extra,ctl){
     <button type="button" class="ic-t" data-open="${i.id}" aria-expanded="${open}"><span class="chev" aria-hidden="true">${open?"▾":"▸"}</span>${tipo}<span>${esc(i.titulo||"(sem título)")}</span></button>
     <span class="ic-b">${ideaBadges(i)}</span>
     <span class="ic-r">${stars(i)}${ctl!=null?ctl:rank(i.etapa)>1?`<span class="stage ${i.etapa}">${ETAPA_L[i.etapa]}</span>`:`<label class="c1t ${inC1?"on":""}"><input type="checkbox" data-act="toc1" data-id="${i.id}" ${inC1?"checked":""}>${inC1?"Passa ao Challenge I":"Challenge I"}</label>`}</span></div>
-  <div class="ic-m"><span class="ic-p">${ppl.length?ppl.map(p=>`<span class="chipp">${av(p,22)}${esc(p)}</span>`).join(""):'<span class="note">Sem grupo</span>'}</span>
+  <div class="ic-m"><span class="ic-p">${ppl.length?ppl.map(p=>`<span class="chipp" data-pid="${esc(i.id)}" data-pn="${esc(p)}"${pEd()?' title="Botão direito: remover da ideia"':""}>${av(p,22)}${esc(p)}</span>`).join(""):'<span class="note">Sem grupo</span>'}</span>
     <span class="ic-j">${tallyHtml(i.id)||'<span class="note">sem avaliações do júri</span>'}${nfb?`<span class="note">${nfb} entrada${nfb>1?"s":""}</span>`:""}</span></div>
   ${i.problema||i.solucao?`<div class="ic-ps"><div><b>Problema</b><p>${esc(i.problema||"—")}</p></div><div><b>Solução</b><p>${esc(i.solucao||"—")}</p></div></div>`:""}
   ${resumoCard(i)}
@@ -1719,7 +1746,7 @@ function juryIdea(i,jur,J,hide){
     <div class="jc-ps"><div><b>Problema</b><p>${esc(i.problema||"—")}</p></div><div><b>Solução</b><p>${esc(i.solucao||"—")}</p></div></div>
     ${mats.length?`<div class="jc-files"><span class="jc-lbl">Ficheiros dos membros</span>${mats.map(m=>`<button type="button" class="fchip" data-act="matopen" data-p="${esc(m.path)}" title="${esc(m.tipo||"")} · ${esc(m.nome||"")}"><span class="fi">${esc((String(m.ficheiro).split(".").pop()||"").slice(0,4).toUpperCase())}</span><span class="fn">${esc(m.ficheiro)}</span><small>${esc(m.tipo||"")}</small></button>`).join("")}</div>`:""}`;
   return `<article class="jcard jc2" ${hide?"hidden":""} style="--sc:var(--s${Math.min(4,Number(i.sessao)||1)})" data-q="${esc(ideaHay(i))}">
-  <div class="jc-top"><span class="jc-s">${esc(sessLabel(i))}</span><span class="jc-ppl">${ppl.map(p=>`<span class="chipp">${av(p,22)}${esc(p)}</span>`).join("")||'<span class="note">Sem grupo</span>'}</span>
+  <div class="jc-top"><span class="jc-s">${esc(sessLabel(i))}</span><span class="jc-ppl">${ppl.map(p=>`<span class="chipp" data-pid="${esc(i.id)}" data-pn="${esc(p)}"${pEd()?' title="Botão direito: remover da ideia"':""}>${av(p,22)}${esc(p)}</span>`).join("")||'<span class="note">Sem grupo</span>'}</span>
     <span class="jc-meta">${starsRO(i)}${ed&&!editing?`<button type="button" class="btn sm ghost" data-act="jedit" data-id="${i.id}">Editar</button><button type="button" class="btn sm ghost danger" data-act="delidea" data-id="${i.id}" aria-label="Apagar a ideia ${esc(i.titulo||"")}">Apagar</button>`:""}</span></div>
   ${body}
   ${jur?`<section class="jc-fb">
