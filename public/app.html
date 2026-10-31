@@ -1097,7 +1097,7 @@ function hIdeias(){
   list.sort(f.ord==="gosto"?(a,b)=>((b.gosto||0)-(a.gosto||0))||(score(b.id)-score(a.id))||(a.titulo||"").localeCompare(b.titulo||""):(a,b)=>(b.sessao-a.sessao)||(b.createdAt||"").localeCompare(a.createdAt||""));
   const perS=[1,2,3,4].map(n=>all.filter(i=>i.sessao===n));
   const maxS=Math.max(1,...perS.map(a=>a.length));
-  const pares=[...new Set(all.flatMap(i=>i.par||[]))].sort();
+  const pares=[...new Set(all.flatMap(i=>i.par||[]).map(x=>String(x||"").trim()).filter(Boolean))].sort();
   const qk=S.quick;
   return `${memberOpts()}
   <div class="grid g2" style="margin-bottom:14px">
@@ -1200,7 +1200,7 @@ function hFase(f){
   const scored=list.filter(i=>i._avg!=null);
   const passa=list.filter(i=>i.aval&&i.aval[f]&&["avanca","startup"].includes(i.aval[f].decisao)).length;
   const allI=[...S.ideias.values()];
-  const membros=[...new Set(allI.flatMap(i=>i.par||[]))].sort();
+  const membros=[...new Set(allI.flatMap(i=>i.par||[]).map(x=>String(x||"").trim()).filter(Boolean))].sort();
   const nM=m=>list.filter(i=>(i.par||[]).includes(m)).length;
   const maxM=Math.max(1,...membros.map(nM));
   const sessN=[...new Set(list.map(i=>Number(i.sessao)||1))].sort((x,y)=>x-y);
