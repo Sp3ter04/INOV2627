@@ -370,6 +370,17 @@ td .ps b{display:block;font-family:var(--display);font-size:10.5px;letter-spacin
 
 .app.jmode{grid-template-columns:minmax(0,1fr);background:none}
 .app.jmode .side{display:none}
+.sb-toggle{background:rgba(255,255,255,.14);border:0;color:#fff;font:inherit;font-size:12.5px;font-weight:600;padding:8px 10px;border-radius:8px;cursor:pointer;text-align:left}
+.sb-toggle:hover,.sb-toggle:focus-visible{background:rgba(255,255,255,.26)}
+.sb-show{display:none;position:fixed;top:10px;left:10px;z-index:30;align-items:center;gap:6px;background:var(--brand);color:#fff;border:0;border-radius:8px;padding:7px 11px;font:inherit;font-size:12.5px;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.28)}
+.sb-show:hover,.sb-show:focus-visible{filter:brightness(1.12)}
+@media (min-width:761px){
+  .app.nosb{grid-template-columns:minmax(0,1fr);background:none}
+  .app.nosb .side{display:none}
+  .app.nosb:not(.jmode) .sb-show{display:inline-flex}
+  .app.nosb:not(.jmode) main{padding-top:56px}
+}
+@media (max-width:760px){.sb-toggle{display:none}}
 .app.jmode main{max-width:980px;margin-inline:auto;width:100%}
 .av{border-radius:50%;object-fit:cover;flex:none;background:var(--brand-soft);display:inline-grid;place-items:center;font-family:var(--display);font-weight:800;color:var(--brand);overflow:hidden;vertical-align:middle}
 .jhero{background:#175dab;color:#fff;border-radius:12px;padding:18px;display:flex;flex-direction:column;gap:16px;margin-bottom:14px}
@@ -491,10 +502,12 @@ td .ps b{display:block;font-family:var(--display);font-size:10.5px;letter-spacin
 </style>
 
 <div class="app">
+  <button type="button" class="sb-show" id="sb-show" aria-label="Mostrar barra lateral">☰ Barra lateral</button>
   <aside class="side">
     <div class="brandmark"><b>Inovação 26/27</b><span>JUNITEC · Departamento de Inovação</span><i></i></div>
     <nav class="nav" id="nav" aria-label="Secções"></nav>
     <div class="side-foot">
+      <button type="button" class="sb-toggle" id="sb-hide">« Ocultar barra lateral</button>
       <div class="st" id="st-db"><i></i><span>A ligar…</span></div>
       <div id="st-crm">CRM: sem dados</div>
     </div>
@@ -594,10 +607,15 @@ const S={view:"geral",tab:{hub:"ideias",apollo:"resumo",ud:"resumo",kpi:"perfis"
   ideias:new Map(),kpi:new Map(),startups:new Map(),contactos:new Map(),mbr:new Map(),crm:null,db:null,sample:null,dbState:"pending",
   sessoes:new Map(),pedidos:new Map(),feedback:new Map(),sugestoes:new Map(),materiais:new Map(),jSess:0,live:new Map(),fotos:new Map(),isOwner:false,userKnown:false,mode:isJuriRoute()?"juri":"app",jTab:"avaliar",room:null,lastSync:0,me:{email:"",name:""},preview:false,draft:{},jurado:"",follow:true,jPar:null,liveN:null,
   f:{sess:0,q:"",dec:"",par:"",etapa:"",est:[]},open:null,stSel:null,mes:"",quick:{sessao:1,a:"",b:""},pendingRender:false,aiBusy:false};
-try{const v=JSON.parse(localStorage.getItem("inov-ui")||"{}");if(v.view)S.view=v.view;if(v.tab)Object.assign(S.tab,v.tab);if(v.sess)S.quick.sessao=v.sess;if(v.ord)S.f.ord=v.ord;}catch(e){}
+try{const v=JSON.parse(localStorage.getItem("inov-ui")||"{}");if(v.view)S.view=v.view;if(v.tab)Object.assign(S.tab,v.tab);if(v.sess)S.quick.sessao=v.sess;if(v.sb)S.sb=true;if(v.ord)S.f.ord=v.ord;}catch(e){}
 try{S.jurado=localStorage.getItem("inov-jurado")||"";}catch(e){}
 window.addEventListener("hashchange",()=>{S.mode=isJuriRoute()?"juri":"app";render();window.scrollTo(0,0);});
-function rememberUI(){try{localStorage.setItem("inov-ui",JSON.stringify({view:S.view,tab:S.tab,sess:S.quick.sessao,ord:S.f.ord||""}));}catch(e){}}
+function applySb(){const a=document.querySelector(".app");if(a)a.classList.toggle("nosb",!!S.sb);}
+function setSb(v){S.sb=!!v;applySb();rememberUI();const t=document.getElementById(v?"sb-show":"sb-hide");if(t&&t.offsetParent!==null)t.focus();}
+document.getElementById("sb-hide").addEventListener("click",()=>setSb(true));
+document.getElementById("sb-show").addEventListener("click",()=>setSb(false));
+applySb();
+function rememberUI(){try{localStorage.setItem("inov-ui",JSON.stringify({view:S.view,tab:S.tab,sess:S.quick.sessao,ord:S.f.ord||"",sb:!!S.sb}));}catch(e){}}
 
 /* ================= Utilitários ================= */
 function clone(o){return JSON.parse(JSON.stringify(o));}
