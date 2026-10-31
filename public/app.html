@@ -942,20 +942,24 @@ function sugPend(){return [...S.sugestoes.values()].filter(x=>(x.estado||"penden
 function ideaBadges(i){const nm=matsOf(i.id).length,ns=S.isOwner?sugPend().filter(x=>x.ideiaId===i.id).length:0;
   return `${i.criadaPor?'<span class="pill br" title="Criada por um membro">membro</span>':""}${nm?`<span class="pill" title="Ficheiros">${nm}</span>`:""}${ns?`<span class="pill warn" title="Sugestões por decidir">${ns} sugest${ns>1?"ões":"ão"}</span>`:""}`;}
 function sugCard(x){
-  const i=S.ideias.get(x.ideiaId),pend=(x.estado||"pendente")==="pendente",part=x.tipo==="participar";
+  const i=S.ideias.get(x.ideiaId),pend=(x.estado||"pendente")==="pendente",T=x.tipo,part=T==="participar"||T==="colaborar",just=T==="matar"||T==="repescagem";
+  const verb={participar:"pede para participar em",colaborar:"pede para colaborar (Challenge I) em",matar:"diz que a validação correu mal e pede para matar",repescagem:"pede para passar ao Challenge I"}[T]||"sugere melhorar";
+  const okL={matar:"Aceitar e matar a ideia",repescagem:"Aceitar e passar ao Challenge I"}[T]||(part?"Aceitar na ideia":"Aceitar e atualizar a ideia");
+  const fls=(x.ficheiros||[]).length?`<div class="matb"><span class="eyebrow">Ficheiros de validação · ${x.ficheiros.length}</span><ul class="matl">${x.ficheiros.map(m=>m.simulado?`<li><span class="note">${esc(m.ficheiro)} (simulado no modo admin)</span></li>`:`<li><button type="button" class="btn sm" data-act="matopen" data-p="${esc(m.path)}">${esc(m.ficheiro)}</button><span class="pill">${esc(m.tipo||"")}</span></li>`).join("")}</ul></div>`:"";
   const diff=(l,a,b)=>norm(a||"")===norm(b||"")?`<div class="sgd same"><span class="eyebrow">${l} · sem alteração</span><p>${esc(a||"—")}</p></div>`:`<div class="sgd"><span class="eyebrow">${l}</span><div class="sgc"><div><small>Atual</small><p>${esc(a||"—")}</p></div><div class="new"><small>Proposto</small><p>${esc(b||"—")}</p></div></div></div>`;
-  return `<article class="card sgcard ${pend?"":"done"}"><div class="card-h"><div class="row" style="gap:8px;flex-wrap:nowrap;min-width:0">${av(x.nome,32)}<div style="min-width:0"><b>${esc(x.nome||x.email)}</b> <span class="note">${part?"pede para participar em":"sugere melhorar"}</span><div class="sgt">${esc(i?i.titulo:x.titulo||"(ideia apagada)")}${i?` <span class="note">· ${esc(sessLabel(i))}</span>`:""}</div></div></div>
+  return `<article class="card sgcard ${pend?"":"done"}"><div class="card-h"><div class="row" style="gap:8px;flex-wrap:nowrap;min-width:0">${av(x.nome,32)}<div style="min-width:0"><b>${esc(x.nome||x.email)}</b> <span class="note">${verb}</span>${x.teste?' <span class="pill">teste (modo admin)</span>':""}<div class="sgt">${esc(i?i.titulo:x.titulo||"(ideia apagada)")}${i?` <span class="note">· ${esc(sessLabel(i))}</span>`:""}</div></div></div>
     <span class="pill ${pend?"warn":x.estado==="aceite"?"ok":"bad"}">${pend?"por decidir":esc(x.estado)}</span></div>
-    ${part?`<p style="margin:0"><b>Como ajudou:</b> ${esc(x.nota||"—")}</p>${i?`<p class="note" style="margin:0">Pessoas atuais: ${esc((i.par||[]).join(", ")||"—")}</p>`:""}`
-      :`${diff("Problema",i&&i.problema,x.problema)}${diff("Solução",i&&i.solucao,x.solucao)}${x.nota?`<p style="margin:0"><b>Porquê:</b> ${esc(x.nota)}</p>`:""}`}
+    ${part?`<p style="margin:0"><b>${T==="colaborar"?"Porque quer colaborar":"Como ajudou"}:</b> ${esc(x.nota||"—")}</p>${i?`<p class="note" style="margin:0">Pessoas atuais: ${esc((i.par||[]).join(", ")||"—")}</p>`:""}`
+      :just?`<p style="margin:0"><b>Justificação:</b> ${esc(x.nota||"—")}</p>${i?`<p class="note" style="margin:0">Etapa atual: ${esc(ETAPA_L[i.etapa]||i.etapa||"—")}</p>`:""}${fls}`
+      :`${x.tituloNovo?diff("Título",i&&i.titulo,x.tituloNovo):""}${diff("Problema",i&&i.problema,x.problema)}${diff("Solução",i&&i.solucao,x.solucao)}${x.nota?`<p style="margin:0"><b>Porquê:</b> ${esc(x.nota)}</p>`:""}`}
     <div class="row" style="justify-content:space-between"><span class="note">${esc(String(x.em||"").slice(0,16).replace("T"," "))}${x.decididoEm?" · decidido a "+esc(String(x.decididoEm).slice(0,10)):""}</span>
-    ${pend&&i?`<span class="row"><button type="button" class="btn sm" data-act="sugno" data-id="${esc(x.id)}">Rejeitar</button><button type="button" class="btn sm pri" data-act="sugok" data-id="${esc(x.id)}">${part?"Aceitar na ideia":"Aceitar e atualizar a ideia"}</button></span>`:""}</div></article>`;}
+    ${pend&&i?`<span class="row"><button type="button" class="btn sm" data-act="sugno" data-id="${esc(x.id)}">Rejeitar</button><button type="button" class="btn sm pri" data-act="sugok" data-id="${esc(x.id)}">${okL}</button></span>`:""}</div></article>`;}
 function hSug(){
   const all=[...S.sugestoes.values()].sort((a,b)=>String(b.em||"").localeCompare(String(a.em||""))),pend=all.filter(x=>(x.estado||"pendente")==="pendente"),done=all.filter(x=>(x.estado||"pendente")!=="pendente");
   const novas=[...S.ideias.values()].filter(i=>i.criadaPor).sort((a,b)=>String(b.createdAt||"").localeCompare(String(a.createdAt||"")));
   const mats=[...S.materiais.values()].sort((a,b)=>String(b.em||"").localeCompare(String(a.em||"")));
   return `<div class="sgk"><div class="card"><span class="eyebrow">Por decidir</span><b>${pend.length}</b></div><div class="card"><span class="eyebrow">Ideias novas dos membros</span><b>${novas.length}</b></div><div class="card"><span class="eyebrow">Ficheiros enviados</span><b>${mats.length}</b></div></div>
-  <p class="note" style="margin:0 0 10px">Os membros entram em <a href="/membro" target="_blank" rel="noopener">/membro</a>. Aceitar uma melhoria substitui o problema e a solução (o texto antigo fica guardado na ideia). Aceitar um pedido para participar junta a pessoa à ideia.</p>
+  <p class="note" style="margin:0 0 10px">Os membros entram em <a href="/membro" target="_blank" rel="noopener">/membro</a>. Aceitar uma melhoria substitui o título, o problema e a solução (o texto antigo fica guardado na ideia). Aceitar um pedido para participar ou colaborar junta a pessoa à ideia. Aceitar um pedido para matar tira a ideia do Challenge I; aceitar um pedido para passar ao Challenge I põe-na lá. Os pedidos marcados "teste" vêm do modo admin (<a href="/membro?admin" target="_blank" rel="noopener">/membro?admin</a>).</p>
   ${pend.length?pend.map(sugCard).join(""):'<div class="card"><p class="note" style="margin:0">Nada por decidir.</p></div>'}
   ${novas.length?`<div class="card"><div class="card-h"><h2>Ideias novas criadas pelos membros</h2><span class="src">entram na 4.ª sessão de ideação</span></div><ul class="tlist">${novas.map(i=>`<li><span class="stack2">${avs(i.par||[],26)}</span><span style="min-width:0"><b>${esc(i.titulo)}</b><span class="note" style="display:block">${esc((i.par||[]).join(", "))} · ${esc(String(i.createdAt||"").slice(0,10))}</span></span><button type="button" class="btn sm" data-act="sugver" data-id="${esc(i.id)}">Ver na lista</button></li>`).join("")}</ul></div>`:""}
   ${mats.length?`<div class="card"><div class="card-h"><h2>Últimos ficheiros</h2></div><ul class="matl">${mats.slice(0,20).map(m=>{const i=S.ideias.get(m.ideiaId);return `<li><button type="button" class="btn sm" data-act="matopen" data-p="${esc(m.path)}">${esc(m.ficheiro)}</button><span class="pill">${esc(m.tipo||"Outro")}</span><span class="note">${esc(i?i.titulo:"")} · ${esc(m.nome||"")}</span></li>`;}).join("")}</ul></div>`:""}
@@ -989,10 +993,12 @@ document.addEventListener("click",e=>{const b=e.target.closest("[data-act]");if(
   else if(a==="jsess"){S.jSess=Number(b.dataset.v)||0;render();}
   else if(a==="sugver"){S.view="hub";S.tab.hub="ideias";S.open=b.dataset.id;render();setTimeout(()=>{const el=document.querySelector(`[data-open="${b.dataset.id}"]`);if(el)el.scrollIntoView({block:"center"});},60);}
   else if(a==="sugok"||a==="sugno"){const x=S.sugestoes.get(b.dataset.id);if(!x)return;const i=S.ideias.get(x.ideiaId);const now=new Date().toISOString();
-    if(a==="sugok"&&i){if(x.tipo==="participar"){i.par=[...new Set([...(i.par||[]),x.nome].filter(Boolean))];}
-      else{i.historico=[...(i.historico||[]),{problema:i.problema||"",solucao:i.solucao||"",em:now,por:x.nome||""}];i.problema=x.problema||"";i.solucao=x.solucao||"";}
+    if(a==="sugok"&&i){if(x.tipo==="participar"||x.tipo==="colaborar"){i.par=[...new Set([...(i.par||[]),x.nome].filter(Boolean))];}
+      else if(x.tipo==="matar"){i.morta={em:now,por:x.nome||"",motivo:x.nota||"",etapaAntes:i.etapa||""};i.etapa="ideacao";}
+      else if(x.tipo==="repescagem"){i.repescada={em:now,por:x.nome||"",motivo:x.nota||""};i.etapa="c1";delete i.morta;}
+      else{i.historico=[...(i.historico||[]),{titulo:i.titulo||"",problema:i.problema||"",solucao:i.solucao||"",em:now,por:x.nome||""}];if(x.tituloNovo)i.titulo=x.tituloNovo;i.problema=x.problema||"";i.solucao=x.solucao||"";}
       save("ideias",i.id);}
-    x.estado=a==="sugok"?"aceite":"rejeitada";x.decididoEm=now;save("sugestoes",x.id);render();toast(a==="sugok"?(x.tipo==="participar"?`${x.nome} juntou-se à ideia.`:"Ideia atualizada."):"Sugestão rejeitada.");}
+    x.estado=a==="sugok"?"aceite":"rejeitada";x.decididoEm=now;save("sugestoes",x.id);render();toast(a==="sugok"?({participar:`${x.nome} juntou-se à ideia.`,colaborar:`${x.nome} juntou-se à ideia.`,matar:"Ideia retirada do Challenge I.",repescagem:"Ideia passou ao Challenge I."}[x.tipo]||"Ideia atualizada."):"Pedido rejeitado.");}
 });
 function memberOpts(){return `<datalist id="dl-membros">${S.cfg.membros.map(m=>`<option value="${esc(m)}">`).join("")}</datalist>`;}
 function atEvents(){
@@ -1142,9 +1148,10 @@ function stars(i){const g=i.gosto||0,mx=S.cfg.gostoMax||5;return `<span class="s
 /* Resumo do feedback visível no cartão da ideia (lista do Bootcamp): último resumo cumulativo + evolução. */
 function resumoCard(i){
   const R=i.resumoS||{},ks=Object.keys(R).filter(k=>R[k]).sort((a,b)=>Number(a)-Number(b));
-  if(!ks.length)return "";
+  const rj=i.resumoJuri?`<div class="ic-res"><span class="eyebrow">Resumo do júri (visível aos membros)</span><p>${esc(i.resumoJuri)}</p></div>`:"";
+  if(!ks.length)return rj;
   const k=ks[ks.length-1],prev=ks.slice(0,-1);
-  return `<div class="ic-res"><span class="eyebrow">Resumo do feedback do júri · até à ${esc(k)}.ª sessão</span><p>${esc(R[k])}</p>${prev.length?`<details class="ic-res-d"><summary>Ver evolução (${prev.length} ${prev.length>1?"sessões anteriores":"sessão anterior"})</summary>${prev.map(x=>`<p><b>${esc(x)}.ª sessão</b> · ${esc(R[x])}</p>`).join("")}</details>`:""}</div>`;
+  return rj+`<div class="ic-res"><span class="eyebrow">Resumo do feedback do júri · até à ${esc(k)}.ª sessão</span><p>${esc(R[k])}</p>${prev.length?`<details class="ic-res-d"><summary>Ver evolução (${prev.length} ${prev.length>1?"sessões anteriores":"sessão anterior"})</summary>${prev.map(x=>`<p><b>${esc(x)}.ª sessão</b> · ${esc(R[x])}</p>`).join("")}</details>`:""}</div>`;
 }
 function ideaRow(i,extra,ctl,compact){
   const open=S.open===i.id,psO=!compact||!!(S.psOpen&&S.psOpen.has(i.id)),inC1=rank(i.etapa)>=1,nfb=fbAll(i.id).length,ppl=(i.par||[]).filter(Boolean);
