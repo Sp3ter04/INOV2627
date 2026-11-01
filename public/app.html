@@ -1793,7 +1793,7 @@ function c1MatHtml(i,big){const M=c1Mats(i);const ext=f=>(String(f||"").split(".
   return `${sl.length?`<div class="row">${sl.join("")}</div>`:""}${rest.length?`<div class="jc-files">${rest.join("")}</div>`:""}`;}
 function c1Res(i){const t=i.resumoJuri||(()=>{const R=i.resumoS||{},k=Object.keys(R).filter(x=>R[x]).sort((a,b)=>a-b);return k.length?R[k[k.length-1]]:"";})();
   return t?esc(t).replace(/\s*\[Fundida: «([^»]+)»\]\s*/g,(m,x)=>`<br><span class="note">Da ideia juntada «${x}»:</span> `):"";}
-function c1Scale(cur,attrs,label){return `<span class="c1sc" role="group" aria-label="${esc(label)}">${[0,1,2,3,4,5].map(v=>`<button type="button" ${attrs} data-v="${v}" aria-pressed="${cur!=null&&cur!==""&&Number(cur)===v}" aria-label="${esc(label)}: ${v}">${v}</button>`).join("")}</span>`;}
+function c1Scale(cur,attrs,label){return `<span class="c1sc" role="group" aria-label="${esc(label)}">${[0,1,2,3,4,5].map(v=>`<button type="button" ${attrs} data-v="${v}" aria-pressed="${cur!=null&&cur!==""&&Number(cur)===v}" aria-label="${esc(label)}: ${v}" title="${cur!=null&&cur!==""&&Number(cur)===v?"Clica outra vez para apagar a nota":v}">${v}</button>`).join("")}</span>`;}
 function vJuriC1(){
   const jur=S.jurado||"",F=S.cfg.fases.c1||{},list=c1Ideas(),t=S.c1Tab||"apres",curId=c1Cur(list),L=liveState();
   const done=list.filter(i=>c1Done(c1Mine(i.id))).length;
@@ -1834,7 +1834,7 @@ function c1Apres(i,k,list){
     <div class="c1crit">${C1_CRIT.map(([c,l,hint])=>`<div class="c1row"><div class="c1lab"><b>${l}</b><small>${hint}</small></div>${c1Scale(f.notas[c],`data-act="c1nota" data-id="${esc(i.id)}" data-c="${c}"`,l)}</div>`).join("")}</div>
     <label class="l">Perguntas para o grupo<textarea class="field" rows="3" id="c1q-${esc(i.id)}" data-c1t="perguntas" data-id="${esc(i.id)}" placeholder="O que queres perguntar no fim do pitch?">${esc(f.perguntas||"")}</textarea></label>
     <label class="l">Feedback para o grupo<textarea class="field" rows="4" id="c1f-${esc(i.id)}" data-c1t="feedback" data-id="${esc(i.id)}" placeholder="O que está bem, o que falta e o próximo passo que sugeres">${esc(f.feedback||"")}</textarea></label>
-    <div class="row" style="justify-content:space-between"><span class="note">${c1Has(f)?`Guardado automaticamente${f.updatedAt?" às "+new Date(f.updatedAt).toLocaleTimeString("pt-PT",{hour:"2-digit",minute:"2-digit"}):""}`:"Grava sozinho a cada alteração."}${c1Has(f)&&!c1Done(f)?` · faltam ${C1_CRIT.filter(([c])=>f.notas[c]==null).length} critérios`:""}</span>${next?`<button type="button" class="btn pri" data-act="c1go" data-id="${esc(next.id)}">Seguinte →</button>`:""}</div>
+    <div class="row" style="justify-content:space-between"><span class="note">${c1Has(f)?`Clica de novo num número para o apagar · Guardado automaticamente${f.updatedAt?" às "+new Date(f.updatedAt).toLocaleTimeString("pt-PT",{hour:"2-digit",minute:"2-digit"}):""}`:"Grava sozinho a cada alteração."}${c1Has(f)&&!c1Done(f)?` · faltam ${C1_CRIT.filter(([c])=>f.notas[c]==null).length} critérios`:""}</span>${next?`<button type="button" class="btn pri" data-act="c1go" data-id="${esc(next.id)}">Seguinte →</button>`:""}</div>
   </aside>`;
   return nav+`<div class="c1grid">${info}${ev}</div>`;
 }
@@ -1920,8 +1920,9 @@ document.addEventListener("click",e=>{const b=e.target.closest&&e.target.closest
   else if(a==="c1follow"){S.c1Follow=true;render();window.scrollTo(0,0);}
   else if(a==="c1now"){if(!S.isOwner)return;setLive({c1Atual:id||""});S.c1Follow=true;render();toast(id?"O júri passa a ver esta ideia.":"Ninguém a apresentar.");}
   else if(a==="c1more"){S.c1More=S.c1More||{};S.c1More[id]=!S.c1More[id];render();}
-  else if(a==="c1nota"){c1Set(id,f=>{f.notas[b.dataset.c]=Number(v);});render();}
-  else if(a==="c1pitch"){c1Set(id,f=>{f.pitch[b.dataset.p]=Number(v);});render();}
+  /* Clicar outra vez no número escolhido apaga essa nota */
+  else if(a==="c1nota"){const c=b.dataset.c;c1Set(id,f=>{if(f.notas[c]!=null&&Number(f.notas[c])===Number(v))delete f.notas[c];else f.notas[c]=Number(v);});render();}
+  else if(a==="c1pitch"){const p=b.dataset.p;c1Set(id,f=>{if(f.pitch[p]!=null&&Number(f.pitch[p])===Number(v))delete f.pitch[p];else f.pitch[p]=Number(v);});render();}
   else if(a==="c1view"){e.preventDefault();openViewer(b.dataset.p||"",b.dataset.u||"",b.dataset.t||"");}
   else if(a==="c1v"){S.c1v=v;render();}
   else if(a==="c1jf"){if(!S.isOwner)return;S.cfg.juriFase=v;saveCfg();render();toast(v==="c1"?"O painel do júri abre no Challenge I.":"O painel do júri abre nas sessões de ideação.");}

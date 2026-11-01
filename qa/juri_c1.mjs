@@ -80,6 +80,12 @@ await J.fill(`#c1q-${orcId}`,"Quanto pagaria uma construtora?");await J.fill(`#c
 const doc=(store.get(`feedback/c1__${orcId}__miguel-gomes`)||{}).data;
 ok(doc&&doc.tipo==="c1aval"&&doc.notas.negocio===2&&doc.pitch["Guilherme D."]===4&&doc.perguntas.includes("construtora")&&doc.feedback.includes("pricing"),"avaliação gravada (notas, pitch, perguntas, feedback)");
 ok(await J.locator(".c1bar .pairchip[aria-pressed=true] .c1ok").count()===1,"chip mostra ✓ quando completa");
+await J.click('[data-act="c1nota"][data-c="negocio"][data-v="2"]');await W(900);
+ok((store.get(`feedback/c1__${orcId}__miguel-gomes`).data.notas.negocio)===undefined&&await J.locator('[data-act="c1nota"][data-c="negocio"][aria-pressed=true]').count()===0,"clicar outra vez apaga a nota");
+ok(await J.locator(".c1bar .pairchip[aria-pressed=true] .c1ok").count()===0,"sem a nota, deixa de estar completa");
+await J.click('.c1ppl figure:nth-child(1) [data-act="c1pitch"][data-v="4"]');await W(900);
+ok(store.get(`feedback/c1__${orcId}__miguel-gomes`).data.pitch["Guilherme D."]===undefined,"clicar outra vez apaga a nota do pitch");
+await J.click('[data-act="c1nota"][data-c="negocio"][data-v="2"]');await J.click('.c1ppl figure:nth-child(1) [data-act="c1pitch"][data-v="4"]');await W(900);
 // slides
 await J.click('.c1info [data-act="c1view"]');await W(2500);
 ok(await J.locator("#c1viewer canvas").count()===1,"leitor de slides mostra o PDF");
