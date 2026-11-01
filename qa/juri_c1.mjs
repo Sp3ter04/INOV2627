@@ -16,6 +16,8 @@ put("materiais",{id:"m1",ideiaId:"a1",ficheiro:"pitch-orcamentacao.pdf",path:"a1
 put("materiais",{id:"m2",ideiaId:"a1",ficheiro:"MVP no Figma",url:"https://figma.com/x",tipo:"MVP / protótipo",nome:"Xavier S.",email:"x@j.pt",em:"2026-11-01"});
 put("materiais",{id:"m3",ideiaId:"a1",ficheiro:"entrevistas.pdf",path:"a1/entrevistas.pdf",tipo:"Validação de mercado",nome:"Xavier S.",email:"x@j.pt",em:"2026-11-01"});
 put("fotos",{id:"main",fotos:{}});
+put("feedback",{id:"v1",ideiaId:"a1",jurado:"Vitor Clara",tipo:"veredito",veredito:"gosto",comentario:"Gosto",sessao:4,enviadoEm:"2026-10-30T10:00:00Z"});
+put("feedback",{id:"v2",ideiaId:"a1",jurado:"Vitor Clara",tipo:"comentario",veredito:"",comentario:"Comentário final do coordenador",sessao:4,enviadoEm:"2026-10-30T23:59:00Z"});
 const PUB=["ideias","sessoes","live","fotos","config","feedback"];
 function handle(route){
   const req=route.request(),u=new URL(req.url()),h=req.headers(),code=h["x-inov-code"],coord=code===CODE,juri=code===JCODE,m=req.method();
@@ -133,6 +135,8 @@ await row.click();await W(300);
 ok(await C.locator(".c1det",{hasText:"Miguel Gomes"}).count()===1&&await C.locator(".c1det",{hasText:"Texto a meio"}).count()===1,"resultados: notas e feedback por jurado");
 ok(await C.locator(".c1det",{hasText:"construtora"}).count()===1,"resultados: perguntas do jurado");
 ok(await C.locator('[data-act="c1goRes"]').count()>=1,"cartão da ideia mostra a média do júri");
+const orcCard=C.locator(".ic",{hasText:"Orçamentação"}).first();
+ok((await orcCard.textContent()).includes("1 gosto"),"comentário sem veredito não apaga o veredito do mesmo jurado");
 await C.screenshot({path:"/tmp/qa-c1-coord.png",fullPage:false});
 const errs=C.errs.concat(J.errs,Jm.errs);
 ok(errs.length===0,"sem erros JS",errs.join(" | "));
