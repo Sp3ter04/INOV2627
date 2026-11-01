@@ -417,6 +417,64 @@ td .ps b{display:block;font-family:var(--display);font-size:10.5px;letter-spacin
 .prow2.tri{gap:4px;grid-template-columns:16px 26px minmax(0,1fr) 26px minmax(0,1fr) 26px minmax(0,1fr) auto auto auto}
 @media(max-width:600px){.ps{grid-template-columns:minmax(0,1fr)}.verd{grid-template-columns:repeat(2,minmax(0,1fr))}.prow2{grid-template-columns:34px minmax(0,1fr) 34px minmax(0,1fr)}.prow2>.mono,.prow2>.note{display:none}.prow2>.btn{grid-column:1/-1}}
 
+/* Challenge I · júri */
+.c1bar .pairchip{padding:4px 10px}.c1bar .c1n{display:inline-grid;place-items:center;min-width:20px;height:20px;border-radius:50%;background:rgb(255 255 255 / .22);font-size:11px}
+.c1bar .pairchip[aria-pressed="true"] .c1n{background:#175dab;color:#fff}
+.c1ok{color:#3ccf7a;font-weight:900}.pairchip[aria-pressed="true"] .c1ok{color:var(--ok)}.c1half{color:#ffd166;font-weight:900}
+.c1nav{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;margin-bottom:12px}
+.c1pos{text-align:center;color:var(--muted);font-weight:700}.c1pos b{font:800 20px var(--display);color:var(--fg)}
+.c1grid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(320px,1fr);gap:14px;align-items:start}
+.c1title{font-size:22px;line-height:1.25}
+.c1ppl{display:flex;gap:14px 22px;flex-wrap:wrap;justify-content:center;padding:8px 0 4px;border-bottom:1px solid var(--line)}
+.c1ppl figure{margin:0;display:flex;flex-direction:column;align-items:center;gap:6px;min-width:150px}
+.c1ppl figcaption{font:800 15px var(--display);text-align:center}
+.c1pl{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:-2px}
+.c1sc{display:inline-flex;border:1px solid var(--line-2);border-radius:8px;overflow:hidden;background:var(--surface);flex:none}
+.c1sc button{all:unset;box-sizing:border-box;cursor:pointer;width:34px;height:34px;display:grid;place-items:center;font:700 14px var(--mono);color:var(--fg);border-right:1px solid var(--line)}
+.c1sc button:last-child{border-right:0}.c1sc button:hover{background:var(--brand-soft)}
+.c1sc button[aria-pressed="true"]{background:var(--brand);color:var(--on-brand)}
+.c1sc button:focus-visible{outline:2px solid var(--brand);outline-offset:-2px}
+.c1ps{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;position:relative;max-height:220px;overflow:hidden}
+.c1ps:not(.open)::after{content:"";position:absolute;left:0;right:0;bottom:0;height:46px;background:linear-gradient(transparent,var(--surface))}
+.c1ps.open{max-height:none}.c1ps p{margin:2px 0 0;white-space:pre-wrap;overflow-wrap:anywhere;font-size:14.5px}
+.c1more{align-self:flex-start;margin-top:-6px}
+.c1blk{border-top:1px solid var(--line);padding-top:10px;display:flex;flex-direction:column;gap:8px}
+.c1rs summary{cursor:pointer;min-height:30px;display:flex;align-items:center}.c1rs p{margin:0;font-size:14px}
+.c1slbtn{min-height:44px}.c1slbtn small{font-weight:600;opacity:.8;max-width:200px;overflow:hidden;text-overflow:ellipsis}
+.c1eval{position:sticky;top:12px;max-height:calc(100vh - 24px);overflow:auto}
+.c1eh{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.c1avg{display:flex;align-items:baseline;gap:3px;color:var(--muted)}.c1avg b{font:800 26px var(--display);color:var(--brand)}
+.c1crit{display:flex;flex-direction:column;gap:2px}
+.c1row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:7px 0;border-top:1px solid var(--line)}
+.c1lab{min-width:0}.c1lab b{display:block;font-size:14px}.c1lab small{display:block;color:var(--muted);font-size:12px;line-height:1.3}
+.c1ch{display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap}.c1ch h3{margin:0 0 4px}
+.c1num{flex:none;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:var(--brand-soft);color:var(--brand);font:800 14px var(--display)}
+.c1st{display:flex;gap:8px;align-items:center;margin-left:auto}
+.c1prog{height:8px;border-radius:99px;background:var(--surface-2);overflow:hidden;border:1px solid var(--line)}.c1prog i{display:block;height:100%;background:var(--ok)}
+.c1tw{overflow-x:auto}
+.c1tab{width:100%;border-collapse:collapse;font-size:13.5px}
+.c1tab th{font-size:11.5px;color:var(--muted);font-weight:800;text-transform:uppercase;letter-spacing:.04em;padding:6px;border-bottom:1px solid var(--line-2);white-space:nowrap}
+.c1tab td{padding:7px 6px;border-bottom:1px solid var(--line);text-align:center;font-variant-numeric:tabular-nums}
+.c1tab tbody tr[data-act]{cursor:pointer}.c1tab tbody tr[data-act]:hover{background:var(--brand-soft)}.c1tab tr.todo td:first-child{box-shadow:inset 3px 0 var(--warn)}
+.c1tab tr:focus-visible{outline:2px solid var(--brand);outline-offset:-2px}
+.c1det td{text-align:left;background:var(--surface-2)}.c1jr{border-top:1px dashed var(--line);padding:8px 0}.c1jr:first-of-type{border-top:0}.c1jr .fbc{margin:4px 0 0}
+.c1ord{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.c1ord li{display:grid;grid-template-columns:58px auto minmax(0,1fr) auto auto;gap:10px;align-items:center;padding:6px 8px;border:1px solid var(--line);border-radius:8px}
+.c1ord li.now{border-color:var(--ok);background:var(--ok-soft)}
+.c1ot{min-width:0}.c1ot b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.c1ot small{color:var(--muted);font-size:12px}
+.c1v{position:fixed;inset:0;z-index:300;background:rgb(6 12 22 / .985);display:flex;flex-direction:column;color:#fff}
+.c1v[hidden]{display:none}
+.c1vh{display:flex;gap:10px;align-items:center;padding:10px 14px}.c1vh b{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.c1vc{font:600 13px var(--mono);opacity:.85}
+.c1vs{flex:1;display:grid;grid-template-columns:56px minmax(0,1fr) 56px;align-items:center;min-height:0;padding:0 6px 14px}
+.c1vp{height:100%;display:grid;place-items:center;min-height:0;overflow:hidden}.c1vp canvas{background:#fff;border-radius:4px;box-shadow:0 8px 30px rgb(0 0 0 / .5)}
+.c1vp iframe{width:100%;height:100%;border:0;border-radius:6px;background:#fff}.c1vp .note{color:#cfd8e3}
+.c1vb{all:unset;cursor:pointer;width:46px;height:46px;border-radius:50%;display:grid;place-items:center;font-size:32px;line-height:1;background:rgb(255 255 255 / .12)}
+.c1vb:hover{background:rgb(255 255 255 / .25)}.c1vb:disabled{opacity:.25;cursor:default}.c1vb:focus-visible{outline:2px solid #9fdcf7}.c1vb[hidden]{display:none}
+body.c1noscroll{overflow:hidden}
+@media(max-width:860px){.c1grid{grid-template-columns:minmax(0,1fr)}.c1eval{position:static;max-height:none}}
+@media(max-width:600px){.c1ppl{gap:12px}.c1ppl figure{min-width:0;flex:1 1 100%}.c1ps{grid-template-columns:minmax(0,1fr)}.c1nav .btn{padding:6px 10px}.c1row{flex-direction:column;align-items:flex-start;gap:6px}
+  .c1ord li{grid-template-columns:50px minmax(0,1fr) auto;}.c1ord li .stack2,.c1ord li>.note{display:none}.c1vs{grid-template-columns:40px minmax(0,1fr) 40px}.c1vb{width:36px;height:36px;font-size:26px}}
 /* KPIs */
 .ktab th.kev{min-width:92px;max-width:110px;white-space:normal;vertical-align:bottom;text-transform:none;letter-spacing:0;font-weight:700;font-size:11px;line-height:1.25}
 .ktab th.kev .mono{display:block;color:var(--fg);font-size:11.5px}
@@ -526,6 +584,7 @@ const DEFAULT_CFG={
   membros:["Afonso M.","Bernardo F.","Francisca O.","Guilherme D.","Inês F.","Inês P.","João F.","Lourenço S.","Maria P.","Matilde S.","Rita M.","Xavier S."],
   sessoes:[{n:1,data:"2026-10-13"},{n:2,data:"2026-10-16"},{n:3,data:"2026-10-22"},{n:4,data:"2026-10-30"}],
   gostoMax:5,
+  juriFase:"c1",
   sessAbertas:[3],
   fases:{
     c1:{nome:"Challenge I",data:"2026-11-03",min:0,max:10,juri:[],formato:"Apresentação a pares"},
@@ -937,7 +996,7 @@ function sessLabel(i){return `${i.sessao||"?"}.ª sessão de ideação`;}
 function matsOf(iid){return [...S.materiais.values()].filter(m=>m.ideiaId===iid).sort((a,b)=>String(b.em||"").localeCompare(String(a.em||"")));}
 function fsize(n){n=Number(n)||0;return n>1048576?(n/1048576).toFixed(1).replace(".",",")+" MB":Math.max(1,Math.round(n/1024))+" KB";}
 function matBlock(iid,coord){const L=matsOf(iid);if(!L.length&&!coord)return "";
-  return `<div class="matb"><span class="eyebrow">Ficheiros dos membros · ${L.length}</span>${L.length?`<ul class="matl">${L.map(m=>`<li><button type="button" class="btn sm" data-act="matopen" data-p="${esc(m.path)}" title="Abrir ${esc(m.ficheiro)}">${esc(m.ficheiro)}</button><span class="pill">${esc(m.tipo||"Outro")}</span><span class="note">${esc(m.nome||"")} · ${esc(String(m.em||"").slice(0,10))} · ${fsize(m.tamanho)}</span></li>`).join("")}</ul>`:'<p class="note" style="margin:0">Ainda sem ficheiros. Os membros juntam-nos na área dos membros.</p>'}</div>`;}
+  return `<div class="matb"><span class="eyebrow">Ficheiros dos membros · ${L.length}</span>${L.length?`<ul class="matl">${L.map(m=>`<li>${m.url?`<a class="btn sm" href="${esc(href(m.url))}" target="_blank" rel="noopener">${esc(m.ficheiro||m.url)} ↗</a>`:`<button type="button" class="btn sm" data-act="matopen" data-p="${esc(m.path)}" title="Abrir ${esc(m.ficheiro)}">${esc(m.ficheiro)}</button>`}<span class="pill">${esc(m.tipo||"Outro")}</span><span class="note">${esc(m.nome||"")} · ${esc(String(m.em||"").slice(0,10))} · ${fsize(m.tamanho)}</span></li>`).join("")}</ul>`:'<p class="note" style="margin:0">Ainda sem ficheiros. Os membros juntam-nos na área dos membros.</p>'}</div>`;}
 function sugPend(){return [...S.sugestoes.values()].filter(x=>(x.estado||"pendente")==="pendente");}
 function ideaBadges(i){const nm=matsOf(i.id).length,ns=S.isOwner?sugPend().filter(x=>x.ideiaId===i.id).length:0;
   return `${i.criadaPor?'<span class="pill br" title="Criada por um membro">membro</span>':""}${nm?`<span class="pill" title="Ficheiros">${nm}</span>`:""}${ns?`<span class="pill warn" title="Sugestões por decidir">${ns} sugest${ns>1?"ões":"ão"}</span>`:""}`;}
@@ -1003,8 +1062,8 @@ document.addEventListener("click",e=>{const b=e.target.closest("[data-act]");if(
 function memberOpts(){return `<datalist id="dl-membros">${S.cfg.membros.map(m=>`<option value="${esc(m)}">`).join("")}</datalist>`;}
 function atEvents(){
   const E=[],ide=id=>{const i=S.ideias.get(id);return i?i.titulo||"(sem título)":"(ideia apagada)";};
-  [...S.feedback.values()].forEach(f=>E.push({t:f.enviadoEm||f.updatedAt||f.d||"",who:f.jurado||"?",role:"Júri",what:isQ(f)?"fez uma pergunta":"deu o veredito "+verdLabel(f),txt:f.comentario||"",idea:ide(f.ideiaId),iid:f.ideiaId}));
-  [...S.sugestoes.values()].forEach(x=>{E.push({t:x.em||x.updatedAt||"",who:x.nome||x.email||"?",role:"Membro",what:x.tipo==="participar"?"pediu para participar":"sugeriu melhorar a descrição",txt:x.nota||"",idea:ide(x.ideiaId),iid:x.ideiaId});
+  [...S.feedback.values()].forEach(f=>E.push({t:f.enviadoEm||f.updatedAt||f.d||"",who:f.jurado||"?",role:"Júri",what:f.tipo==="c1aval"?"avaliou no Challenge I":isQ(f)?"fez uma pergunta":"deu o veredito "+verdLabel(f),txt:f.comentario||"",idea:ide(f.ideiaId),iid:f.ideiaId}));
+  [...S.sugestoes.values()].forEach(x=>{E.push({t:x.em||x.updatedAt||"",who:x.nome||x.email||"?",role:"Membro",what:({participar:"pediu para participar",colaborar:"pediu para colaborar",matar:"pediu para matar a ideia",repescagem:"pediu para passar ao Challenge I"})[x.tipo]||"sugeriu melhorar a descrição",txt:x.nota||"",idea:ide(x.ideiaId),iid:x.ideiaId});
     if(x.decididoEm&&(x.estado||"pendente")!=="pendente")E.push({t:x.decididoEm,who:"Coordenador",role:"Coordenador",what:(x.estado==="aceite"?"aceitou":"recusou")+" o pedido de "+(x.nome||x.email||"?"),txt:"",idea:ide(x.ideiaId),iid:x.ideiaId});});
   [...S.materiais.values()].forEach(m=>E.push({t:m.em||"",who:m.nome||m.email||"?",role:"Membro",what:"juntou um ficheiro ("+(m.tipo||"Outro")+")",txt:m.ficheiro||"",idea:ide(m.ideiaId),iid:m.ideiaId}));
   [...S.ideias.values()].filter(i=>i.criadaPor).forEach(i=>E.push({t:i.createdAt||"",who:(i.par||[])[0]||i.criadaPor||"?",role:"Membro",what:"criou a ideia",txt:"",idea:i.titulo||"(sem título)",iid:i.id}));
@@ -1206,6 +1265,7 @@ function faseCard(i,k,f,F,J,prev){
   const nx=NEXT[f],onx=rank(i.etapa)>=rank(nx);
   const ctl=f==="sd"?(rank(i.etapa)>rank(f)?`<span class="stage ${i.etapa}">${ETAPA_L[i.etapa]}</span>`:""):`<label class="c1t ${onx?"on":""}"><input type="checkbox" data-act="fnext" data-id="${i.id}" data-f="${f}" ${onx?"checked":""}>${onx?"Passa ao "+ETAPA_L[nx]:"Passar ao "+ETAPA_L[nx]}</label>`;
   const prevs=prev.map(q=>{const v=ideaAvg(i,q),d=i.aval&&i.aval[q]&&i.aval[q].decisao;return v!=null||d?`<span class="pill">${esc(S.cfg.fases[q].nome)}: ${v!=null?nf(v):"–"}${d?" · "+esc(d):""}</span>`:"";}).join("");
+  const jg=f==="c1"?c1Agg(i.id):null,jp=jg&&jg.A.length?`<button type="button" class="pill br" data-act="c1goRes" data-id="${esc(i.id)}" title="Ver nos resultados do júri" style="border:0;cursor:pointer">Júri ${n1(jg.mean)}/5 · ${jg.A.length}</button> `:"";
   return ideaRow(i,`<div class="ic-av">
     <div class="ic-av-h"><span class="eyebrow">${esc(F.nome)} · avaliação</span><span class="row">${prevs}<span class="note">${i._avg!=null?"#"+(k+1)+" · ":""}média <b class="score">${i._avg!=null?nf(i._avg):"–"}</b></span></span></div>
     ${J.length?`<div class="ic-av-n">${J.map(n=>`<label>${esc(n)}<input class="field n" type="number" step="0.5" min="${F.min}" max="${F.max}" data-b="ideias|${i.id}|aval.${f}.notas.${encodeURIComponent(n)}" data-type="num" value="${esc((a.notas||{})[n]??"")}" aria-label="Nota de ${esc(n)}"></label>`).join("")}</div>`:'<span class="note">Adiciona jurados acima para lhes dares uma nota por ideia.</span>'}
@@ -1215,7 +1275,7 @@ function faseCard(i,k,f,F,J,prev){
       <label class="l">Slides<input class="field" data-b="ideias|${i.id}|aval.${f}.slides" value="${esc(a.slides||"")}" placeholder="https://…"></label>
       <label class="l">Site / protótipo<input class="field" data-b="ideias|${i.id}|aval.${f}.site" value="${esc(a.site||"")}" placeholder="https://…"></label>
       ${a.slides||a.site?`<div class="full row">${a.slides?`<a href="${esc(href(a.slides))}" target="_blank" rel="noopener">Abrir slides ↗</a>`:""}${a.site?`<a href="${esc(href(a.site))}" target="_blank" rel="noopener">Abrir site ↗</a>`:""}</div>`:""}</div>`:""}
-  </div>`,ctl,f==="c1"||f==="c2");
+  </div>`,jp+ctl,f==="c1"||f==="c2");
 }
 function hFase(f){
   const F=S.cfg.fases[f];const prev={c1:[],c2:["c1"],sd:["c1","c2"]}[f];
@@ -1247,7 +1307,7 @@ function hFase(f){
     ${tile(passa,f==="sd"?"Viram startup":"Passam à fase seguinte",f==="sd"?"objetivo: 3":"")}
     ${tile(fmtD(F.data),"Data",ev?`no CRM: ${esc(ev.nome)}`:"")}
   </div>
-  ${blocoM}
+  ${f==="c1"?c1Coord():""}${blocoM}
   <div class="card" style="margin-bottom:14px"><div class="card-h"><h2>Júri do ${esc(F.nome)}</h2>
     <span class="row">${crmJ.length?`<button type="button" class="btn sm" data-act="impjuri" data-f="${f}">Importar ${crmJ.length} confirmados do CRM</button>`:""}<label class="row note">Escala <input class="field n sm" type="number" data-cfg="fases.${f}.min" value="${F.min}"> a <input class="field n sm" type="number" data-cfg="fases.${f}.max" value="${F.max}"></label></span></div>
     <div class="row">${J.map((n,k)=>`<span class="pill br">${esc(n)} <button type="button" class="x" data-act="rmjuri" data-f="${f}" data-k="${k}" aria-label="Remover ${esc(n)}">×</button></span>`).join("")||'<span class="note">Adiciona os jurados para ganhares uma coluna de notas por cada um.</span>'}
@@ -1662,6 +1722,7 @@ function score(iid){const a=fbFor(iid);return a.filter(f=>f.veredito==="gosto").
 
 function juryNames(n){const s=sess(n);const set=new Set(s.juri||[]);[...S.feedback.values()].forEach(f=>{if(f.sessao===n&&f.jurado)set.add(f.jurado);});return [...set];}
 function vJuri(){
+  if(c1Mode())return vJuriC1();
   const L=liveState(),n=L.sessao||1,s=sess(n),J=juryNames(n);
   const pares=(s.pares||[]).map((p,k)=>Object.assign({k},p)).filter(p=>p.a||p.b);
   const date=S.cfg.sessoes[n-1]&&S.cfg.sessoes[n-1].data;
@@ -1673,7 +1734,7 @@ function vJuri(){
     <div class="row" style="justify-content:space-between;align-items:flex-start"><div><div class="eyebrow">Bootcamp de Inovação 26/27 · Júri</div><h1>${S.jTab==="todas"?"Todas as ideias":n+".ª sessão de ideação"}</h1>${liveBadge()}
       <div style="opacity:.9;margin-top:2px">${fmtD(date)}${jur?` · a avaliar como <b>${esc(jur)}</b> <button type="button" class="btn sm ghost" data-act="jout">trocar</button>`:""}</div></div>
       ${canHub()||jur?`<span class="row">${canHub()&&norm(jur||"").trim()===norm(JURI_EDITOR)?`<button type="button" class="btn sm ${S.preview?"pri":""}" data-act="jprev">${S.preview?"A ver como júri · sair":"Ver como o júri vê"}</button>`:jur&&norm(jur).trim()!==norm(JURI_EDITOR)?`<span class="pill">A ver como júri</span>`:""}${canHub()&&S.mode!=="juri"&&!S.preview?`<button type="button" class="btn sm" data-act="tohome">← Bootcamp</button>`:""}</span>`:""}</div>
-    <div class="jtabs" role="group" aria-label="Vista"><button type="button" data-act="jtab" data-v="avaliar" aria-pressed="${S.jTab!=="rank"&&S.jTab!=="todas"}">Avaliar par a par</button><button type="button" data-act="jtab" data-v="rank" aria-pressed="${S.jTab==="rank"}">Ranking da sessão</button><button type="button" data-act="jtab" data-v="todas" aria-pressed="${S.jTab==="todas"}">Todas as ideias</button></div>
+    ${(S.cfg.juriFase||"c1")==="c1"?`<button type="button" class="btn sm" data-act="c1fase" data-v="" style="align-self:flex-start">← Voltar ao Challenge I</button>`:""}<div class="jtabs" role="group" aria-label="Vista"><button type="button" data-act="jtab" data-v="avaliar" aria-pressed="${S.jTab!=="rank"&&S.jTab!=="todas"}">Avaliar par a par</button><button type="button" data-act="jtab" data-v="rank" aria-pressed="${S.jTab==="rank"}">Ranking da sessão</button><button type="button" data-act="jtab" data-v="todas" aria-pressed="${S.jTab==="todas"}">Todas as ideias</button></div>
     ${S.jTab==="rank"||S.jTab==="todas"?"":pares.length?`<div class="pairbar" role="group" aria-label="Pares">${pares.map(p=>`<button type="button" class="pairchip" data-act="jpar" data-v="${p.k}" aria-pressed="${p.k===S.jPar}"><span class="stack2">${avs(mem3(p),26)}</span>${mem3(p).map(m=>esc(first(m))).join(" &amp; ")}${p.k===(L.parAtual||0)?'<span class="now">agora</span>':""}</button>`).join("")}</div>`:""}
     ${S.jTab!=="rank"&&S.jTab!=="todas"&&(cur.a||cur.b)?`<div class="duo">${mem3(cur).map(m=>`<figure>${av(m,mem3(cur).length>2?92:116)}<figcaption>${esc(m)}</figcaption></figure>`).join('<span class="amp">&amp;</span>')}</div>`:""}
     ${S.jTab!=="rank"&&S.jTab!=="todas"&&!S.follow&&pares.length?`<div class="row" style="justify-content:center"><button type="button" class="btn sm" data-act="jfollow">Voltar ao par que está a apresentar</button></div>`:""}
@@ -1695,7 +1756,187 @@ function vJuri(){
   h+=ideas.length?`<div class="stack">${ideas.map(i=>juryIdea(i,jur,J)).join("")}</div>`:empty("Ainda sem ideias deste par","O problema e a solução aparecem aqui sozinhos assim que o Vitor os registar.");
   return h;
 }
-function juryOficial(){const set=new Set(JURI_DEF);[...S.sessoes.values()].forEach(x=>(x.juri||[]).forEach(n=>n&&set.add(n)));return [...set].filter(n=>!/@/.test(n)).sort((a,b)=>a.localeCompare(b,"pt"));}
+/* ================= Challenge I · painel do júri =================
+   Cada jurado tem um documento por ideia na coleção feedback: id "c1__<ideia>__<jurado>", tipo "c1aval",
+   com notas 0–5 em 6 critérios, nota 0–5 do pitch de cada pessoa, perguntas e feedback. Grava sozinho.
+   A ordem das apresentações fica em config (fases.c1.ordem) e a ideia a apresentar em live/estado (c1Atual). */
+const C1_CRIT=[["problema","Problema","É um problema real, frequente e que dói?"],["validacao","Validação","Falaram com clientes? Há provas?"],["solucao","Solução","Resolve mesmo o problema? É clara?"],["escalabilidade","Escalabilidade","Pode crescer para muitos clientes ou mercados?"],["viabilidade","Viabilidade","Conseguem construí-la com recursos realistas?"],["negocio","Business model","Quem paga, quanto e porquê?"]];
+const C1_ABR={problema:"Prob.",validacao:"Valid.",solucao:"Sol.",escalabilidade:"Escal.",viabilidade:"Viab.",negocio:"BM"};
+function c1Mode(){return (S.cfg.juriFase||"c1")==="c1"&&S.jFase!=="ideacao";}
+function c1Ideas(){const ord=(S.cfg.fases.c1&&S.cfg.fases.c1.ordem)||[];const pos=id=>{const k=ord.indexOf(id);return k<0?1e4:k;};
+  return [...S.ideias.values()].filter(i=>rank(i.etapa)>=1).sort((a,b)=>pos(a.id)-pos(b.id)||String(a.titulo||"").localeCompare(String(b.titulo||""),"pt"));}
+const c1Id=(iid,j)=>"c1__"+iid+"__"+slug(j);
+const c1Of=iid=>[...S.feedback.values()].filter(f=>f.tipo==="c1aval"&&f.ideiaId===iid);
+const c1Mine=iid=>S.jurado?S.feedback.get(c1Id(iid,S.jurado)):null;
+const c1Mean=f=>f?avg(C1_CRIT.map(([k])=>f.notas&&f.notas[k])):null;
+const c1Pitch=f=>f&&f.pitch?avg(Object.values(f.pitch)):null;
+const c1Done=f=>!!f&&C1_CRIT.every(([k])=>f.notas&&f.notas[k]!=null&&f.notas[k]!=="");
+const c1Has=f=>!!f&&(C1_CRIT.some(([k])=>f.notas&&f.notas[k]!=null)||Object.keys(f.pitch||{}).length>0||!!(f.perguntas||"").trim()||!!(f.feedback||"").trim());
+const n1=x=>x==null?"–":Number(x).toLocaleString("pt-PT",{minimumFractionDigits:1,maximumFractionDigits:1});
+function c1Doc(iid){const id=c1Id(iid,S.jurado);let f=S.feedback.get(id);
+  if(!f){f={id,tipo:"c1aval",fase:"c1",ideiaId:iid,jurado:S.jurado,notas:{},pitch:{},perguntas:"",feedback:"",enviadoEm:new Date().toISOString(),d:TODAY()};S.feedback.set(id,f);}
+  f.notas=f.notas||{};f.pitch=f.pitch||{};return f;}
+function c1Set(iid,fn){if(!S.jurado)return;const f=c1Doc(iid);fn(f);f.updatedAt=new Date().toISOString();save("feedback",f.id);}
+function c1Cur(list){const L=liveState();if(S.c1Follow!==false&&L.c1Atual&&list.some(i=>i.id===L.c1Atual))return L.c1Atual;
+  if(S.c1Sel&&list.some(i=>i.id===S.c1Sel))return S.c1Sel;return L.c1Atual&&list.some(i=>i.id===L.c1Atual)?L.c1Atual:(list[0]&&list[0].id);}
+function c1Mats(i){const ms=matsOf(i.id),a=(i.aval&&i.aval.c1)||{};
+  const isSl=m=>/slide|pitch|apresenta/i.test(m.tipo||"")||/\.pdf$/i.test(m.ficheiro||"")&&/slide|pitch|deck|apresenta/i.test(m.ficheiro||"");
+  const slides=ms.filter(m=>m.path&&isSl(m)),links=ms.filter(m=>m.url),files=ms.filter(m=>m.path&&!isSl(m));
+  const extra=[];if(a.slides)extra.push({url:a.slides,ficheiro:"Slides",tipo:"Slides do pitch",slide:true});if(a.site)extra.push({url:a.site,ficheiro:"Site / protótipo",tipo:"MVP / protótipo"});
+  return {slides,links:[...links,...extra.filter(x=>!x.slide)],linkSlides:extra.filter(x=>x.slide).concat(links.filter(m=>/slide|pitch|apresenta/i.test(m.tipo||""))),files};}
+function c1MatHtml(i,big){const M=c1Mats(i);const ext=f=>(String(f||"").split(".").pop()||"").slice(0,4).toUpperCase();
+  const sl=[...M.slides.map(m=>`<button type="button" class="btn ${big?"pri":""} c1slbtn" data-act="c1view" data-p="${esc(m.path)}" data-t="${esc(m.ficheiro)}"><span aria-hidden="true">▶</span> Ver slides <small>${esc(m.ficheiro)}</small></button>`),
+    ...M.linkSlides.filter((x,k,a)=>a.findIndex(y=>y.url===x.url)===k).map(m=>`<button type="button" class="btn ${big?"pri":""} c1slbtn" data-act="c1view" data-u="${esc(m.url)}" data-t="${esc(m.ficheiro||"Slides")}"><span aria-hidden="true">▶</span> Ver slides <small>${esc(m.ficheiro||"link")}</small></button>`)];
+  const rest=[...M.files.map(m=>`<button type="button" class="fchip" data-act="${/\.pdf$/i.test(m.ficheiro||"")?"c1view":"matopen"}" data-p="${esc(m.path)}" data-t="${esc(m.ficheiro)}" title="${esc(m.tipo||"")} · ${esc(m.nome||"")}"><span class="fi">${esc(ext(m.ficheiro))}</span><span class="fn">${esc(m.ficheiro)}</span><small>${esc(m.tipo||"")}</small></button>`),
+    ...M.links.filter(m=>!M.linkSlides.includes(m)).map(m=>`<a class="fchip" href="${esc(href(m.url))}" target="_blank" rel="noopener" title="${esc(m.url)}"><span class="fi">↗</span><span class="fn">${esc(m.ficheiro||m.url)}</span><small>${esc(m.tipo||"Link")}</small></a>`)];
+  if(!sl.length&&!rest.length)return `<p class="note" style="margin:0">Ainda sem slides nem ficheiros de validação.</p>`;
+  return `${sl.length?`<div class="row">${sl.join("")}</div>`:""}${rest.length?`<div class="jc-files">${rest.join("")}</div>`:""}`;}
+function c1Res(i){const t=i.resumoJuri||(()=>{const R=i.resumoS||{},k=Object.keys(R).filter(x=>R[x]).sort((a,b)=>a-b);return k.length?R[k[k.length-1]]:"";})();
+  return t?esc(t).replace(/\s*\[Fundida: «([^»]+)»\]\s*/g,(m,x)=>`<br><span class="note">Da ideia juntada «${x}»:</span> `):"";}
+function c1Scale(cur,attrs,label){return `<span class="c1sc" role="group" aria-label="${esc(label)}">${[0,1,2,3,4,5].map(v=>`<button type="button" ${attrs} data-v="${v}" aria-pressed="${cur!=null&&cur!==""&&Number(cur)===v}" aria-label="${esc(label)}: ${v}">${v}</button>`).join("")}</span>`;}
+function vJuriC1(){
+  const jur=S.jurado||"",F=S.cfg.fases.c1||{},list=c1Ideas(),t=S.c1Tab||"apres",curId=c1Cur(list),L=liveState();
+  const done=list.filter(i=>c1Done(c1Mine(i.id))).length;
+  let h=`<div class="jhero c1hero">
+    <div class="row" style="justify-content:space-between;align-items:flex-start"><div><div class="eyebrow">Bootcamp de Inovação 26/27 · Júri</div><h1>Challenge I</h1>${liveBadge()}
+      <div style="opacity:.9;margin-top:2px">${fmtD(F.data)}${jur?` · a avaliar como <b>${esc(jur)}</b> <button type="button" class="btn sm ghost" data-act="jout">trocar</button>`:""}</div></div>
+      <span class="row">${canHub()&&S.mode!=="juri"?`<button type="button" class="btn sm" data-act="tohome">← Bootcamp</button>`:""}<button type="button" class="btn sm ghost" data-act="c1fase" data-v="ideacao" title="Ver as sessões de ideação">Sessões de ideação</button></span></div>
+    <div class="jtabs" role="group" aria-label="Vista"><button type="button" data-act="c1tab" data-v="apres" aria-pressed="${t==="apres"}">Apresentação</button><button type="button" data-act="c1tab" data-v="todas" aria-pressed="${t==="todas"}">Todas as ideias (${list.length})</button><button type="button" data-act="c1tab" data-v="notas" aria-pressed="${t==="notas"}">As minhas notas (${done}/${list.length})</button></div>
+    ${t==="apres"&&list.length?`<div class="pairbar c1bar" role="group" aria-label="Ordem das apresentações">${list.map((i,k)=>{const m=c1Mine(i.id);return `<button type="button" class="pairchip" data-act="c1go" data-id="${esc(i.id)}" aria-pressed="${i.id===curId}" title="${esc(i.titulo||"")}"><b class="c1n">${k+1}</b>${esc(String(i.titulo||"").replace(/\s*\(.*\)$/,"").slice(0,26))}${String(i.titulo||"").replace(/\s*\(.*\)$/,"").length>26?"…":""}${c1Done(m)?'<span class="c1ok" aria-label="avaliada">✓</span>':c1Has(m)?'<span class="c1half" aria-label="a meio">•</span>':""}${i.id===L.c1Atual?'<span class="now">agora</span>':""}</button>`;}).join("")}</div>`:""}
+  </div>`;
+  if(S.dbState!=="on")return h+empty("Sem ligação à base de dados","Recarrega a página. Se continuar, avisa o Vitor.");
+  if(!jur)return juryWho();
+  if(!list.length)return h+empty("Ainda não há ideias no Challenge I","Aparecem aqui assim que o Vitor as passar ao Challenge I.");
+  if(t==="todas")return h+c1Todas(list);
+  if(t==="notas")return h+c1Notas(list);
+  const k=list.findIndex(i=>i.id===curId),i=list[k];
+  return h+c1Apres(i,k,list);
+}
+function c1Apres(i,k,list){
+  const L=liveState(),f=c1Mine(i.id)||{notas:{},pitch:{}},ppl=(i.par||[]).filter(Boolean),m=c1Mean(f),more=S.c1More&&S.c1More[i.id];
+  const prev=list[k-1],next=list[k+1],notNow=L.c1Atual&&L.c1Atual!==i.id;
+  const nav=`<div class="c1nav"><button type="button" class="btn" data-act="c1go" data-id="${prev?esc(prev.id):""}" ${prev?"":"disabled"} aria-label="Ideia anterior">← Anterior</button>
+    <span class="c1pos"><b>${k+1}</b> de ${list.length}${i.id===L.c1Atual?' · <span class="pill ok">a apresentar agora</span>':""}</span>
+    <button type="button" class="btn" data-act="c1go" data-id="${next?esc(next.id):""}" ${next?"":"disabled"} aria-label="Ideia seguinte">Seguinte →</button></div>
+    ${notNow&&S.c1Follow===false?`<div class="row" style="justify-content:center;margin:-4px 0 10px"><button type="button" class="btn sm" data-act="c1follow">Voltar à ideia que está a apresentar</button></div>`:""}
+    ${S.isOwner&&i.id!==L.c1Atual?`<div class="row" style="justify-content:center;margin:-4px 0 10px"><button type="button" class="btn sm pri" data-act="c1now" data-id="${esc(i.id)}">Marcar como «a apresentar agora»</button></div>`:""}`;
+  const info=`<section class="card c1info">
+    <div class="row" style="justify-content:space-between"><span class="eyebrow">${k+1}.ª apresentação · ${esc(sessLabel(i))}</span>${starsRO(i)}</div>
+    <h2 class="c1title">${esc(i.titulo||"(sem título)")}</h2>
+    <div class="c1ppl">${ppl.length?ppl.map(p=>`<figure>${av(p,ppl.length>3?60:76)}<figcaption>${esc(p)}</figcaption><span class="c1pl">Pitch</span>${c1Scale(f.pitch[p],`data-act="c1pitch" data-id="${esc(i.id)}" data-p="${esc(p)}"`,"Pitch de "+p)}</figure>`).join(""):'<span class="note">Sem apresentadores registados.</span>'}</div>
+    <div class="c1ps ${more?"open":""}"><div><b>Problema</b><p>${esc(i.problema||"—")}</p></div><div><b>Solução</b><p>${esc(i.solucao||"—")}</p></div></div>
+    <button type="button" class="btn sm ghost c1more" data-act="c1more" data-id="${esc(i.id)}">${more?"Mostrar menos ▴":"Ler tudo ▾"}</button>
+    <div class="c1blk"><span class="jc-lbl">Slides e validação</span>${c1MatHtml(i,true)}</div>
+    <div class="c1blk c1rs"><span class="jc-lbl">Resumo do feedback nas sessões de ideação</span><p>${c1Res(i)||'<span class="note">Sem resumo.</span>'}</p></div>
+  </section>`;
+  const ev=`<aside class="card c1eval" aria-label="A tua avaliação">
+    <div class="c1eh"><h2>A tua avaliação</h2><span class="c1avg" title="Média dos 6 critérios"><small>média</small><b>${n1(m)}</b><small>/5</small></span></div>
+    <div class="c1crit">${C1_CRIT.map(([c,l,hint])=>`<div class="c1row"><div class="c1lab"><b>${l}</b><small>${hint}</small></div>${c1Scale(f.notas[c],`data-act="c1nota" data-id="${esc(i.id)}" data-c="${c}"`,l)}</div>`).join("")}</div>
+    <label class="l">Perguntas para o grupo<textarea class="field" rows="3" id="c1q-${esc(i.id)}" data-c1t="perguntas" data-id="${esc(i.id)}" placeholder="O que queres perguntar no fim do pitch?">${esc(f.perguntas||"")}</textarea></label>
+    <label class="l">Feedback para o grupo<textarea class="field" rows="4" id="c1f-${esc(i.id)}" data-c1t="feedback" data-id="${esc(i.id)}" placeholder="O que está bem, o que falta e o próximo passo que sugeres">${esc(f.feedback||"")}</textarea></label>
+    <div class="row" style="justify-content:space-between"><span class="note">${c1Has(f)?`Guardado automaticamente${f.updatedAt?" às "+new Date(f.updatedAt).toLocaleTimeString("pt-PT",{hour:"2-digit",minute:"2-digit"}):""}`:"Grava sozinho a cada alteração."}${c1Has(f)&&!c1Done(f)?` · faltam ${C1_CRIT.filter(([c])=>f.notas[c]==null).length} critérios`:""}</span>${next?`<button type="button" class="btn pri" data-act="c1go" data-id="${esc(next.id)}">Seguinte →</button>`:""}</div>
+  </aside>`;
+  return nav+`<div class="c1grid">${info}${ev}</div>`;
+}
+function c1Todas(list){const q=S.c1q||"";
+  return `<div class="card jfilt" style="margin-bottom:14px"><input class="field" id="c1qs" type="search" placeholder="Procurar por título, problema, solução ou pessoa" aria-label="Procurar ideias" autocomplete="off" value="${esc(q)}">
+    <p class="note" style="margin:0">Pela ordem das apresentações. Abre uma ideia para leres tudo e veres os slides; «Avaliar» leva-te à ficha de avaliação.</p></div>
+  <div class="stack" id="c1list">${list.map((i,k)=>{const f=c1Mine(i.id),ppl=(i.par||[]).filter(Boolean),o=S.c1Open&&S.c1Open.has("all-"+i.id);
+    return `<article class="jcard c1card" data-q="${esc(ideaHay(i))}" ${q.trim()&&!jqMatch(ideaHay(i),q)?"hidden":""}>
+      <div class="c1ch"><b class="c1num">${k+1}</b><div style="min-width:0;flex:1"><h3>${esc(i.titulo||"(sem título)")}</h3><span class="jc-ppl">${ppl.map(p=>`<span class="chipp">${av(p,22)}${esc(p)}</span>`).join("")}</span></div>
+        <span class="c1st">${c1Done(f)?`<span class="pill ok">Avaliada · ${n1(c1Mean(f))}</span>`:c1Has(f)?'<span class="pill warn">A meio</span>':'<span class="pill">Por avaliar</span>'}<button type="button" class="btn sm pri" data-act="c1eval" data-id="${esc(i.id)}">Avaliar</button></span></div>
+      <details data-c1open="all-${esc(i.id)}" ${o?"open":""}><summary class="note" style="cursor:pointer;font-weight:700">Problema, solução, resumo e slides</summary>
+        <div class="jc-ps" style="margin-top:8px"><div><b>Problema</b><p>${esc(i.problema||"—")}</p></div><div><b>Solução</b><p>${esc(i.solucao||"—")}</p></div></div>
+        <div class="c1blk"><span class="jc-lbl">Resumo do feedback nas sessões de ideação</span><p style="margin:2px 0 0">${c1Res(i)||'<span class="note">Sem resumo.</span>'}</p></div>
+        <div class="c1blk"><span class="jc-lbl">Slides e validação</span>${c1MatHtml(i)}</div></details></article>`;}).join("")}</div>`;}
+function c1Notas(list){const rows=list.map((i,k)=>({i,k,f:c1Mine(i.id)})),done=rows.filter(r=>c1Done(r.f)).length;
+  return `<div class="card" style="margin-bottom:14px"><div class="card-h"><h2>As tuas notas</h2><span class="note">${done} de ${list.length} avaliadas</span></div>
+    <div class="c1prog" role="progressbar" aria-valuemin="0" aria-valuemax="${list.length}" aria-valuenow="${done}"><i style="width:${list.length?Math.round(done/list.length*100):0}%"></i></div>
+    <div class="c1tw"><table class="c1tab"><thead><tr><th>#</th><th style="text-align:left">Ideia</th><th title="Média do pitch das pessoas">Pitch</th>${C1_CRIT.map(([c,l])=>`<th title="${l}">${C1_ABR[c]}</th>`).join("")}<th>Média</th></tr></thead>
+    <tbody>${rows.map(({i,k,f})=>`<tr data-act="c1eval" data-id="${esc(i.id)}" tabindex="0" class="${c1Done(f)?"":"todo"}"><td>${k+1}</td><td style="text-align:left"><b>${esc(i.titulo||"")}</b></td><td>${n1(c1Pitch(f))}</td>${C1_CRIT.map(([c])=>`<td>${f&&f.notas&&f.notas[c]!=null?f.notas[c]:"–"}</td>`).join("")}<td><b>${n1(c1Mean(f))}</b></td></tr>`).join("")}</tbody></table></div>
+    <p class="note" style="margin:0">Toca numa linha para abrires a ideia. As notas vão de 0 a 5.</p></div>`;}
+/* ---- coordenador: ordem e resultados (separador Challenge I) ---- */
+function c1Agg(iid){const A=c1Of(iid).filter(c1Has);const crit={};C1_CRIT.forEach(([c])=>crit[c]=avg(A.map(f=>f.notas&&f.notas[c])));
+  const pp={};A.forEach(f=>Object.entries(f.pitch||{}).forEach(([p,v])=>{(pp[p]=pp[p]||[]).push(v);}));const pitch={};Object.keys(pp).forEach(p=>pitch[p]=avg(pp[p]));
+  return {A,crit,pitch,mean:avg(A.map(c1Mean)),pitchMean:avg(Object.values(pitch))};}
+function c1Coord(){
+  const list=c1Ideas(),L=liveState(),v=S.c1v||"ordem",J=new Set(list.flatMap(i=>c1Of(i.id).filter(c1Has).map(f=>f.jurado)));
+  const head=`<div class="card-h"><h2>Apresentações e avaliação do júri</h2><span class="row"><span class="seg" role="group"><button type="button" data-act="c1v" data-v="ordem" aria-pressed="${v==="ordem"}">Ordem das apresentações</button><button type="button" data-act="c1v" data-v="res" aria-pressed="${v==="res"}">Resultados do júri (${J.size})</button></span><a class="btn sm" href="/coordenador/juri" target="_blank" rel="noopener">Abrir painel do júri ↗</a></span></div>
+    <div class="row note" style="gap:8px">Painel do júri mostra: <span class="seg" role="group"><button type="button" data-act="c1jf" data-v="c1" aria-pressed="${(S.cfg.juriFase||"c1")==="c1"}">Challenge I</button><button type="button" data-act="c1jf" data-v="ideacao" aria-pressed="${S.cfg.juriFase==="ideacao"}">Sessões de ideação</button></span></div>`;
+  if(v==="ordem")return `<div class="card" style="margin-bottom:14px">${head}
+    <div class="row"><button type="button" class="btn sm" data-act="c1ord" data-v="estrelas">Ordenar por estrelas</button><button type="button" class="btn sm" data-act="c1ord" data-v="baralhar">Baralhar</button>${L.c1Atual?`<button type="button" class="btn sm" data-act="c1now" data-id="">Ninguém a apresentar</button>`:""}<span class="note">A ordem aparece logo ao júri. «Agora» faz o painel do júri saltar para essa ideia.</span></div>
+    <ol class="c1ord">${list.map((i,k)=>{const n=c1Of(i.id).filter(c1Has).length,now=i.id===L.c1Atual;return `<li class="${now?"now":""}"><input class="field n sm" type="number" min="1" max="${list.length}" value="${k+1}" data-c1pos="${esc(i.id)}" aria-label="Posição de ${esc(i.titulo||"")}">
+      <span class="stack2">${avs(i.par||[],26)}</span><span class="c1ot"><b>${esc(i.titulo||"")}</b><small>${esc((i.par||[]).filter(Boolean).join(", "))}</small></span>
+      <span class="note">${n} aval.</span><span class="row" style="gap:4px"><button type="button" class="btn sm" data-act="c1mv" data-id="${esc(i.id)}" data-v="-1" ${k?"":"disabled"} aria-label="Subir">↑</button><button type="button" class="btn sm" data-act="c1mv" data-id="${esc(i.id)}" data-v="1" ${k<list.length-1?"":"disabled"} aria-label="Descer">↓</button>
+      <button type="button" class="btn sm ${now?"pri":""}" data-act="c1now" data-id="${now?"":esc(i.id)}">${now?"A apresentar":"Agora"}</button></span></li>`;}).join("")}</ol></div>`;
+  const R=list.map((i,k)=>Object.assign({i,k},c1Agg(i.id))).sort((a,b)=>(b.mean??-1)-(a.mean??-1)||a.k-b.k);
+  return `<div class="card" style="margin-bottom:14px">${head}
+    <div class="c1tw"><table class="c1tab c1res"><thead><tr><th>#</th><th style="text-align:left">Ideia</th><th>Júris</th>${C1_CRIT.map(([c,l])=>`<th title="${l}">${C1_ABR[c]}</th>`).join("")}<th>Pitch</th><th>Média</th></tr></thead>
+    <tbody>${R.map((r,p)=>{const o=S.c1rOpen&&S.c1rOpen.has(r.i.id);return `<tr class="c1rrow" data-act="c1ropen" data-id="${esc(r.i.id)}" tabindex="0" aria-expanded="${o}"><td>${r.mean!=null?p+1:"–"}</td><td style="text-align:left"><b>${o?"▾":"▸"} ${esc(r.i.titulo||"")}</b><small class="note" style="display:block">${r.k+1}.ª apresentação</small></td><td>${r.A.length}</td>${C1_CRIT.map(([c])=>`<td>${n1(r.crit[c])}</td>`).join("")}<td>${n1(r.pitchMean)}</td><td><b class="score">${n1(r.mean)}</b></td></tr>
+      ${o?`<tr class="c1det"><td colspan="${C1_CRIT.length+5}">${Object.keys(r.pitch).length?`<p style="margin:0 0 8px"><b>Pitch por pessoa:</b> ${Object.entries(r.pitch).map(([pn,x])=>`${av(pn,20)} ${esc(pn)} <b>${n1(x)}</b>`).join(" · ")}</p>`:""}
+        ${r.A.length?r.A.map(f=>`<div class="c1jr"><div class="row" style="justify-content:space-between"><b>${esc(f.jurado)}</b><span class="note">${C1_CRIT.map(([c,l])=>`${C1_ABR[c]} ${f.notas&&f.notas[c]!=null?f.notas[c]:"–"}`).join(" · ")} · média <b>${n1(c1Mean(f))}</b>${Object.keys(f.pitch||{}).length?" · pitch "+Object.entries(f.pitch).map(([pn,x])=>esc(first(pn))+" "+x).join(", "):""}</span></div>
+          ${(f.perguntas||"").trim()?`<p class="fbc"><span class="pill br">Perguntas</span> ${esc(f.perguntas)}</p>`:""}${(f.feedback||"").trim()?`<p class="fbc"><span class="pill ok">Feedback</span> ${esc(f.feedback)}</p>`:""}</div>`).join(""):'<p class="note" style="margin:0">Ainda nenhum jurado avaliou esta ideia.</p>'}</td></tr>`:""}`;}).join("")}</tbody></table></div>
+    <p class="note" style="margin:0">Ordenado pela média dos 6 critérios (0–5). Toca numa ideia para veres as notas, as perguntas e o feedback de cada jurado.</p></div>`;}
+function c1SetOrder(ids){S.cfg.fases.c1=Object.assign({},S.cfg.fases.c1,{ordem:ids});saveCfg();render();}
+/* ---- leitor de slides (PDF página a página, como um livro; Google Slides embutido) ---- */
+const PDFJS="https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/build/";
+let pdfLib=null;
+async function loadPdfJs(){if(pdfLib)return pdfLib;pdfLib=await import(PDFJS+"pdf.min.mjs");pdfLib.GlobalWorkerOptions.workerSrc=PDFJS+"pdf.worker.min.mjs";return pdfLib;}
+const V={doc:null,page:1,n:0,busy:false};
+function viewerShell(t){let d=document.getElementById("c1viewer");if(!d){d=document.createElement("div");d.id="c1viewer";d.className="c1v";d.setAttribute("role","dialog");d.setAttribute("aria-modal","true");document.body.appendChild(d);}
+  d.innerHTML=`<div class="c1vh"><b>${esc(t||"Slides")}</b><span class="c1vc" aria-live="polite"></span><a class="btn sm" id="c1vopen" target="_blank" rel="noopener" hidden>Abrir noutra janela ↗</a><button type="button" class="btn sm" data-c1v="close" aria-label="Fechar">Fechar ✕</button></div>
+    <div class="c1vs"><button type="button" class="c1vb prev" data-c1v="prev" aria-label="Slide anterior">‹</button><div class="c1vp"><p class="note">A abrir…</p></div><button type="button" class="c1vb next" data-c1v="next" aria-label="Slide seguinte">›</button></div>`;
+  document.body.classList.add("c1noscroll");d.hidden=false;d.querySelector("[data-c1v=close]").focus();return d;}
+function viewerClose(){const d=document.getElementById("c1viewer");if(d){d.hidden=true;d.innerHTML="";}document.body.classList.remove("c1noscroll");V.doc=null;}
+async function viewerPage(p){if(!V.doc||V.busy)return;p=Math.max(1,Math.min(V.n,p));V.busy=true;V.page=p;const d=document.getElementById("c1viewer");if(!d){V.busy=false;return;}
+  try{const pg=await V.doc.getPage(p),box=d.querySelector(".c1vp"),w=box.clientWidth,hh=box.clientHeight,vp1=pg.getViewport({scale:1}),sc=Math.min(w/vp1.width,hh/vp1.height),dpr=window.devicePixelRatio||1,vp=pg.getViewport({scale:sc*dpr});
+    const c=document.createElement("canvas");c.width=vp.width;c.height=vp.height;c.style.width=vp.width/dpr+"px";c.style.height=vp.height/dpr+"px";await pg.render({canvasContext:c.getContext("2d"),viewport:vp}).promise;
+    box.innerHTML="";box.appendChild(c);d.querySelector(".c1vc").textContent=p+" / "+V.n;d.querySelector(".prev").disabled=p<=1;d.querySelector(".next").disabled=p>=V.n;}
+  catch(e){d.querySelector(".c1vp").innerHTML='<p class="note">Não foi possível mostrar este slide.</p>';}
+  V.busy=false;}
+function gslidesEmbed(u){const m=String(u).match(/docs\.google\.com\/presentation\/d\/([^/?#]+)/);return m?`https://docs.google.com/presentation/d/${m[1]}/embed?start=false&loop=false`:null;}
+async function openViewer(path,url,t){const d=viewerShell(t),box=d.querySelector(".c1vp"),op=d.querySelector("#c1vopen");
+  try{let src=url?href(url):null;
+    if(!src){if(!window.INOV_FILE_URL)throw new Error("Os ficheiros só abrem na versão web.");src=await window.INOV_FILE_URL(path);}
+    op.href=src;op.hidden=false;
+    const gs=url&&gslidesEmbed(url);
+    if(gs||(url&&!/\.pdf(\?|$)/i.test(url))){d.querySelectorAll(".c1vb").forEach(b=>b.hidden=true);
+      if(gs){box.innerHTML=`<iframe src="${esc(gs)}" title="${esc(t||"Slides")}" allowfullscreen></iframe>`;d.querySelector(".c1vc").textContent="usa as setas dentro dos slides";}
+      else box.innerHTML=`<p class="note">Este link abre noutra janela.</p><a class="btn pri" href="${esc(src)}" target="_blank" rel="noopener">Abrir ↗</a>`;return;}
+    const lib=await loadPdfJs();V.doc=await lib.getDocument({url:src}).promise;V.n=V.doc.numPages;V.page=1;await viewerPage(1);}
+  catch(e){box.innerHTML=`<p class="note">Não foi possível abrir: ${esc(e&&e.message||"erro")}</p>`;}}
+document.addEventListener("click",e=>{const v=e.target.closest&&e.target.closest("[data-c1v]");if(!v)return;const a=v.dataset.c1v;if(a==="close")viewerClose();else if(a==="prev")viewerPage(V.page-1);else if(a==="next")viewerPage(V.page+1);});
+document.addEventListener("keydown",e=>{const d=document.getElementById("c1viewer");
+  if(d&&!d.hidden){if(e.key==="Escape")viewerClose();else if(e.key==="ArrowRight"||e.key==="PageDown"||e.key===" "){e.preventDefault();viewerPage(V.page+1);}else if(e.key==="ArrowLeft"||e.key==="PageUp"){e.preventDefault();viewerPage(V.page-1);}return;}
+  if(!(S.mode==="juri"||!canHub())||!c1Mode()||(S.c1Tab||"apres")!=="apres")return;const tg=e.target;if(tg&&(tg.tagName==="INPUT"||tg.tagName==="TEXTAREA"||tg.isContentEditable))return;
+  if(e.key==="ArrowRight"||e.key==="ArrowLeft"){const list=c1Ideas(),k=list.findIndex(i=>i.id===c1Cur(list)),n=list[k+(e.key==="ArrowRight"?1:-1)];if(n){S.c1Follow=false;S.c1Sel=n.id;render();window.scrollTo(0,0);}}
+  if(e.key==="Enter"&&tg&&tg.dataset&&tg.dataset.act&&tg.tagName==="TR")tg.click();});
+/* ---- ações ---- */
+document.addEventListener("click",e=>{const b=e.target.closest&&e.target.closest("[data-act]");if(!b||!/^c1/.test(b.dataset.act))return;const a=b.dataset.act,id=b.dataset.id,v=b.dataset.v;
+  if(a==="c1tab"){S.c1Tab=v;render();window.scrollTo(0,0);}
+  else if(a==="c1fase"){S.jFase=v;render();window.scrollTo(0,0);}
+  else if(a==="c1go"){if(!id)return;S.c1Sel=id;S.c1Follow=id===liveState().c1Atual?true:false;render();window.scrollTo(0,0);}
+  else if(a==="c1eval"){S.c1Tab="apres";S.c1Sel=id;S.c1Follow=id===liveState().c1Atual;render();window.scrollTo(0,0);}
+  else if(a==="c1follow"){S.c1Follow=true;render();window.scrollTo(0,0);}
+  else if(a==="c1now"){if(!S.isOwner)return;setLive({c1Atual:id||""});S.c1Follow=true;render();toast(id?"O júri passa a ver esta ideia.":"Ninguém a apresentar.");}
+  else if(a==="c1more"){S.c1More=S.c1More||{};S.c1More[id]=!S.c1More[id];render();}
+  else if(a==="c1nota"){c1Set(id,f=>{f.notas[b.dataset.c]=Number(v);});render();}
+  else if(a==="c1pitch"){c1Set(id,f=>{f.pitch[b.dataset.p]=Number(v);});render();}
+  else if(a==="c1view"){e.preventDefault();openViewer(b.dataset.p||"",b.dataset.u||"",b.dataset.t||"");}
+  else if(a==="c1v"){S.c1v=v;render();}
+  else if(a==="c1jf"){if(!S.isOwner)return;S.cfg.juriFase=v;saveCfg();render();toast(v==="c1"?"O painel do júri abre no Challenge I.":"O painel do júri abre nas sessões de ideação.");}
+  else if(a==="c1goRes"){S.c1v="res";S.c1rOpen=S.c1rOpen||new Set();S.c1rOpen.add(id);render();window.scrollTo(0,0);}
+  else if(a==="c1ropen"){S.c1rOpen=S.c1rOpen||new Set();S.c1rOpen.has(id)?S.c1rOpen.delete(id):S.c1rOpen.add(id);render();}
+  else if(a==="c1mv"){const ids=c1Ideas().map(i=>i.id),k=ids.indexOf(id),j=k+Number(v);if(k<0||j<0||j>=ids.length)return;[ids[k],ids[j]]=[ids[j],ids[k]];c1SetOrder(ids);}
+  else if(a==="c1ord"){let L=c1Ideas();if(v==="estrelas")L=L.slice().sort((x,y)=>(y.gosto||0)-(x.gosto||0)||String(x.titulo||"").localeCompare(String(y.titulo||""),"pt"));else{L=L.slice();for(let k=L.length-1;k>0;k--){const j=Math.floor(Math.random()*(k+1));[L[k],L[j]]=[L[j],L[k]];}}c1SetOrder(L.map(i=>i.id));toast(v==="estrelas"?"Ordenado por estrelas.":"Ordem baralhada.");}
+});
+document.addEventListener("input",e=>{const t=e.target;
+  if(t.dataset&&t.dataset.c1t){c1Set(t.dataset.id,f=>{f[t.dataset.c1t]=t.value;});}
+  else if(t.id==="c1qs"){S.c1q=t.value;document.querySelectorAll("#c1list > .c1card").forEach(c=>{c.hidden=!!t.value.trim()&&!jqMatch(String(c.dataset.q||""),t.value);});}});
+document.addEventListener("change",e=>{const t=e.target;if(!t.dataset||!t.dataset.c1pos)return;const ids=c1Ideas().map(i=>i.id),k=ids.indexOf(t.dataset.c1pos);let j=Math.round(Number(t.value))-1;if(k<0||isNaN(j))return;j=Math.max(0,Math.min(ids.length-1,j));ids.splice(k,1);ids.splice(j,0,t.dataset.c1pos);c1SetOrder(ids);});
+document.addEventListener("toggle",e=>{const k=e.target&&e.target.dataset&&e.target.dataset.c1open;if(!k)return;S.c1Open=S.c1Open||new Set();e.target.open?S.c1Open.add(k):S.c1Open.delete(k);},true);
+
+function juryOficial(){const set=new Set(JURI_DEF);Object.values(S.cfg.fases||{}).forEach(F=>(F.juri||[]).forEach(n=>n&&set.add(n)));[...S.sessoes.values()].forEach(x=>(x.juri||[]).forEach(n=>n&&set.add(n)));return [...set].filter(n=>!/@/.test(n)).sort((a,b)=>a.localeCompare(b,"pt"));}
 function juryWho(){
   const R=juryOficial();
   return `<div class="jhero"><div class="eyebrow">Bootcamp de Inovação 26/27 · Júri</div><h1>Quem és?</h1><div style="opacity:.92;margin-top:2px;max-width:60ch">Escolhe o teu nome antes de veres as ideias. É com ele que ficam registados os teus vereditos, comentários e perguntas.</div></div>
@@ -1770,7 +2011,7 @@ function juryIdea(i,jur,J,hide){
     <div class="full row" style="justify-content:space-between"><button type="button" class="btn sm danger" data-act="delidea" data-id="${i.id}">Apagar ideia</button><button type="button" class="btn sm pri" data-act="jedit" data-id="">Concluir edição</button></div></div>`
     :`<h3 class="jc-t">${esc(i.titulo||"(sem título)")}</h3>${i.origem&&S.ideias.get(i.origem)?`<p class="note" style="margin:-6px 0 0">↺ Retomada da ${esc(S.ideias.get(i.origem).sessao)}.ª sessão (${esc(S.ideias.get(i.origem).titulo||"")})</p>`:""}
     <div class="jc-ps"><div><b>Problema</b><p>${esc(i.problema||"—")}</p></div><div><b>Solução</b><p>${esc(i.solucao||"—")}</p></div></div>
-    ${mats.length?`<div class="jc-files"><span class="jc-lbl">Ficheiros dos membros</span>${mats.map(m=>`<button type="button" class="fchip" data-act="matopen" data-p="${esc(m.path)}" title="${esc(m.tipo||"")} · ${esc(m.nome||"")}"><span class="fi">${esc((String(m.ficheiro).split(".").pop()||"").slice(0,4).toUpperCase())}</span><span class="fn">${esc(m.ficheiro)}</span><small>${esc(m.tipo||"")}</small></button>`).join("")}</div>`:""}`;
+    ${mats.length?`<div class="jc-files"><span class="jc-lbl">Ficheiros dos membros</span>${mats.map(m=>m.url?`<a class="fchip" href="${esc(href(m.url))}" target="_blank" rel="noopener"><span class="fi">↗</span><span class="fn">${esc(m.ficheiro||m.url)}</span><small>${esc(m.tipo||"")}</small></a>`:`<button type="button" class="fchip" data-act="matopen" data-p="${esc(m.path)}" title="${esc(m.tipo||"")} · ${esc(m.nome||"")}"><span class="fi">${esc((String(m.ficheiro).split(".").pop()||"").slice(0,4).toUpperCase())}</span><span class="fn">${esc(m.ficheiro)}</span><small>${esc(m.tipo||"")}</small></button>`).join("")}</div>`:""}`;
   return `<article class="jcard jc2" ${hide?"hidden":""} style="--sc:var(--s${Math.min(4,Number(i.sessao)||1)})" data-q="${esc(ideaHay(i))}">
   <div class="jc-top"><span class="jc-s">${esc(sessLabel(i))}</span><span class="jc-ppl">${ppl.map(p=>`<span class="chipp" data-pid="${esc(i.id)}" data-pn="${esc(p)}"${pEd()?' title="Botão direito: remover da ideia"':""}>${av(p,22)}${esc(p)}</span>`).join("")||'<span class="note">Sem grupo</span>'}</span>
     <span class="jc-meta">${starsRO(i)}${ed&&!editing?`<button type="button" class="btn sm ghost" data-act="jedit" data-id="${i.id}">Editar</button><button type="button" class="btn sm ghost danger" data-act="delidea" data-id="${i.id}" aria-label="Apagar a ideia ${esc(i.titulo||"")}">Apagar</button>`:""}</span></div>

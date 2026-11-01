@@ -92,7 +92,7 @@ const estPill=s=>{const e=s.estado||"pendente";return `<span class="pill ${e==="
 function av(n){const f=st.fotos[n],ini=String(n||"?").split(" ").map(x=>x[0]||"").join("").slice(0,2);return f?`<img src="${esc(f)}" alt="${esc(n)}" title="${esc(n)}" loading="lazy" onerror="this.outerHTML='<i title=&quot;${esc(n)}&quot;>${esc(ini)}</i>'">`:`<i title="${esc(n)}">${esc(ini)}</i>`;}
 function stars(g){return `<span class="stars" role="img" aria-label="${g||0} de 5 estrelas">${[1,2,3,4,5].map(k=>`<span class="${k<=(g||0)?"on":""}">★</span>`).join("")}</span>`;}
 function fbOc(f){if(f.ocultoMembros!==undefined)return !!f.ocultoMembros;const raw=String(f.comentario||"").trim();if(!raw)return false;const x=raw.replace(/^\[Sessão \d\]\s*/,"").trim();if(!x)return true;return x.length<=12||(!/\s/.test(x)&&x.length<=15);}
-const fbVis=i=>st.fb.filter(f=>f.ideiaId===i.id&&!fbOc(f)).sort((a,b)=>String(b.d||"").localeCompare(String(a.d||"")));
+const fbVis=i=>st.fb.filter(f=>f.ideiaId===i.id&&f.tipo!=="c1aval"&&!fbOc(f)).sort((a,b)=>String(b.d||"").localeCompare(String(a.d||"")));
 function fbHtml(i){const l=fbVis(i);
   if(!l.length)return `<p class="note">Ainda sem feedback individual visível.</p>`;
   return l.map(f=>{const v=VER[f.veredito]||[f.veredito||"",""];return `<div class="fb"><b>${esc(f.jurado||"Júri")}</b> ${v[0]?`<span class="pill ${v[1]}">${esc(v[0])}${f.custom?": "+esc(f.custom):""}</span>`:""} <span class="note">${esc(f.d||"")}</span>${f.comentario?`<p class="txt" style="margin:4px 0 0">${esc(f.comentario)}</p>`:""}</div>`;}).join("");}
@@ -106,14 +106,18 @@ function metaHtml(i){const ma=st.mat.filter(m=>m.ideiaId===i.id);return `<div cl
 function reqsHtml(i){const l=st.sug.filter(s=>s.ideiaId===i.id).sort((a,b)=>String(b.em).localeCompare(String(a.em)));
   return l.length?`<div class="reqs">${l.map(s=>`<div>${estPill(s)} ${esc(TIPO[s.tipo]||s.tipo)} <span class="note">· ${(s.em||"").slice(0,10)}${s.teste?" · teste":""}</span></div>`).join("")}</div>`:"";}
 const pend=(i,t)=>st.sug.some(s=>s.ideiaId===i.id&&s.tipo===t&&(s.estado||"pendente")==="pendente");
-function fileList(ma){return ma.length?ma.map(m=>`<div class="fb"><button class="lnk" data-a="dl" data-p="${esc(m.path)}">${esc(m.ficheiro)}</button> <span class="pill">${esc(m.tipo)}</span> <span class="note">${esc(m.nome)} · ${(m.em||"").slice(0,10)}</span>${lc(m.email)===lc(myEmail())?` <button class="lnk" data-a="rm" data-id="${esc(m.id)}" data-p="${esc(m.path)}">Remover</button>`:""}</div>`).join(""):`<p class="note">Ainda sem ficheiros.</p>`;}
+function fileList(ma){return ma.length?ma.map(m=>`<div class="fb">${m.url?`<a class="lnk" href="${esc(/^https?:\/\//i.test(m.url)?m.url:"https://"+m.url)}" target="_blank" rel="noopener" style="padding:8px;font-weight:700">${esc(m.ficheiro||m.url)} ↗</a>`:`<button class="lnk" data-a="dl" data-p="${esc(m.path)}">${esc(m.ficheiro)}</button>`} <span class="pill">${esc(m.tipo)}</span> <span class="note">${esc(m.nome)} · ${(m.em||"").slice(0,10)}</span>${lc(m.email)===lc(myEmail())?` <button class="lnk" data-a="rm" data-id="${esc(m.id)}" data-p="${esc(m.path)}">Remover</button>`:""}</div>`).join(""):`<p class="note">Ainda sem ficheiros.</p>`;}
 /* Escolher ficheiros já enviados + juntar novos (usado em "matar" e no pedido para passar ao Challenge I). */
 function filePick(i,pre,req){const ma=st.mat.filter(m=>m.ideiaId===i.id);
   return `<div class="lab">${req?"Ficheiros de validação (obrigatório, pelo menos 1)":"Ficheiros de apoio (opcional)"}</div>${ma.map(m=>`<label class="chk"><input type="checkbox" class="${pre}-old" value="${esc(m.id)}"> ${esc(m.ficheiro)} <span class="note">· ${esc(m.tipo)}</span></label>`).join("")}
   <label for="${pre}-f-${esc(i.id)}">${ma.length?"Ou junta novos":"Juntar ficheiros"} (PDF, Word, Excel, PowerPoint, imagem… até 25 MB cada)</label><input type="file" multiple id="${pre}-f-${esc(i.id)}" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.csv,.txt,.png,.jpg,.jpeg">`;}
 function matHtml(i){const ma=st.mat.filter(m=>m.ideiaId===i.id);return fileList(ma)+
-  `<label for="t-${esc(i.id)}">Tipo</label><select id="t-${esc(i.id)}"><option>Pesquisa</option><option>Validação de mercado</option><option>Outro</option></select>
-  <label for="f-${esc(i.id)}">Ficheiro (PDF, Word, Excel, PowerPoint, imagem… até 25 MB)</label><input type="file" id="f-${esc(i.id)}" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.csv,.txt,.png,.jpg,.jpeg"><div class="row"><button class="pri" data-a="up" data-id="${esc(i.id)}">Enviar ficheiro</button></div>`;}
+  `<p class="note" style="margin:10px 0 0">O júri vê estes ficheiros no Challenge. Os <b>slides do pitch em PDF</b> abrem num leitor página a página.</p>
+  <label for="t-${esc(i.id)}">Tipo</label><select id="t-${esc(i.id)}"><option>Slides do pitch</option><option>Validação de mercado</option><option>Pesquisa</option><option>Outro</option></select>
+  <label for="f-${esc(i.id)}">Ficheiro (slides em PDF, Word, Excel, imagem… até 25 MB)</label><input type="file" id="f-${esc(i.id)}" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.csv,.txt,.png,.jpg,.jpeg"><div class="row"><button class="pri" data-a="up" data-id="${esc(i.id)}">Enviar ficheiro</button></div>
+  <div class="lab" style="margin-top:14px">Ou junta um link</div><label for="lu-${esc(i.id)}">Link (MVP, protótipo, Figma, Google Slides…)</label><input id="lu-${esc(i.id)}" type="url" inputmode="url" placeholder="https://…">
+  <label for="ln-${esc(i.id)}">Nome do link</label><input id="ln-${esc(i.id)}" maxlength="80" placeholder="Ex.: MVP no Figma">
+  <label for="lt-${esc(i.id)}">Tipo</label><select id="lt-${esc(i.id)}"><option>MVP / protótipo</option><option>Slides do pitch</option><option>Validação de mercado</option><option>Outro</option></select><div class="row"><button data-a="link" data-id="${esc(i.id)}">Juntar link</button></div>`;}
 function altHtml(i,withTitle){return `<label for="at-${esc(i.id)}">Título</label><input id="at-${esc(i.id)}" maxlength="120" value="${esc(i.titulo||"")}"${withTitle?"":" disabled"}>
   <label for="p-${esc(i.id)}">Problema (ideia)</label><textarea id="p-${esc(i.id)}">${esc(i.problema||"")}</textarea>
   <label for="s-${esc(i.id)}">Solução</label><textarea id="s-${esc(i.id)}">${esc(i.solucao||"")}</textarea>
@@ -255,10 +259,15 @@ document.addEventListener("click",async ev=>{const b=ev.target.closest("[data-a]
   else if(a==="fs"){st.fs=Number(b.dataset.v)||0;render();}
   else if(a==="up"){const f=$("#f-"+id).files[0];if(!f){flash("Escolhe primeiro um ficheiro.",1);return;}
     await upload(id,f,$("#t-"+id).value);st.msg="Ficheiro enviado."+(isAdm()?" (modo admin: ficheiro simulado, não foi enviado)":"");st.err=false;render();keep();}
+  else if(a==="link"){let u=$("#lu-"+id).value.trim();const nm=$("#ln-"+id).value.trim(),tp=$("#lt-"+id).value;if(!u){flash("Escreve o link.",1);return;}if(!/^https?:\/\//i.test(u))u="https://"+u;
+    try{new URL(u);}catch(x){flash("Esse link não parece válido.",1);return;}
+    const d={id:nid("m"),email:myEmail(),nome:st.nome,ideiaId:id,ficheiro:nm||u.replace(/^https?:\/\//,"").slice(0,60),url:u,tipo:tp,em:new Date().toISOString()};
+    await put("materiais",d);st.mat.push(d);st.msg="Link juntado."+sim;st.err=false;render();keep();}
   else if(a==="dl"){if(String(b.dataset.p).startsWith("simulado/")){flash("Ficheiro simulado no modo admin: não existe no servidor.",1);return;}
     await fresh();const r=await fetch(U+"/storage/v1/object/sign/materiais/"+b.dataset.p,{method:"POST",headers:hdr({"Content-Type":"application/json"}),body:JSON.stringify({expiresIn:300})});const j=await r.json();if(!r.ok)throw new Error("Sem acesso ao ficheiro.");window.open(U+"/storage/v1"+j.signedURL,"_blank","noopener");}
   else if(a==="rm"){if(!confirm("Remover este ficheiro?"))return;const m=st.mat.find(x=>x.id===id);
-    if(!(m&&m.simulado)){if(isAdm()){flash("No modo admin não é possível remover ficheiros reais.",1);return;}await fresh();await fetch(U+"/storage/v1/object/materiais/"+b.dataset.p,{method:"DELETE",headers:hdr()});await rest("docs?col=eq.materiais&id=eq."+encodeURIComponent(id),{method:"DELETE"});}
+    if(!(m&&(m.simulado||m.url))){if(isAdm()){flash("No modo admin não é possível remover ficheiros reais.",1);return;}await fresh();await fetch(U+"/storage/v1/object/materiais/"+b.dataset.p,{method:"DELETE",headers:hdr()});await rest("docs?col=eq.materiais&id=eq."+encodeURIComponent(id),{method:"DELETE"});}
+    if(m&&m.url&&!simulando())await rest("docs?col=eq.materiais&id=eq."+encodeURIComponent(id),{method:"DELETE"});
     st.mat=st.mat.filter(x=>x.id!==id);st.msg="Ficheiro removido.";st.err=false;render();keep();}
   }catch(x){flash(x.message||"Erro.",1);}});
 document.addEventListener("input",e=>{if(e.target.id!=="q")return;st.q=e.target.value;filtra();});

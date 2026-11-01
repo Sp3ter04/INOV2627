@@ -96,6 +96,16 @@
     if (w) w.location.href = url; else location.href = url;
   };
 
+  /* URL assinado (10 min) de um ficheiro dos membros, para o leitor de slides do júri */
+  window.INOV_FILE_URL = async function(path){
+    const h = { apikey: KEY, Authorization: "Bearer " + KEY, "Content-Type": "application/json" };
+    const c = getCode(); if (c) h["x-inov-code"] = c;
+    const r = await fetch(SB + "/storage/v1/object/sign/materiais/" + String(path).split("/").map(enc).join("/"), { method: "POST", headers: h, body: JSON.stringify({ expiresIn: 600 }) });
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok || !j.signedURL) throw new Error("sem acesso ao ficheiro");
+    return SB + "/storage/v1" + j.signedURL;
+  };
+
   /* ---------- coordenador ---------- */
   let coordP = null;
   function checkCoord(){
