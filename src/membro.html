@@ -56,7 +56,7 @@ details{border-top:1px solid var(--line);padding-top:8px;margin-top:10px}summary
 <div id="app"></div>
 <script>
 const U="https://hggrgaktnacmmgmaoeib.supabase.co",K="sb_publishable_em1gUMD7EQjI8n1hCE18tQ_DSy-eAsR",DOM="@junitec.pt",LS_CODE="inov-coord-code",SS_ADM="inov-membro-admin";
-const st={ses:null,nome:"",ideias:[],fb:[],fotos:{},sug:[],mat:[],tab:"c1",c1f:"todas",msg:null,load:false,view:"",sim:true,membros:[],openFb:new Set(),pan:"",q:""};
+const st={ses:null,nome:"",ideias:[],fb:[],fotos:{},sug:[],mat:[],tab:"",c1f:"todas",msg:null,load:false,view:"",sim:true,membros:[],openFb:new Set(),pan:"",q:""};
 const $=s=>document.querySelector(s);
 const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const lc=s=>String(s||"").toLowerCase();
@@ -80,6 +80,7 @@ const ideia=id=>st.ideias.find(x=>x.id===id);
 const isMine=i=>!!i&&(i.par||[]).includes(st.nome);
 const ETAPA={c1:1,c2:2,sd:3,startup:4};
 const isC1=i=>(ETAPA[i.etapa]||0)>=1;
+const isC2=i=>(ETAPA[i.etapa]||0)>=2;
 async function loadAll(){st.load=true;render();
   const [i,f,fo,su,ma,nm]=await Promise.all([docs("ideias"),docs("feedback"),docs("fotos"),docs("sugestoes"),docs("materiais"),isAdm()?Promise.resolve(st.nome):rest("rpc/inov_nome",{method:"POST",body:"{}"})]);
   st.ideias=i;st.fb=f;st.fotos=(fo.find(x=>x.fotos)||{}).fotos||{};st.nome=nm||(st.ses.user.user_metadata||{}).nome||"";
@@ -99,6 +100,14 @@ function fbHtml(i){const l=fbVis(i);
 /* Resumo do feedback: o resumo curto do júri (resumoJuri); se não houver, o último resumo por sessão. Clicar mostra todos os feedbacks visíveis. */
 function resTxt(i){if(i.resumoJuri&&!(i.resumoS&&i.resumoS.c1))return esc(i.resumoJuri).replace(/\s*\[Fundida: «([^»]+)»\]\s*/g,(m,t)=>`<br><span class="note">Da ideia juntada «${t}»:</span> `);
   const R=i.resumoS||{},k=Object.keys(R).filter(x=>R[x]).sort((x,y)=>(({c1:100,c2:101,sd:102})[x]||Number(x)||0)-(({c1:100,c2:101,sd:102})[y]||Number(y)||0));return k.length?esc(R[k[k.length-1]]).replace(/\n/g,"<br>"):"";}
+/* Separadores Challenge: no Challenge II só o resumo do Challenge I; no Challenge I primeiro o resumo do Challenge I e depois o das sessões de ideação (com os feedbacks das sessões). */
+function sesTxt(i){const R=i.resumoS||{},k=Object.keys(R).filter(x=>R[x]&&/^\d+$/.test(x)).sort((a,b)=>a-b),t=i.resumoJuri||(k.length?R[k[k.length-1]]:"");
+  return t?esc(t).replace(/\s*\[Fundida: «([^»]+)»\]\s*/g,(m,x)=>`<br><span class="note">Da ideia juntada «${x}»:</span> `).replace(/\n/g,"<br>"):"";}
+function phRes(i,ph){const r=i.resumoS&&i.resumoS.c1?esc(i.resumoS.c1).replace(/\n/g,"<br>"):"";
+  const c1b=`<div class="res" style="cursor:default"><span class="lab">Resumo do feedback do júri · Challenge I</span>${r||'<span class="note">Ainda sem resumo do Challenge I.</span>'}</div>`;
+  if(ph==="c2")return c1b;
+  const n=fbVis(i).length,o=st.openFb.has(i.id),t=sesTxt(i);
+  return c1b+`<button type="button" class="res" data-a="fbt" data-id="${esc(i.id)}" aria-expanded="${o}"><span class="lab">Resumo do feedback das sessões de ideação</span>${t||'<span class="note">Ainda sem resumo.</span>'}${n?`<span class="more">${o?"Esconder os feedbacks ▴":`Ver os feedbacks das sessões (${n}) ▾`}</span>`:""}</button>${o?`<div class="fbl">${fbHtml(i)}</div>`:""}`;}
 function resBlock(i){const n=fbVis(i).length,o=st.openFb.has(i.id),t=resTxt(i);
   return `<button type="button" class="res" data-a="fbt" data-id="${esc(i.id)}" aria-expanded="${o}"><span class="lab">Resumo do feedback do júri</span>${t||'<span class="note">Ainda sem resumo.</span>'}<span class="more">${o?"Esconder os feedbacks ▴":`Ver todos os feedbacks (${n}) ▾`}</span></button>${o?`<div class="fbl">${fbHtml(i)}</div>`:""}`;}
 function psHtml(i,open){return `<details${open?" open":""}><summary>Problema e solução</summary><div class="ps2 c"><div><div class="lab" style="margin-top:4px">Problema</div><p class="txt">${esc(i.problema||"—")}</p></div><div><div class="lab" style="margin-top:4px">Solução</div><p class="txt">${esc(i.solucao||"—")}</p></div></div></details>`;}
@@ -124,26 +133,32 @@ function altHtml(i,withTitle){return `<label for="at-${esc(i.id)}">Título</labe
   <label for="n-${esc(i.id)}">Porquê? (opcional)</label><input id="n-${esc(i.id)}"><div class="row"><button class="pri" data-a="sug" data-id="${esc(i.id)}">Enviar proposta ao coordenador</button></div><p class="note">O título e a descrição só mudam depois de o coordenador aceitar.</p>`;}
 const panBtn=(i,k,label,pri)=>{const on=st.pan===i.id+"|"+k;return `<button${pri?' class="pri"':""} data-a="pan" data-id="${esc(i.id)}" data-k="${k}" aria-expanded="${on}">${label}</button>`;};
 const panOn=(i,k)=>st.pan===i.id+"|"+k;
-function c1Card(i){const mine=isMine(i);
+function c1Card(i,ph){ph=ph||"c1";const mine=isMine(i),FN=ph==="c2"?"Challenge II":"Challenge I";
   let pan="";
   if(panOn(i,"mat"))pan=`<div class="pan"><h4>Documentos da ideia</h4>${matHtml(i)}</div>`;
   else if(panOn(i,"alt"))pan=`<div class="pan"><h4>Propor alteração do título, da ideia e da solução</h4>${altHtml(i,true)}</div>`;
-  else if(panOn(i,"matar"))pan=`<div class="pan"><h4>A validação correu mal: pedir para matar a ideia</h4><p class="note">O coordenador decide. Se aceitar, a ideia sai do Challenge I.</p><label for="mj-${esc(i.id)}">O que mostrou a validação? (obrigatório)</label><textarea id="mj-${esc(i.id)}" placeholder="Ex.: 12 entrevistas a clínicas, nenhuma sente o problema; quem paga já usa a solução X"></textarea>${filePick(i,"mk",false)}<div class="row"><button class="pri" data-a="matar" data-id="${esc(i.id)}" style="background:var(--bad);border-color:var(--bad)">Enviar pedido para matar</button></div></div>`;
+  else if(panOn(i,"matar"))pan=`<div class="pan"><h4>A validação correu mal: pedir para matar a ideia</h4><p class="note">O coordenador decide. Se aceitar, a ideia sai do ${FN}.</p><label for="mj-${esc(i.id)}">O que mostrou a validação? (obrigatório)</label><textarea id="mj-${esc(i.id)}" placeholder="Ex.: 12 entrevistas a clínicas, nenhuma sente o problema; quem paga já usa a solução X"></textarea>${filePick(i,"mk",false)}<div class="row"><button class="pri" data-a="matar" data-id="${esc(i.id)}" style="background:var(--bad);border-color:var(--bad)">Enviar pedido para matar</button></div></div>`;
   else if(panOn(i,"col"))pan=`<div class="pan"><h4>Pedir para colaborar nesta ideia</h4><label for="cj-${esc(i.id)}">Porque queres colaborar e o que podes trazer? (obrigatório)</label><textarea id="cj-${esc(i.id)}" placeholder="Ex.: conheço o setor, tenho contactos em 3 clínicas, posso fazer as entrevistas"></textarea><div class="row"><button class="pri" data-a="col" data-id="${esc(i.id)}">Enviar pedido ao coordenador</button></div><p class="note">Se o coordenador aceitar, passas a fazer parte da ideia.</p></div>`;
   const acts=mine?`<div class="acts">${panBtn(i,"mat","Juntar documento",1)}${panBtn(i,"alt","Propor alteração")}${pend(i,"matar")?'<span class="pill bad" style="align-self:center">Pedido para matar enviado</span>':panBtn(i,"matar","Má validação: pedir para matar")}</div>`
     :`<div class="acts">${pend(i,"colaborar")||pend(i,"participar")?'<span class="pill warn">Pedido para colaborar enviado</span>':panBtn(i,"col","Pedir para colaborar",1)}</div>`;
-  return `<article class="card" id="i-${esc(i.id)}" data-q="${esc(nrm([i.titulo,i.problema,i.solucao,(i.par||[]).join(" ")].join(" ")))}"><div class="ch"><h3>${esc(i.titulo||"(sem título)")}</h3><span class="sb">${mine?'<span class="pill ok">Tua ideia</span> ':""}<span class="pill">Challenge I</span></span></div>
-  ${metaHtml(i)}${resBlock(i)}${psHtml(i)}${!mine&&st.mat.some(m=>m.ideiaId===i.id)?`<details><summary>Ficheiros</summary>${fileList(st.mat.filter(m=>m.ideiaId===i.id))}</details>`:""}${reqsHtml(i)}${acts}${pan}</article>`;}
+  return `<article class="card" id="i-${esc(i.id)}" data-q="${esc(nrm([i.titulo,i.problema,i.solucao,(i.par||[]).join(" ")].join(" ")))}"><div class="ch"><h3>${esc(i.titulo||"(sem título)")}</h3><span class="sb">${mine?'<span class="pill ok">Tua ideia</span> ':""}<span class="pill">${FN}</span></span></div>
+  ${metaHtml(i)}${phRes(i,ph)}${psHtml(i)}${!mine&&st.mat.some(m=>m.ideiaId===i.id)?`<details><summary>Ficheiros</summary>${fileList(st.mat.filter(m=>m.ideiaId===i.id))}</details>`:""}${reqsHtml(i)}${acts}${pan}</article>`;}
 function repCard(i){const p=pend(i,"repescagem");
   const pan=panOn(i,"rep")?`<div class="pan"><h4>Pedir para passar ao Challenge I</h4><p class="note">Explica o que mudou desde a sessão de ideação e junta a validação que o mostra (entrevistas, inquéritos, contactos…).</p><label for="rj-${esc(i.id)}">Justificação (obrigatório)</label><textarea id="rj-${esc(i.id)}" placeholder="Ex.: falámos com 8 empresas do setor e 5 confirmaram o problema e o valor que pagariam"></textarea>${filePick(i,"rk",true)}<div class="row"><button class="pri" data-a="rep" data-id="${esc(i.id)}">Enviar pedido ao coordenador</button></div></div>`:"";
   return `<article class="card" id="i-${esc(i.id)}" data-q="${esc(nrm([i.titulo,i.problema,i.solucao,(i.par||[]).join(" ")].join(" ")))}"><div class="ch"><h3>${esc(i.titulo||"(sem título)")}</h3><span class="pill sb">${i.sessao||"?"}.ª sessão</span></div>
   ${metaHtml(i)}${resBlock(i)}${psHtml(i)}${reqsHtml(i)}<div class="acts">${p?'<span class="pill warn">Pedido enviado: à espera do coordenador</span>':panBtn(i,"rep","Pedir para passar ao Challenge I",1)}</div>${pan}</article>`;}
+function c2Html(){const c2=st.ideias.filter(isC2).sort(ordem),mc=c2.filter(isMine),list=st.c1f==="minhas"?mc:c2;
+  return `<div class="sum"><div><b>${c2.length}</b><span>ideias no Challenge II</span></div><div><b>${mc.length}</b><span>tuas no Challenge II</span></div><div><b>${st.sug.filter(s=>(s.estado||"pendente")==="pendente").length}</b><span>pedidos por decidir</span></div></div>
+  <p class="note" style="margin:0 0 10px">Estas são as ideias que passaram ao Challenge II, com o resumo do feedback do júri no Challenge I. Nas tuas, junta documentos ou propõe alterações. Nas outras, podes pedir para colaborar.</p>
+  <div class="chips" role="group" aria-label="Filtro"><button data-a="c1f" data-v="todas" aria-pressed="${st.c1f==="todas"}">Todas as ideias (${c2.length})</button><button data-a="c1f" data-v="minhas" aria-pressed="${st.c1f==="minhas"}">As minhas ideias (${mc.length})</button></div>
+  <input id="q" type="search" placeholder="Procurar ideias, problemas, pessoas…" aria-label="Procurar ideias" style="margin:0 0 10px">
+  ${st.load?`<p>A carregar…</p>`:list.length?list.map(i=>c1Card(i,"c2")).join(""):`<div class="card"><p style="margin:0">${st.c1f==="minhas"?"Nenhuma ideia tua passou ao Challenge II.":"Ainda não há ideias no Challenge II."}</p></div>`}`;}
 function c1Html(){const c1=st.ideias.filter(isC1).sort(ordem),mc=c1.filter(isMine),list=st.c1f==="minhas"?mc:c1,out=st.ideias.filter(i=>isMine(i)&&!isC1(i)).sort(ordem);
   return `<div class="sum"><div><b>${c1.length}</b><span>ideias no Challenge I</span></div><div><b>${mc.length}</b><span>tuas no Challenge I</span></div><div><b>${st.sug.filter(s=>(s.estado||"pendente")==="pendente").length}</b><span>pedidos por decidir</span></div></div>
   <p class="note" style="margin:0 0 10px">Estas são as ideias que passaram ao Challenge I. Nas tuas, junta documentos, propõe alterações ou, se a validação correu mal, pede para a matar. Nas outras, podes pedir para colaborar.</p>
   <div class="chips" role="group" aria-label="Filtro"><button data-a="c1f" data-v="todas" aria-pressed="${st.c1f==="todas"}">Todas as ideias (${c1.length})</button><button data-a="c1f" data-v="minhas" aria-pressed="${st.c1f==="minhas"}">As minhas ideias (${mc.length})</button></div>
   <input id="q" type="search" placeholder="Procurar ideias, problemas, pessoas…" aria-label="Procurar ideias" style="margin:0 0 10px">
-  ${st.load?`<p>A carregar…</p>`:list.length?list.map(c1Card).join(""):`<div class="card"><p style="margin:0">Nenhuma ideia tua passou ao Challenge I. Vê abaixo como pedir.</p></div>`}
+  ${st.load?`<p>A carregar…</p>`:list.length?list.map(i=>c1Card(i,"c1")).join(""):`<div class="card"><p style="margin:0">Nenhuma ideia tua passou ao Challenge I. Vê abaixo como pedir.</p></div>`}
   <div class="sec"><h2>As tuas ideias que não passaram</h2><span class="note">${out.length}</span></div>
   <p class="note" style="margin:0 0 10px">Se tens validação nova que mostre que a ideia merece seguir, pede ao coordenador para a passar ao Challenge I.</p>
   ${out.length?out.map(repCard).join(""):`<div class="card"><p class="note" style="margin:0">Todas as tuas ideias estão no Challenge I.</p></div>`}`;}
@@ -188,12 +203,13 @@ function render(){const A=$("#app");
    <form id="cf"><label for="n1">Nova palavra-passe</label><input id="n1" type="password" minlength="8" autocomplete="new-password" required><label for="n2">Repetir</label><input id="n2" type="password" minlength="8" autocomplete="new-password" required><div class="row"><button class="pri" style="flex:1">Guardar</button></div></form></div></div>`;
    $("#cf").onsubmit=async e=>{e.preventDefault();const a=$("#n1").value,b=$("#n2").value,em=st.ses.user.email;if(a!==b){st.msg="As palavras-passe não coincidem.";return render();}if(a.length<8||a===em.split("@")[0]||a===em){st.msg="Escolhe uma palavra-passe diferente do email e com 8 ou mais caracteres.";return render();}
     try{await fresh();const u=await auth("user",{password:a,data:{must_change:false}},"PUT");st.ses.user=u;st.msg=null;await start();}catch(x){st.msg=x.message;render();}};return;}
-  const mine=st.ideias.filter(isMine).sort(ordem),all=[...st.ideias].sort(ordem),nc1=st.ideias.filter(isC1).length,base=st.tab==="minhas"?mine:all,list=base.filter(i=>!st.fs||Number(i.sessao)===st.fs);
+  const nc2=st.ideias.filter(isC2).length;if(!["c1","c2","minhas"].includes(st.tab))st.tab=nc2?"c2":"c1";
+  const mine=st.ideias.filter(isMine).sort(ordem),all=[...st.ideias].sort(ordem),nc1=st.ideias.filter(isC1).length,base=mine,list=base.filter(i=>!st.fs||Number(i.sessao)===st.fs);
   const ses=[...new Set(base.map(i=>Number(i.sessao)||0))].filter(Boolean).sort(),pendN=st.sug.filter(s=>(s.estado||"pendente")==="pendente").length,fbN=st.fb.filter(f=>mine.some(i=>i.id===f.ideiaId)).length;
   A.innerHTML=`${isAdm()?admBar():""}<div class="bar"><span class="pp" style="margin-left:6px">${av(st.nome)}</span><div class="sp"><b>${esc(st.nome||myEmail())}</b><small>Inovação 26/27</small></div>${isAdm()?"":`<button data-a="pw" class="lnk">Palavra-passe</button>`}<button data-a="out">Sair</button></div>
   <div class="wrap">${st.msg?`<div class="msg ${st.err?"err":""}" role="status">${esc(st.msg)}</div>`:""}
-  <div class="tabs" role="group"><button data-a="tab" data-t="c1" aria-pressed="${st.tab==="c1"}">Challenge I (${nc1})</button><button data-a="tab" data-t="minhas" aria-pressed="${st.tab==="minhas"}">As minhas ideias (${mine.length})</button><button data-a="tab" data-t="todas" aria-pressed="${st.tab==="todas"}">Todas as ideias (${all.length})</button></div>
-  ${st.tab==="c1"?c1Html():`${st.tab==="minhas"?`<div class="sum"><div><b>${mine.length}</b><span>ideias tuas</span></div><div><b>${fbN}</b><span>feedbacks do júri</span></div><div><b>${pendN}</b><span>pedidos por decidir</span></div></div>`:""}
+  <div class="tabs" role="group"><button data-a="tab" data-t="c2" aria-pressed="${st.tab==="c2"}">Challenge II (${nc2})</button><button data-a="tab" data-t="c1" aria-pressed="${st.tab==="c1"}">Challenge I (${nc1})</button><button data-a="tab" data-t="minhas" aria-pressed="${st.tab==="minhas"}">As minhas ideias (${mine.length})</button></div>
+  ${st.tab==="c2"?c2Html():st.tab==="c1"?c1Html():`${st.tab==="minhas"?`<div class="sum"><div><b>${mine.length}</b><span>ideias tuas</span></div><div><b>${fbN}</b><span>feedbacks do júri</span></div><div><b>${pendN}</b><span>pedidos por decidir</span></div></div>`:""}
   <div class="row" style="margin:0 0 12px;align-items:center"><button class="pri" data-a="novo">+ Nova ideia</button><span class="note">${st.tab==="minhas"?"Junta ficheiros e sugere melhorias às tuas ideias.":"Lê tudo, incluindo o feedback. Se ajudaste numa ideia, pede para participar."}</span></div>${st.novo?novoHtml():""}
   <input id="q" type="search" placeholder="Procurar ideias, problemas, pessoas…" aria-label="Procurar ideias" style="margin:0 0 10px">
   ${ses.length>1?`<div class="chips" role="group" aria-label="Sessão"><button data-a="fs" data-v="0" aria-pressed="${!st.fs}">Todas as sessões</button>${ses.map(k=>`<button data-a="fs" data-v="${k}" aria-pressed="${st.fs===k}">${k}.ª sessão</button>`).join("")}</div>`:""}
