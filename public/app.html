@@ -1127,6 +1127,24 @@ function hFb(){
 function ideaChain(i){const c=[i],seen=new Set([i.id]);let o=i;while(o.origem&&S.ideias.get(o.origem)&&!seen.has(o.origem)){o=S.ideias.get(o.origem);seen.add(o.id);c.unshift(o);}return c;}
 /* Resumo cumulativo guardado na ideia mais recente: resumoS = {"1": "...", "2": "..."} (um texto por sessão). */
 function resumoDe(x,n){const r=x.resumoS&&x.resumoS[String(n)];if(r)return r;return "";}
+/* As fases avaliadas também têm resumo: resumoS.c1 = "Challenge I" (depois c2, sd), sempre depois das sessões numeradas. */
+const RES_FASES=["c1","c2","sd"];
+const resOrd=k=>{const f=RES_FASES.indexOf(k);return f>=0?100+f:(Number(k)||0);};
+function resKeys(R){return Object.keys(R||{}).filter(k=>R[k]).sort((a,b)=>resOrd(a)-resOrd(b));}
+function resLbl(k,ate){return RES_FASES.includes(k)?((S.cfg.fases&&S.cfg.fases[k]&&S.cfg.fases[k].nome)||k):(ate?"até à ":"")+k+".ª sessão";}
+/* Feedback escrito pelo júri no Challenge I (documentos c1aval com feedback ou perguntas). */
+function c1Txt(iid){return [...S.feedback.values()].filter(f=>f.tipo==="c1aval"&&f.ideiaId===iid&&(String(f.feedback||"").trim()||String(f.perguntas||"").trim())).sort((a,b)=>String(a.enviadoEm||"").localeCompare(String(b.enviadoEm||"")));}
+/* Passo "Challenge I" na linha do tempo do feedback. full = vista Feedback (botão editar + lista); senão, ficha da ideia (caixa de texto para o coordenador). */
+function c1Step(last,full){
+  const L=c1Txt(last.id),r=resumoDe(last,"c1"),nm=resLbl("c1");
+  if(!L.length&&!r)return "";
+  const key=last.id+":c1",open=!!(S.fbOpen&&S.fbOpen[key]),ed=!!(S.fbEd&&S.fbEd[key]);
+  const ta=`<label class="l full">Resumo do ${esc(nm)}<textarea class="field" rows="4" data-b="ideias|${esc(last.id)}|resumoS.c1" placeholder="O que o júri disse no ${esc(nm)}, em tom construtivo.">${esc(r)}</textarea></label>`;
+  const txt=r?`<p class="fres">${esc(r)}</p>`:(full?`<p class="fres auto">(Resumo por escrever.)</p>`:"");
+  const body=!full?(S.isOwner?ta:txt):txt+(S.isOwner?(ed?`<div class="fres-e">${ta}<div class="row" style="justify-content:flex-end;margin-top:6px"><button type="button" class="btn sm pri" data-act="fbed" data-id="${esc(key)}">Concluir</button></div></div>`:`<div><button type="button" class="btn sm" data-act="fbed" data-id="${esc(key)}">${r?"Editar resumo":"Escrever resumo"}</button></div>`):"");
+  const list=full&&L.length?`<details class="fc-d" data-fdet="${esc(key)}" ${open?"open":""}><summary>Ver os ${L.length} feedbacks do júri</summary><ul class="feed">${L.map(f=>{const fb=String(f.feedback||"").trim(),q=String(f.perguntas||"").trim();return feedLi({who:f.jurado||"Júri",tag:fb?'<span class="pill ok">Feedback</span>':'<span class="pill br">Perguntas</span>',time:fbDate(f),txt:[fb,q].filter(Boolean).join(" · ")});}).join("")}</ul></details>`:"";
+  return `<li class="tl-i" style="--sc:var(--s4)"><div class="tl-h"><b>${esc(nm)}</b><span class="note">· ${L.length} ${L.length===1?"feedback":"feedbacks"}</span></div>${body}${list}</li>`;
+}
 function hFbResumo(){
   const sel=(S.fbS&&S.fbS.length?S.fbS:[1,2,3,4]).map(Number);
   const ids=[...S.ideias.values()],usados=new Set(ids.map(x=>x.origem).filter(Boolean));
@@ -1148,9 +1166,10 @@ function hFbResumo(){
     </li>`;
   };
   const card=it=>{const last=it.last,n=it.ns[it.ns.length-1];const ppl=(last.par||[]).filter(Boolean);
-    return `<article class="fcard" style="--sc:var(--s${Math.min(4,n)})"><div class="fc-h"><h3>${esc(last.titulo||"(sem título)")}</h3><span class="pill">${it.ns.map(x=>x+".ª").join(" → ")} sessão</span></div>
+    const c1=c1Step(last,true);
+    return `<article class="fcard" style="--sc:var(--s${Math.min(4,n)})"><div class="fc-h"><h3>${esc(last.titulo||"(sem título)")}</h3><span class="pill">${it.ns.map(x=>x+".ª").join(" → ")} sessão${c1?" → "+esc(resLbl("c1")):""}</span></div>
       ${ppl.length?`<div class="fc-p"><span class="stack2">${avs(ppl,24)}</span>${esc(ppl.join(", "))}</div>`:""}
-      <ol class="tl">${it.ns.map(x=>step(it,x)).join("")}</ol></article>`;};
+      <ol class="tl">${it.ns.map(x=>step(it,x)).join("")}${c1}</ol></article>`;};
   return `<div class="card" style="margin-bottom:12px;display:grid;gap:10px"><div><h2 style="margin:0">Resumo do feedback por ideia</h2><p class="note" style="margin:4px 0 0">Cada ideia mostra, sessão a sessão, o resumo cumulativo do que o júri disse até ali. As ideias que passaram por várias sessões aparecem primeiro. Filtra pelas sessões que queres ver.</p></div>
     <div class="schips" role="group" aria-label="Sessões">${[1,2,3,4].map(n=>`<button type="button" data-act="fbsess" data-v="${n}" aria-pressed="${sel.includes(n)}">${n}.ª sessão${n===4?" (novas)":""}</button>`).join("")}</div></div>
   <div class="kpis3"><div class="k"><span>Ideias</span><b>${items.length}</b></div><div class="k"><span>Em várias sessões</span><b>${items.filter(it=>it.ns.length>1).length}</b></div><div class="k"><span>Resumos escritos</span><b>${nRes}/${nSteps}</b></div></div>
@@ -1206,11 +1225,11 @@ function hIdeias(){
 function stars(i){const g=i.gosto||0,mx=S.cfg.gostoMax||5;return `<span class="stars" role="group" aria-label="Gosto">${Array.from({length:mx},(_,k)=>`<button type="button" class="${k<g?"on":""}" data-act="gosto" data-id="${i.id}" data-v="${k+1}" aria-label="${k+1} de ${mx}">★</button>`).join("")}</span>`;}
 /* Resumo do feedback visível no cartão da ideia (lista do Bootcamp): último resumo cumulativo + evolução. */
 function resumoCard(i){
-  const R=i.resumoS||{},ks=Object.keys(R).filter(k=>R[k]).sort((a,b)=>Number(a)-Number(b));
+  const R=i.resumoS||{},ks=resKeys(R);
   const rj=i.resumoJuri?`<div class="ic-res"><span class="eyebrow">Resumo do júri (visível aos membros)</span><p>${esc(i.resumoJuri)}</p></div>`:"";
   if(!ks.length)return rj;
   const k=ks[ks.length-1],prev=ks.slice(0,-1);
-  return rj+`<div class="ic-res"><span class="eyebrow">Resumo do feedback do júri · até à ${esc(k)}.ª sessão</span><p>${esc(R[k])}</p>${prev.length?`<details class="ic-res-d"><summary>Ver evolução (${prev.length} ${prev.length>1?"sessões anteriores":"sessão anterior"})</summary>${prev.map(x=>`<p><b>${esc(x)}.ª sessão</b> · ${esc(R[x])}</p>`).join("")}</details>`:""}</div>`;
+  return rj+`<div class="ic-res"><span class="eyebrow">Resumo do feedback do júri · ${esc(resLbl(k,true))}</span><p>${esc(R[k])}</p>${prev.length?`<details class="ic-res-d"><summary>Ver evolução (${prev.length} ${prev.length>1?"etapas anteriores":"etapa anterior"})</summary>${prev.map(x=>`<p><b>${esc(resLbl(x))}</b> · ${esc(R[x])}</p>`).join("")}</details>`:""}</div>`;
 }
 function ideaRow(i,extra,ctl,compact){
   const open=S.open===i.id,psO=!compact||!!(S.psOpen&&S.psOpen.has(i.id)),inC1=rank(i.etapa)>=1,nfb=fbAll(i.id).length,ppl=(i.par||[]).filter(Boolean);
@@ -1233,12 +1252,13 @@ function resumoIdeia(i){
   let last=i;for(let g=0;g<20;g++){const nx=[...S.ideias.values()].find(x=>x.origem===last.id);if(!nx)break;last=nx;}
   const chain=ideaChain(last);
   const steps=chain.map(x=>{const n=Number(x.sessao)||1,L=fbAll(x.id);return {n,x,L,st:vStatsL(L),r:resumoDe(last,n)};});
-  if(!steps.some(s=>s.L.length||s.r))return "";
+  const c1h=c1Step(last,false);
+  if(!steps.some(s=>s.L.length||s.r)&&!c1h)return "";
   return `<div class="full fres-box"><span class="l">Resumo do feedback do júri, sessão a sessão</span>
     <ol class="tl">${steps.map(s=>`<li class="tl-i" style="--sc:var(--s${Math.min(4,s.n)})"><div class="tl-h"><b>${s.n}.ª sessão</b><span class="note">· ${s.L.length} ${s.L.length===1?"feedback":"feedbacks"}</span></div>
       ${s.L.length?`<div>${vBar(s.st)}</div>`:""}
       ${S.isOwner?`<label class="l full">Resumo até à ${s.n}.ª sessão<textarea class="field" rows="3" data-b="ideias|${esc(last.id)}|resumoS.${s.n}" placeholder="O que o júri disse até aqui, em tom construtivo.">${esc(s.r)}</textarea></label>`:(s.r?`<p class="fres">${esc(s.r)}</p>`:"")}
-      </li>`).join("")}</ol></div>`;
+      </li>`).join("")}${c1h}</ol></div>`;
 }
 function ideaForm(i){
   const LOCK=new Set(["titulo","problema","solucao"]);
@@ -1793,7 +1813,7 @@ function c1MatHtml(i,big){const M=c1Mats(i);const ext=f=>(String(f||"").split(".
     ...M.links.filter(m=>!M.linkSlides.includes(m)).map(m=>`<a class="fchip" href="${esc(href(m.url))}" target="_blank" rel="noopener" title="${esc(m.url)}"><span class="fi">↗</span><span class="fn">${esc(m.ficheiro||m.url)}</span><small>${esc(m.tipo||"Link")}</small></a>`)];
   if(!sl.length&&!rest.length)return `<p class="note" style="margin:0">Ainda sem slides nem ficheiros de validação.</p>`;
   return `${sl.length?`<div class="row">${sl.join("")}</div>`:""}${rest.length?`<div class="jc-files">${rest.join("")}</div>`:""}`;}
-function c1Res(i){const t=i.resumoJuri||(()=>{const R=i.resumoS||{},k=Object.keys(R).filter(x=>R[x]).sort((a,b)=>a-b);return k.length?R[k[k.length-1]]:"";})();
+function c1Res(i){const t=i.resumoJuri||(()=>{const R=i.resumoS||{},k=resKeys(R).filter(x=>!RES_FASES.includes(x));return k.length?R[k[k.length-1]]:"";})();
   return t?esc(t).replace(/\s*\[Fundida: «([^»]+)»\]\s*/g,(m,x)=>`<br><span class="note">Da ideia juntada «${x}»:</span> `):"";}
 function c1Scale(cur,attrs,label){return `<span class="c1sc" role="group" aria-label="${esc(label)}">${[0,1,2,3,4,5].map(v=>`<button type="button" ${attrs} data-v="${v}" aria-pressed="${cur!=null&&cur!==""&&Number(cur)===v}" aria-label="${esc(label)}: ${v}" title="${cur!=null&&cur!==""&&Number(cur)===v?"Clica outra vez para apagar a nota":v}">${v}</button>`).join("")}</span>`;}
 function vJuriC1(){
