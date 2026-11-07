@@ -69,6 +69,8 @@
 .tl-h{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}.tl-h b{font:800 14px var(--display)}
 .fres{margin:0;background:var(--brand-soft);border-radius:8px;padding:10px 12px;line-height:1.55;white-space:pre-wrap}
 .ic-res{margin:10px 0 0;background:var(--brand-soft);border-radius:8px;padding:10px 12px;line-height:1.55}
+.ic-res p{white-space:pre-wrap}
+.ic-jl{list-style:none;margin:8px 0 0;padding:0;display:grid;gap:6px}.ic-jl li{display:grid;grid-template-columns:auto 1fr;gap:8px;align-items:start;background:var(--surface,#fff);border:1px solid var(--line);border-radius:8px;padding:8px 10px}.ic-jl b{display:block;font-size:13px}.ic-jl p{margin:2px 0 0;white-space:pre-wrap;font-size:13px}.ic-jl .q{color:var(--muted)}
 .ic-av{margin-top:4px;padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:var(--surface-2);display:grid;gap:10px}
 .ic-av-h{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;justify-content:space-between}.ic-av-h .eyebrow{margin:0}
 .ic-av-n{display:flex;flex-wrap:wrap;gap:10px}.ic-av-n label{display:grid;gap:3px;font-size:12px;font-weight:700;color:var(--muted)}.ic-av-n .field.n{width:84px}
@@ -1133,7 +1135,8 @@ const resOrd=k=>{const f=RES_FASES.indexOf(k);return f>=0?100+f:(Number(k)||0);}
 function resKeys(R){return Object.keys(R||{}).filter(k=>R[k]).sort((a,b)=>resOrd(a)-resOrd(b));}
 function resLbl(k,ate){return RES_FASES.includes(k)?((S.cfg.fases&&S.cfg.fases[k]&&S.cfg.fases[k].nome)||k):(ate?"até à ":"")+k+".ª sessão";}
 /* Feedback escrito pelo júri no Challenge I (documentos c1aval com feedback ou perguntas). */
-function c1Txt(iid){return [...S.feedback.values()].filter(f=>f.tipo==="c1aval"&&f.ideiaId===iid&&(String(f.feedback||"").trim()||String(f.perguntas||"").trim())).sort((a,b)=>String(a.enviadoEm||"").localeCompare(String(b.enviadoEm||"")));}
+function c1Txt(iid){return faseTxt(iid,"c1");}
+function faseTxt(iid,ph){return [...S.feedback.values()].filter(f=>f.tipo===ph+"aval"&&f.ideiaId===iid&&(String(f.feedback||"").trim()||String(f.perguntas||"").trim())).sort((a,b)=>String(a.enviadoEm||"").localeCompare(String(b.enviadoEm||"")));}
 /* Passo "Challenge I" na linha do tempo do feedback. full = vista Feedback (botão editar + lista); senão, ficha da ideia (caixa de texto para o coordenador). */
 function c1Step(last,full){
   const L=c1Txt(last.id),r=resumoDe(last,"c1"),nm=resLbl("c1");
@@ -1144,6 +1147,15 @@ function c1Step(last,full){
   const body=!full?(S.isOwner?ta:txt):txt+(S.isOwner?(ed?`<div class="fres-e">${ta}<div class="row" style="justify-content:flex-end;margin-top:6px"><button type="button" class="btn sm pri" data-act="fbed" data-id="${esc(key)}">Concluir</button></div></div>`:`<div><button type="button" class="btn sm" data-act="fbed" data-id="${esc(key)}">${r?"Editar resumo":"Escrever resumo"}</button></div>`):"");
   const list=full&&L.length?`<details class="fc-d" data-fdet="${esc(key)}" ${open?"open":""}><summary>Ver os ${L.length} feedbacks do júri</summary><ul class="feed">${L.map(f=>{const fb=String(f.feedback||"").trim(),q=String(f.perguntas||"").trim();return feedLi({who:f.jurado||"Júri",tag:fb?'<span class="pill ok">Feedback</span>':'<span class="pill br">Perguntas</span>',time:fbDate(f),txt:[fb,q].filter(Boolean).join(" · ")});}).join("")}</ul></details>`:"";
   return `<li class="tl-i" style="--sc:var(--s4)"><div class="tl-h"><b>${esc(nm)}</b><span class="note">· ${L.length} ${L.length===1?"feedback":"feedbacks"}</span></div>${body}${list}</li>`;
+}
+/* Separadores Challenge I/II: só o feedback dessa fase. Resumo (Apresentação · Ideia · o que o júri disse) + o feedback escrito de cada jurado. */
+function faseFb(i,ph){
+  const L=faseTxt(i.id,ph),r=resumoDe(i,ph),nm=resLbl(ph),key=i.id+":"+ph,ed=!!(S.fbEd&&S.fbEd[key]);
+  const ta=`<label class="l full">Resumo do ${esc(nm)}<textarea class="field" rows="7" data-b="ideias|${esc(i.id)}|resumoS.${ph}" placeholder="Apresentação: slides, pitch, clareza…&#10;Ideia: problema, validação, solução…&#10;O que o júri disse:&#10;- Nome: …">${esc(r)}</textarea></label>`;
+  const edit=S.isOwner?(ed?`<div class="fres-e">${ta}<div class="row" style="justify-content:flex-end;margin-top:6px"><button type="button" class="btn sm pri" data-act="fbed" data-id="${esc(key)}">Concluir</button></div></div>`:`<div style="margin-top:6px"><button type="button" class="btn sm" data-act="fbed" data-id="${esc(key)}">${r?"Editar resumo":"Escrever resumo"}</button></div>`):"";
+  const jl=L.length?`<ul class="ic-jl">${L.map(f=>{const fb=String(f.feedback||"").trim(),q=String(f.perguntas||"").trim();return `<li>${av(f.jurado||"Júri",28)}<div><b>${esc(f.jurado||"Júri")}</b>${fb?`<p>${esc(fb)}</p>`:""}${q?`<p class="q">${fb?"Perguntas: ":""}${esc(q)}</p>`:""}</div></li>`;}).join("")}</ul>`:`<p class="note" style="margin:6px 0 0">Ainda sem feedback escrito do júri neste ${esc(nm)}.</p>`;
+  return `<div class="ic-res"><span class="eyebrow">Resumo do feedback do júri · ${esc(nm)}</span>${r?`<p>${esc(r)}</p>`:'<p class="note">Resumo por escrever.</p>'}${edit}</div>
+  <div class="ic-res" style="background:transparent;padding:0"><span class="eyebrow">Feedback de cada jurado · ${L.length}</span>${jl}</div>`;
 }
 function hFbResumo(){
   const sel=(S.fbS&&S.fbS.length?S.fbS:[1,2,3,4]).map(Number);
@@ -1232,8 +1244,8 @@ function resumoCard(i){
   const k=ks[ks.length-1],prev=ks.slice(0,-1);
   return rj+`<div class="ic-res"><span class="eyebrow">Resumo do feedback do júri · ${esc(resLbl(k,true))}</span><p>${esc(R[k])}</p>${prev.length?`<details class="ic-res-d"><summary>Ver evolução (${prev.length} ${prev.length>1?"etapas anteriores":"etapa anterior"})</summary>${prev.map(x=>`<p><b>${esc(resLbl(x))}</b> · ${esc(R[x])}</p>`).join("")}</details>`:""}</div>`;
 }
-function ideaRow(i,extra,ctl,compact){
-  const open=S.open===i.id,psO=!compact||!!(S.psOpen&&S.psOpen.has(i.id)),inC1=rank(i.etapa)>=1,nfb=fbAll(i.id).length,ppl=(i.par||[]).filter(Boolean);
+function ideaRow(i,extra,ctl,compact,ph){
+  const open=S.open===i.id,psO=!compact||!!(S.psOpen&&S.psOpen.has(i.id)),inC1=rank(i.etapa)>=1,nfb=ph?0:fbAll(i.id).length,ppl=(i.par||[]).filter(Boolean),nph=ph?faseTxt(i.id,ph).length:0;
   const tipo=i.tipo&&TIPO_COR[i.tipo]?`<span class="tag" style="--pc:${TIPO_COR[i.tipo]}">${TIPO_IDEIA.find(x=>x[0]===i.tipo)[1]}</span>`:"";
   return `<article class="ic ${open?"open":""}" style="--sc:var(--s${Math.min(4,Number(i.sessao)||1)})">
   <div class="ic-h"><span class="ic-s" title="${esc(sessLabel(i))}">${i.sessao||"?"}.ª</span>
@@ -1241,12 +1253,12 @@ function ideaRow(i,extra,ctl,compact){
     <span class="ic-b">${ideaBadges(i)}</span>
     <span class="ic-r">${stars(i)}${ctl!=null?ctl:rank(i.etapa)>1?`<span class="stage ${i.etapa}">${ETAPA_L[i.etapa]}</span>`:`<label class="c1t ${inC1?"on":""}"><input type="checkbox" data-act="toc1" data-id="${i.id}" ${inC1?"checked":""}>${inC1?"Passa ao Challenge I":"Challenge I"}</label>`}</span></div>
   <div class="ic-m"><span class="ic-p">${ppl.length?ppl.map(p=>`<span class="chipp" data-pid="${esc(i.id)}" data-pn="${esc(p)}"${pEd()?' title="Botão direito: remover da ideia"':""}>${av(p,22)}${esc(p)}</span>`).join(""):'<span class="note">Sem grupo</span>'}${compact?`<button type="button" class="ps-t" data-act="psopen" data-id="${esc(i.id)}" aria-expanded="${psO}">problema/solução ${psO?"▾":"▸"}</button>`:""}</span>
-    <span class="ic-j">${tallyHtml(i.id)||'<span class="note">sem avaliações do júri</span>'}${nfb?`<span class="note">${nfb} entrada${nfb>1?"s":""}</span>`:""}</span></div>
+    <span class="ic-j">${ph?`<span class="note">${nph} ${nph===1?"feedback escrito":"feedbacks escritos"} do júri</span>`:(tallyHtml(i.id)||'<span class="note">sem avaliações do júri</span>')}${nfb?`<span class="note">${nfb} entrada${nfb>1?"s":""}</span>`:""}</span></div>
   ${psO?`${i.problema||i.solucao?`<div class="ic-ps"><div><b>Problema</b><p>${esc(i.problema||"—")}</p></div><div><b>Solução</b><p>${esc(i.solucao||"—")}</p></div></div>`:""}
-  ${resumoCard(i)}
+  ${ph?faseFb(i,ph):resumoCard(i)}
   ${S.isOwner&&String(i.notas||"").trim()?`<div class="ic-res ic-notes"><span class="eyebrow">Notas do coordenador</span><p>${esc(i.notas)}</p></div>`:""}
   ${extra||""}`:""}
-  ${open?`<div class="ic-d">${ideaForm(i)}${matBlock(i.id,true)}</div>`:""}</article>`;
+  ${open?`<div class="ic-d">${ideaForm(i,ph)}${matBlock(i.id,true)}</div>`:""}</article>`;
 }
 /* Resumo cumulativo por ideia (Bootcamp): segue a cadeia até à versão mais recente e mostra/edita resumoS por sessão. */
 function resumoIdeia(i){
@@ -1261,7 +1273,7 @@ function resumoIdeia(i){
       ${S.isOwner?`<label class="l full">Resumo até à ${s.n}.ª sessão<textarea class="field" rows="3" data-b="ideias|${esc(last.id)}|resumoS.${s.n}" placeholder="O que o júri disse até aqui, em tom construtivo.">${esc(s.r)}</textarea></label>`:(s.r?`<p class="fres">${esc(s.r)}</p>`:"")}
       </li>`).join("")}${c1h}</ol></div>`;
 }
-function ideaForm(i){
+function ideaForm(i,ph){
   const LOCK=new Set(["titulo","problema","solucao"]);
   const b=(k,l,ta,ph)=>{const ro=!S.isOwner&&LOCK.has(k)?" readonly":"";return `<label class="l ${ta?"full":""}">${l}${ta?`<textarea class="field"${ro} data-b="ideias|${i.id}|${k}" placeholder="${ph||""}">${esc(i[k]||"")}</textarea>`:`<input class="field"${ro} data-b="ideias|${i.id}|${k}" value="${esc(i[k]||"")}" placeholder="${ph||""}">`}</label>`;};
   const hist=["c1","c2","sd"].filter(f=>i.aval&&i.aval[f]).map(f=>{const a=ideaAvg(i,f);return `<span class="pill ${a!=null?"br":""}">${S.cfg.fases[f].nome}: ${a!=null?nf(a):"–"}${i.aval[f].decisao?" · "+esc(i.aval[f].decisao):""}</span>`;}).join(" ");
@@ -1271,8 +1283,8 @@ function ideaForm(i){
     <div class="row"><label class="l" style="flex:1">Membro A<input class="field" list="dl-membros" data-b="ideias|${i.id}|par.0" value="${esc((i.par||[])[0]||"")}"></label><label class="l" style="flex:1">Membro B<input class="field" list="dl-membros" data-b="ideias|${i.id}|par.1" value="${esc((i.par||[])[1]||"")}"></label>${(i.par||[])[2]!==undefined?`<label class="l" style="flex:1">Membro C<input class="field" list="dl-membros" data-b="ideias|${i.id}|par.2" value="${esc((i.par||[])[2]||"")}"></label>`:""}<label class="l">Sessão<select class="field" data-b="ideias|${i.id}|sessao" data-type="num">${[1,2,3,4].map(n=>`<option ${i.sessao===n?"selected":""}>${n}</option>`).join("")}</select></label></div>
     ${b("problema","Problema",1)}${b("solucao","Solução",1)}
     ${b("notas","Notas do coordenador",1,"O que investigar a seguir, perguntas, contactos…")}
-    ${resumoIdeia(i)}
-    ${fbAll(i.id).length?`<div class="full"><span class="l">Feedback e perguntas do júri</span><ul class="fbul">${fbAll(i.id).map(f=>fbItem(f,false)).join("")}</ul></div>`:""}
+    ${ph?"":resumoIdeia(i)}
+    ${!ph&&fbAll(i.id).length?`<div class="full"><span class="l">Feedback e perguntas do júri</span><ul class="fbul">${fbAll(i.id).map(f=>fbItem(f,false)).join("")}</ul></div>`:""}
     ${b("slides","Link dos slides",0,"https://…")}${b("site","Site / protótipo",0,"https://…")}
     <div class="row full" style="justify-content:space-between">${hist||'<span class="note">Ainda não passou por nenhuma fase avaliada.</span>'}<span class="row">${S.isOwner?`<button type="button" class="btn sm danger" data-act="delidea" data-id="${i.id}">Apagar ideia</button>`:""}<button type="button" class="btn sm" data-open="${i.id}">Fechar</button></span></div>
   </div>`;
@@ -1296,7 +1308,7 @@ function faseCard(i,k,f,F,J,prev){
       <label class="l">Slides<input class="field" data-b="ideias|${i.id}|aval.${f}.slides" value="${esc(a.slides||"")}" placeholder="https://…"></label>
       <label class="l">Site / protótipo<input class="field" data-b="ideias|${i.id}|aval.${f}.site" value="${esc(a.site||"")}" placeholder="https://…"></label>
       ${a.slides||a.site?`<div class="full row">${a.slides?`<a href="${esc(href(a.slides))}" target="_blank" rel="noopener">Abrir slides ↗</a>`:""}${a.site?`<a href="${esc(href(a.site))}" target="_blank" rel="noopener">Abrir site ↗</a>`:""}</div>`:""}</div>`:""}
-  </div>`,jp+ctl,f==="c1"||f==="c2");
+  </div>`,jp+ctl,f==="c1"||f==="c2",f==="c1"||f==="c2"?f:"");
 }
 function hFase(f){
   const F=S.cfg.fases[f];const prev={c1:[],c2:["c1"],sd:["c1","c2"]}[f];
