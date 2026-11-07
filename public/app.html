@@ -1226,7 +1226,8 @@ function stars(i){const g=i.gosto||0,mx=S.cfg.gostoMax||5;return `<span class="s
 /* Resumo do feedback visível no cartão da ideia (lista do Bootcamp): último resumo cumulativo + evolução. */
 function resumoCard(i){
   const R=i.resumoS||{},ks=resKeys(R);
-  const rj=i.resumoJuri?`<div class="ic-res"><span class="eyebrow">Resumo do júri (visível aos membros)</span><p>${esc(i.resumoJuri)}</p></div>`:"";
+  /* Ideias com resumo do Challenge I: só esse resumo aparece (o resumo curto do júri fica guardado, mas escondido). */
+  const rj=i.resumoJuri&&!R.c1?`<div class="ic-res"><span class="eyebrow">Resumo do júri (visível aos membros)</span><p>${esc(i.resumoJuri)}</p></div>`:"";
   if(!ks.length)return rj;
   const k=ks[ks.length-1],prev=ks.slice(0,-1);
   return rj+`<div class="ic-res"><span class="eyebrow">Resumo do feedback do júri · ${esc(resLbl(k,true))}</span><p>${esc(R[k])}</p>${prev.length?`<details class="ic-res-d"><summary>Ver evolução (${prev.length} ${prev.length>1?"etapas anteriores":"etapa anterior"})</summary>${prev.map(x=>`<p><b>${esc(resLbl(x))}</b> · ${esc(R[x])}</p>`).join("")}</details>`:""}</div>`;
