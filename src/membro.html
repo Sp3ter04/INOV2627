@@ -44,6 +44,8 @@ details{border-top:1px solid var(--line);padding-top:8px;margin-top:10px}summary
 .res{display:block;width:100%;text-align:left;font-weight:400;background:var(--brand-soft);border:1px solid transparent;border-radius:8px;padding:10px 12px;margin:10px 0 0;color:var(--fg)}
 .res:hover{border-color:var(--brand)}.res .lab{display:block;margin:0 0 4px;color:var(--brand)}.res .more{display:block;margin-top:6px;font-weight:700;color:var(--brand);font-size:.88rem}
 .fbl{border:1px solid var(--line);border-radius:8px;padding:6px 12px;margin-top:6px}
+.c1n{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin:4px 0 8px}.c1n div{border:1px solid var(--line);border-radius:8px;padding:6px 8px;text-align:center}.c1n b{display:block;font-size:1.1rem}.c1n span{font-size:.78rem;color:var(--muted)}
+@media(max-width:560px){.c1n{grid-template-columns:repeat(3,1fr)}}
 .pan{background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:4px 14px 14px;margin-top:10px}
 .pan h4{margin:10px 0 0;font-family:var(--display);font-size:.95rem}
 .reqs{display:flex;flex-direction:column;gap:4px;margin-top:10px}.reqs div{font-size:.88rem}
@@ -56,7 +58,7 @@ details{border-top:1px solid var(--line);padding-top:8px;margin-top:10px}summary
 <div id="app"></div>
 <script>
 const U="https://hggrgaktnacmmgmaoeib.supabase.co",K="sb_publishable_em1gUMD7EQjI8n1hCE18tQ_DSy-eAsR",DOM="@junitec.pt",LS_CODE="inov-coord-code",SS_ADM="inov-membro-admin";
-const st={ses:null,nome:"",ideias:[],fb:[],fotos:{},sug:[],mat:[],tab:"",c1f:"todas",msg:null,load:false,view:"",sim:true,membros:[],openFb:new Set(),pan:"",q:""};
+const st={ses:null,nome:"",ideias:[],fb:[],fotos:{},sug:[],mat:[],tab:"",c1f:"todas",msg:null,load:false,view:"",sim:true,membros:[],openFb:new Set(),openC1:new Set(),pan:"",q:""};
 const $=s=>document.querySelector(s);
 const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const lc=s=>String(s||"").toLowerCase();
@@ -103,8 +105,16 @@ function resTxt(i){if(i.resumoJuri&&!(i.resumoS&&i.resumoS.c1))return esc(i.resu
 /* Separadores Challenge: no Challenge II só o resumo do Challenge I; no Challenge I primeiro o resumo do Challenge I e depois o das sessões de ideação (com os feedbacks das sessões). */
 function sesTxt(i){const R=i.resumoS||{},k=Object.keys(R).filter(x=>R[x]&&/^\d+$/.test(x)).sort((a,b)=>a-b),t=i.resumoJuri||(k.length?R[k[k.length-1]]:"");
   return t?esc(t).replace(/\s*\[Fundida: «([^»]+)»\]\s*/g,(m,x)=>`<br><span class="note">Da ideia juntada «${x}»:</span> `).replace(/\n/g,"<br>"):"";}
+/* Detalhe do Challenge I: nota média por critério (só os 5 critérios) e o feedback escrito de cada jurado. */
+const C1K=[["problema","Problema"],["validacao","Validação"],["solucao","Solução"],["viabilidade","Viabilidade"],["escalabilidade","Escalabilidade"]];
+function c1Det(i){const A=st.fb.filter(f=>f.tipo==="c1aval"&&f.ideiaId===i.id);
+  const med=k=>{const v=A.map(f=>(f.notas||{})[k]).filter(x=>x!==""&&x!=null&&!isNaN(Number(x))).map(Number);return v.length?(v.reduce((a,b)=>a+b,0)/v.length).toFixed(1).replace(".",","):"–";};
+  const L=A.filter(f=>String(f.feedback||"").trim()||String(f.perguntas||"").trim()).sort((a,b)=>String(a.enviadoEm||"").localeCompare(String(b.enviadoEm||"")));
+  return `<div class="fbl"><div class="lab" style="margin:6px 0 4px">Nota média do júri (0 a 5)</div><div class="c1n">${C1K.map(([k,l])=>`<div><b>${med(k)}</b><span>${l}</span></div>`).join("")}</div>
+  ${L.length?L.map(f=>{const fb=String(f.feedback||"").trim(),q=String(f.perguntas||"").trim();return `<div class="fb"><b>${esc(f.jurado||"Júri")}</b>${fb?`<p class="txt" style="margin:4px 0 0">${esc(fb)}</p>`:""}${q?`<p class="txt note" style="margin:4px 0 0">${esc(q)}</p>`:""}</div>`;}).join(""):'<p class="note">Nenhum jurado deixou feedback escrito.</p>'}</div>`;}
 function phRes(i,ph){const r=i.resumoS&&i.resumoS.c1?esc(i.resumoS.c1).replace(/\n/g,"<br>"):"";
-  const c1b=`<div class="res" style="cursor:default"><span class="lab">Resumo do feedback do júri · Challenge I</span>${r||'<span class="note">Ainda sem resumo do Challenge I.</span>'}</div>`;
+  const o1=st.openC1.has(i.id);
+  const c1b=`<button type="button" class="res" data-a="c1t" data-id="${esc(i.id)}" aria-expanded="${o1}"><span class="lab">Resumo do feedback do júri · Challenge I</span>${r||'<span class="note">Ainda sem resumo do Challenge I.</span>'}<span class="more">${o1?"Esconder o feedback do júri ▴":"Ver o feedback de cada jurado e as notas ▾"}</span></button>${o1?c1Det(i):""}`;
   if(ph==="c2")return c1b;
   const n=fbVis(i).length,o=st.openFb.has(i.id),t=sesTxt(i);
   return c1b+`<button type="button" class="res" data-a="fbt" data-id="${esc(i.id)}" aria-expanded="${o}"><span class="lab">Resumo do feedback das sessões de ideação</span>${t||'<span class="note">Ainda sem resumo.</span>'}${n?`<span class="more">${o?"Esconder os feedbacks ▴":`Ver os feedbacks das sessões (${n}) ▾`}</span>`:""}</button>${o?`<div class="fbl">${fbHtml(i)}</div>`:""}`;}
@@ -241,6 +251,7 @@ document.addEventListener("click",async ev=>{const b=ev.target.closest("[data-a]
   try{
   if(a==="tab"){st.tab=b.dataset.t;st.fs=0;st.msg=null;st.pan="";render();}
   else if(a==="c1f"){st.c1f=b.dataset.v;render();}
+  else if(a==="c1t"){st.openC1.has(id)?st.openC1.delete(id):st.openC1.add(id);render();keep();}
   else if(a==="fbt"){st.openFb.has(id)?st.openFb.delete(id):st.openFb.add(id);render();keep();}
   else if(a==="pan"){const k=id+"|"+b.dataset.k;st.pan=st.pan===k?"":k;render();keep();const art=document.getElementById("i-"+id),p=art&&art.querySelector(".pan");if(p){p.scrollIntoView({behavior:"smooth",block:"nearest"});const f=p.querySelector("textarea,input:not([disabled]),select");if(f)f.focus({preventScroll:true});}}
   else if(a==="adm"){st.msg=null;const c=codeGet();if(c&&await admEnter(c)){render();}else{st.view="admcode";render();}}
