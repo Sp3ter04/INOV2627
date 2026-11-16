@@ -1831,8 +1831,8 @@ function c1Mats(i){const ms=matsOf(i.id),a=(i.aval&&i.aval.c1)||{};
   const isSl=m=>/slide|pitch|apresenta/i.test(m.tipo||"")||/\.pdf$/i.test(m.ficheiro||"")&&/slide|pitch|deck|apresenta/i.test(m.ficheiro||"");
   const slides=ms.filter(m=>m.path&&isSl(m)),links=ms.filter(m=>m.url),files=ms.filter(m=>m.path&&!isSl(m));
   const extra=[];if(a.slides)extra.push({url:a.slides,ficheiro:"Slides",tipo:"Slides do pitch",slide:true});if(a.site)extra.push({url:a.site,ficheiro:"Site / protótipo",tipo:"MVP / protótipo"});
-  const s2=PH==="c2"?ms.filter(m=>m.fase==="c2"&&m.path):[];
-  if(s2.length)return {slides:s2,links:[...links,...extra.filter(x=>!x.slide)].filter(m=>!/slide|pitch|apresenta/i.test(m.tipo||"")),linkSlides:[],files};
+  /* Challenge II: só os slides carregados para o Challenge II; os ficheiros antigos continuam no Challenge I e na área de membro */
+  if(PH==="c2")return {slides:ms.filter(m=>m.fase==="c2"&&m.path),links:[],linkSlides:[],files:[]};
   return {slides,links:[...links,...extra.filter(x=>!x.slide)],linkSlides:extra.filter(x=>x.slide).concat(links.filter(m=>/slide|pitch|apresenta/i.test(m.tipo||""))),files};}
 function c1MatHtml(i,big){const M=c1Mats(i);const ext=f=>(String(f||"").split(".").pop()||"").slice(0,4).toUpperCase();
   const sl=[...M.slides.map(m=>`<button type="button" class="btn ${big?"pri":""} c1slbtn" data-act="c1view" data-p="${esc(m.path)}" data-t="${esc(m.ficheiro)}"><span aria-hidden="true">▶</span> Ver slides <small>${esc(m.ficheiro)}</small></button>`),
@@ -1940,7 +1940,7 @@ function c2SpkUI(i){const par=(i.par||[]).filter(Boolean),sp=new Set(c2Ag(i).sp|
 const c2Sl=i=>matsOf(i.id).filter(m=>m.fase==="c2"&&m.path);
 function c2SlUI(i){if(!S.isOwner)return "";const M=c2Sl(i),up=S.c2up&&S.c2up[i.id];
   return `<span class="c2spk"><small>Slides:</small>${M.map(m=>`<span class="c2sp on" title="${esc(m.ficheiro)}">${esc(String(m.ficheiro||"").slice(0,34))} <button type="button" class="x" data-act="c2slrm" data-id="${esc(m.id)}" aria-label="Retirar ${esc(m.ficheiro)}">✕</button></span>`).join("")}
-    ${up?`<small>a carregar…</small>`:`<label class="c2sp" style="cursor:pointer">${M.length?"Substituir":"Carregar"} PDF<input type="file" accept="application/pdf,.pdf" hidden data-c2up="${esc(i.id)}"></label>`}${M.length?"":'<small>(o júri vê os slides antigos, se houver)</small>'}</span>`;}
+    ${up?`<small>a carregar…</small>`:`<label class="c2sp" style="cursor:pointer">${M.length?"Substituir":"Carregar"} PDF<input type="file" accept="application/pdf,.pdf" hidden data-c2up="${esc(i.id)}"></label>`}</span>`;}
 async function c2Upload(iid,f){
   if(!window.INOV_UPLOAD){toast("O carregamento só funciona na versão web.",true);return;}
   if(!/\.pdf$/i.test(f.name)&&f.type!=="application/pdf"){toast("Escolhe um ficheiro PDF.",true);return;}

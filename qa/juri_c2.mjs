@@ -15,7 +15,7 @@ I("c1x","Acessibilidade (só Challenge I)",["Matilde S.","Afonso M."],{etapa:"c1
 I("z9","Ideia de ideação",["Inês F."],{etapa:"ideacao"});
 put("config",{id:"main",juriFase:"c2",fases:{
   c1:{nome:"Challenge I",data:"2026-11-03",min:0,max:10,juri:[],ordem:["c1x","g3"]},
-  c2:{nome:"Challenge II",data:"2026-11-18",min:0,max:10,juri:[],ordem:["g1","g2","g3"],pausaApos:2,inicio:"18h00",sala:"VA4",
+  c2:{nome:"Challenge II",data:"2026-11-18",min:0,max:10,juri:[],ordem:["g1","g2","g3"],juri:["Miguel Gomes","Gabriela Gomes","José Próspero"],pausaApos:2,inicio:"18h00",sala:"VA4",
     ag:{g1:{p:"Clubes perdem material",s:"plataforma B2B de gestão",eq:"Bernardo + João"},g2:{p:"Projetistas perdem horas",s:"software que gera memórias",eq:"Inês P. + Guilherme + Maria + Xavier",sp:["Inês P."]},g3:{p:"Notas de alta demoram",s:"plataforma que propõe rascunho",eq:"Rita + Francisca",sp:["Rita M.","Francisca O."]}}},
   sd:{nome:"Selection Day",data:"2026-11-27",min:0,max:10,juri:[]}}});
 // avaliação do Challenge I já existente (não pode ser tocada pelo Challenge II)
@@ -57,6 +57,8 @@ const cfg=()=>(store.get("config/main")||{data:{}}).data;
 const doc=id=>(store.get("feedback/"+id)||{}).data;
 // 1. Júri A: só Challenge II
 const A=await open("/juri",{code:JCODE});
+ok((await A.locator('[data-act="jset"]').allTextContents()).join("|")==="MGMiguel Gomes|GGGabriela Gomes|JPJosé Próspero","«Quem és?» só com o júri do Challenge II",JSON.stringify(await A.locator('[data-act="jset"]').allTextContents()));
+ok(await A.locator('[data-form="jname"]').count()===0,"sem «Não estou na lista» quando a fase tem júri definido");
 await A.click('[data-act="jset"][data-v="Miguel Gomes"]');await W(600);
 ok((await A.locator(".jhero h1").textContent())==="Challenge II","júri abre no Challenge II");
 ok(await A.locator(".c1bar .pairchip").count()===3,"barra só com as 3 ideias do Challenge II");
