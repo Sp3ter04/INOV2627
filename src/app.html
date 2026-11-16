@@ -461,7 +461,8 @@ td .ps b{display:block;font-family:var(--display);font-size:10.5px;letter-spacin
 .c1tab tr:focus-visible{outline:2px solid var(--brand);outline-offset:-2px}
 .c2ag td{vertical-align:top;line-height:1.35}.c2ag .c2d{white-space:nowrap;font-size:12px;color:var(--muted)}.c2ag tr.c2now td{background:var(--brand-soft)}
 .c2ag tr.c2brk td{background:var(--brand);color:#fff;font-weight:800;text-align:center;letter-spacing:.06em;padding:10px}
-.c2chat{display:grid;gap:8px;border-top:1px solid var(--line);padding-top:10px}.c2chat .fbul{max-height:320px;overflow:auto}
+.c2chat{display:grid;gap:8px;border-top:1px solid var(--line);padding-top:10px}.c2chat .fbul{max-height:320px;overflow:auto}.c2chat .fbul li{grid-template-columns:44px minmax(0,1fr) auto}.c2chat .c2del{justify-self:end;align-self:start;font-size:12.5px;color:var(--muted);text-decoration:underline;padding:2px 4px}
+.jc-q>summary{list-style:none}.jc-q>summary::-webkit-details-marker{display:none}.jc-q>summary::after{content:"";width:7px;height:7px;border:solid currentColor;border-width:0 2px 2px 0;transform:rotate(45deg) translateY(-2px);transition:transform .15s;margin-left:2px}.jc-q[open]>summary::after{transform:rotate(-135deg) translateY(-1px)}
 .c2spk{display:flex;flex-wrap:wrap;gap:4px;align-items:center;margin-top:4px}.c2sp{all:unset;cursor:pointer;font-size:12px;font-weight:700;padding:2px 8px;border-radius:10px;border:1px solid var(--line-2);color:var(--muted)}
 .c2sp.on{background:var(--brand);border-color:var(--brand);color:#fff}.c2sp:focus-visible{outline:2px solid var(--brand);outline-offset:1px}
 .c1det td{text-align:left;background:var(--surface-2)}.c1jr{border-top:1px dashed var(--line);padding:8px 0}.c1jr:first-of-type{border-top:0}.c1jr .fbc{margin:4px 0 0}
@@ -1885,7 +1886,7 @@ function c1Apres(i,k,list){
     <div class="c1crit">${CRIT().map(([c,l,hint])=>`<div class="c1row"><div class="c1lab"><b>${l}</b><small>${hint}</small></div>${c1Scale(f.notas[c],`data-act="c1nota" data-id="${esc(i.id)}" data-c="${c}"`,l)}</div>`).join("")}</div>
     ${PH==="c2"?c2Chat(i):`<label class="l">Perguntas para o grupo<textarea class="field" rows="3" id="c1q-${esc(i.id)}" data-c1t="perguntas" data-id="${esc(i.id)}" placeholder="O que queres perguntar no fim do pitch?">${esc(f.perguntas||"")}</textarea></label>
     <label class="l">Feedback para o grupo<textarea class="field" rows="4" id="c1f-${esc(i.id)}" data-c1t="feedback" data-id="${esc(i.id)}" placeholder="O que está bem, o que falta e o próximo passo que sugeres">${esc(f.feedback||"")}</textarea></label>`}
-    <div class="row" style="justify-content:space-between"><span class="note">${c1Has(f)?`Clica de novo num número para o apagar · Guardado automaticamente${f.updatedAt?" às "+new Date(f.updatedAt).toLocaleTimeString("pt-PT",{hour:"2-digit",minute:"2-digit"}):""}`:"Grava sozinho a cada alteração."}${c1Has(f)&&!c1Done(f)?` · faltam ${CRIT().filter(([c])=>f.notas[c]==null).length} critérios`:""}</span>${next?`<button type="button" class="btn pri" data-act="c1go" data-id="${esc(next.id)}">Seguinte →</button>`:""}</div>
+    <div class="row" style="justify-content:space-between"><span class="note">${c1Has(f)?"Clica de novo num número para o apagar":""}${c1Has(f)&&!c1Done(f)?` · faltam ${CRIT().filter(([c])=>f.notas[c]==null).length} critérios`:""}</span>${next?`<button type="button" class="btn pri" data-act="c1go" data-id="${esc(next.id)}">Seguinte →</button>`:""}</div>
   </aside>`;
   return nav+`<div class="c1grid">${info}${ev}</div>`;
 }
@@ -1972,12 +1973,12 @@ function c2Mirror(f){const M=f.msgs||[];f.feedback=M.filter(m=>m.k!=="q").map(m=
 function c2Msgs(iid){const out=[];c1Of(iid).forEach(f=>(f.msgs||[]).forEach(m=>out.push(Object.assign({j:f.jurado},m))));return out.sort((a,b)=>String(a.t).localeCompare(String(b.t)));}
 function c2Chat(i){
   const M=c2Msgs(i.id),d=(S.c2d&&S.c2d[i.id])||{},me=S.jurado,qo=!!(d.q||"").trim()||!!(S.qOpen&&S.qOpen["c2-"+i.id]);
-  const li=m=>`<li><span class="mono note">${hhmm({enviadoEm:m.t})}</span><span><b>${esc(m.j)}</b> <span class="pill ${m.k==="q"?"br":"ok"}">${m.k==="q"?"Pergunta":"Feedback"}</span><span class="fbc">${esc(m.x)}</span>${m.j===me?` <button type="button" class="x" data-act="c2del" data-id="${esc(i.id)}" data-m="${esc(m.id)}" aria-label="Apagar">apagar</button>`:""}</span></li>`;
+  const li=m=>`<li><span class="mono note">${hhmm({enviadoEm:m.t})}</span><span><b>${esc(m.j)}</b> <span class="pill ${m.k==="q"?"br":"ok"}">${m.k==="q"?"Pergunta":"Feedback"}</span><span class="fbc">${esc(m.x)}</span></span>${m.j===me?`<button type="button" class="x c2del" data-act="c2del" data-id="${esc(i.id)}" data-m="${esc(m.id)}" aria-label="Apagar a tua mensagem">apagar</button>`:"<span></span>"}</li>`;
   return `<div class="c2chat"><span class="eyebrow">Feedback do júri · ${M.length}</span>
-    ${M.length?`<ul class="fbul" aria-live="polite">${M.map(li).join("")}</ul>`:'<p class="note" style="margin:0">Ainda ninguém escreveu. O que escreveres aparece logo a todos os jurados.</p>'}
     <div class="jc-comp"><textarea class="field" rows="2" id="c2m-${esc(i.id)}-f" data-c2m="${esc(i.id)}" data-k="f" placeholder="Feedback para o grupo · Enter envia" aria-label="Feedback para o grupo">${esc(d.f||"")}</textarea><button type="button" class="btn pri" data-act="c2send" data-id="${esc(i.id)}" data-k="f">Enviar</button></div>
     <details class="jc-q" data-qid="c2-${esc(i.id)}" ${qo?"open":""}><summary>Fazer uma pergunta ao grupo</summary>
-      <div class="jc-comp"><textarea class="field" rows="2" id="c2m-${esc(i.id)}-q" data-c2m="${esc(i.id)}" data-k="q" placeholder="Escreve a pergunta · Enter envia" aria-label="Pergunta para o grupo">${esc(d.q||"")}</textarea><button type="button" class="btn" data-act="c2send" data-id="${esc(i.id)}" data-k="q">Enviar pergunta</button></div></details></div>`;}
+      <div class="jc-comp"><textarea class="field" rows="2" id="c2m-${esc(i.id)}-q" data-c2m="${esc(i.id)}" data-k="q" placeholder="Escreve a pergunta · Enter envia" aria-label="Pergunta para o grupo">${esc(d.q||"")}</textarea><button type="button" class="btn" data-act="c2send" data-id="${esc(i.id)}" data-k="q">Enviar pergunta</button></div></details>
+    ${M.length?`<ul class="fbul" aria-live="polite">${M.slice().reverse().map(li).join("")}</ul>`:'<p class="note" style="margin:0">Ainda ninguém escreveu. O que escreveres aparece logo a todos os jurados.</p>'}</div>`;}
 function c2Send(iid,k){const d=((S.c2d=S.c2d||{})[iid]=S.c2d[iid]||{}),x=String(d[k]||"").trim();if(!x||!S.jurado)return;
   c1Set(iid,f=>{f.msgs=f.msgs||[];f.msgs.push({id:uid(),k,t:new Date().toISOString(),x:x.slice(0,2000)});c2Mirror(f);});
   d[k]="";render();toast(k==="q"?"Pergunta enviada.":"Feedback enviado.");}
