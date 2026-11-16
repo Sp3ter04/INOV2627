@@ -16,6 +16,7 @@ put("materiais",{id:"m1",ideiaId:"a1",ficheiro:"pitch-orcamentacao.pdf",path:"a1
 put("materiais",{id:"m2",ideiaId:"a1",ficheiro:"MVP no Figma",url:"https://figma.com/x",tipo:"MVP / protótipo",nome:"Xavier S.",email:"x@j.pt",em:"2026-11-01"});
 put("materiais",{id:"m3",ideiaId:"a1",ficheiro:"entrevistas.pdf",path:"a1/entrevistas.pdf",tipo:"Validação de mercado",nome:"Xavier S.",email:"x@j.pt",em:"2026-11-01"});
 put("fotos",{id:"main",fotos:{}});
+put("config",{id:"main",juriFase:"c1",fases:{c1:{}}});
 put("feedback",{id:"v1",ideiaId:"a1",jurado:"Vitor Clara",tipo:"veredito",veredito:"gosto",comentario:"Gosto",sessao:4,enviadoEm:"2026-10-30T10:00:00Z"});
 put("feedback",{id:"v2",ideiaId:"a1",jurado:"Vitor Clara",tipo:"comentario",veredito:"",comentario:"Comentário final do coordenador",sessao:4,enviadoEm:"2026-10-30T23:59:00Z"});
 const PUB=["ideias","sessoes","live","fotos","config","feedback"];
@@ -118,10 +119,7 @@ await J.fill("#c1qs","");await J.locator(".c1card",{hasText:"Orçamentação"}).
 ok(await J.locator(".c1card",{hasText:"Orçamentação"}).locator(".c1slbtn").count()===1,"Todas as ideias: slides dentro da ideia");
 await W(4500);
 ok(await J.locator('.c1card details[open]').count()===1,"detalhe aberto mantém-se após atualização");
-await J.click('[data-act="c1fase"][data-v="ideacao"]');await W(300);
-ok(await J.locator(".jtabs button",{hasText:"Avaliar par a par"}).count()===1,"botão para as sessões de ideação");
-await J.click('[data-act="c1fase"][data-v=""]');await W(300);
-ok((await J.locator(".jhero h1").textContent())==="Challenge I","voltar ao Challenge I");
+ok(await J.locator('[data-act="c1fase"]').count()===0,"jurado não tem botão para as sessões de ideação nem para trocar de fase");
 // mobile
 const Jm=await open("/juri",{code:JCODE,w:390,h:844,jurado:"Miguel Gomes"});
 ok(await Jm.evaluate(()=>document.documentElement.scrollWidth<=390),"júri cabe em 390 px");

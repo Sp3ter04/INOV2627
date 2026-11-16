@@ -106,6 +106,21 @@
     return SB + "/storage/v1" + j.signedURL;
   };
 
+  /* Carregar / retirar um ficheiro no bucket "materiais" (só coordenador; as regras do Supabase confirmam o código) */
+  window.INOV_UPLOAD = async function(path, file){
+    const h = { apikey: KEY, Authorization: "Bearer " + KEY, "Content-Type": file.type || "application/pdf", "x-upsert": "false" };
+    const c = getCode(); if (c) h["x-inov-code"] = c;
+    const r = await fetch(SB + "/storage/v1/object/materiais/" + String(path).split("/").map(enc).join("/"), { method: "POST", headers: h, body: file });
+    if (!r.ok) { const j = await r.json().catch(() => ({})); throw new Error(j.message || j.error || ("erro " + r.status)); }
+    return path;
+  };
+  window.INOV_RMFILE = async function(path){
+    const h = { apikey: KEY, Authorization: "Bearer " + KEY, "Content-Type": "application/json" };
+    const c = getCode(); if (c) h["x-inov-code"] = c;
+    const r = await fetch(SB + "/storage/v1/object/materiais", { method: "DELETE", headers: h, body: JSON.stringify({ prefixes: [path] }) });
+    if (!r.ok) throw new Error("erro " + r.status);
+  };
+
   /* ---------- coordenador ---------- */
   let coordP = null;
   function checkCoord(){
