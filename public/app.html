@@ -2048,14 +2048,16 @@ document.addEventListener("input",e=>{const t=e.target;
 document.addEventListener("change",e=>{const t=e.target;if(!t.dataset||!t.dataset.c1pos)return;const ids=c1Ideas().map(i=>i.id),k=ids.indexOf(t.dataset.c1pos);let j=Math.round(Number(t.value))-1;if(k<0||isNaN(j))return;j=Math.max(0,Math.min(ids.length-1,j));ids.splice(k,1);ids.splice(j,0,t.dataset.c1pos);c1SetOrder(ids);});
 document.addEventListener("toggle",e=>{const k=e.target&&e.target.dataset&&e.target.dataset.c1open;if(!k)return;S.c1Open=S.c1Open||new Set();e.target.open?S.c1Open.add(k):S.c1Open.delete(k);},true);
 
-function juryOficial(){const set=new Set(JURI_DEF);Object.values(S.cfg.fases||{}).forEach(F=>(F.juri||[]).forEach(n=>n&&set.add(n)));[...S.sessoes.values()].forEach(x=>(x.juri||[]).forEach(n=>n&&set.add(n)));return [...set].filter(n=>!/@/.test(n)).sort((a,b)=>a.localeCompare(b,"pt"));}
+/* Numa fase com júri definido (ex.: Challenge II), só esses nomes aparecem */
+function juryFase(){const ph=juriPh(),F=ph&&S.cfg.fases&&S.cfg.fases[ph];const J=F?(F.juri||[]).filter(n=>n&&!/@/.test(n)):[];return J.length?J:null;}
+function juryOficial(){const JF=juryFase();if(JF)return [...JF];const set=new Set(JURI_DEF);Object.values(S.cfg.fases||{}).forEach(F=>(F.juri||[]).forEach(n=>n&&set.add(n)));[...S.sessoes.values()].forEach(x=>(x.juri||[]).forEach(n=>n&&set.add(n)));return [...set].filter(n=>!/@/.test(n)).sort((a,b)=>a.localeCompare(b,"pt"));}
 function juryWho(){
   const R=juryOficial();
   return `<div class="jhero"><div class="eyebrow">Bootcamp de Inovação 26/27 · Júri</div><h1>Quem és?</h1><div style="opacity:.92;margin-top:2px;max-width:60ch">Escolhe o teu nome antes de veres as ideias. É com ele que ficam registados os teus vereditos, comentários e perguntas.</div></div>
   <div class="card" style="margin-bottom:14px;display:grid;gap:12px"><h2 style="margin:0">Escolhe o teu nome</h2>
     <div class="wgrid">${R.map(n=>`<button type="button" class="wcard" data-act="jset" data-v="${esc(n)}">${av(n,32)}<span>${esc(n)}</span></button>`).join("")}</div>
-    <details><summary class="note" style="cursor:pointer;min-height:32px;display:inline-flex;align-items:center">Não estou na lista</summary>
-      <form class="row" data-form="jname" autocomplete="off" style="flex-wrap:wrap;margin-top:8px"><label class="l" style="flex:1 1 220px">O teu nome<input class="field" name="n" required maxlength="60" placeholder="Nome e apelido"></label><button class="btn pri" type="submit" style="align-self:flex-end">Entrar</button></form></details>
+    ${juryFase()?"":`<details><summary class="note" style="cursor:pointer;min-height:32px;display:inline-flex;align-items:center">Não estou na lista</summary>
+      <form class="row" data-form="jname" autocomplete="off" style="flex-wrap:wrap;margin-top:8px"><label class="l" style="flex:1 1 220px">O teu nome<input class="field" name="n" required maxlength="60" placeholder="Nome e apelido"></label><button class="btn pri" type="submit" style="align-self:flex-end">Entrar</button></form></details>`}
     <p class="note" style="margin:0">Fica guardado neste dispositivo. Podes trocar de nome no topo do painel.</p></div>`;
 }
 function liveBadge(){if(S.dbState!=="on")return "";const t=S.lastSync?new Date(S.lastSync).toLocaleTimeString("pt-PT",{hour:"2-digit",minute:"2-digit",second:"2-digit"}):"";return `<span class="livebadge"><i></i><span>Ao vivo${t?" · atualizado às "+t:""}</span></span>`;}

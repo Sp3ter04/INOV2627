@@ -22,11 +22,17 @@ put("config",{id:"main",juriFase:"c2",fases:{
 const C1DOC={id:"c1__g3__miguel-gomes",tipo:"c1aval",fase:"c1",ideiaId:"g3",jurado:"Miguel Gomes",notas:{problema:5,negocio:2},pitch:{"Rita M.":4},perguntas:"Pergunta do Challenge I",feedback:"Feedback do Challenge I",enviadoEm:"2026-11-03T19:00:00Z"};
 put("feedback",C1DOC);
 put("fotos",{id:"main",fotos:{}});
+const uploads=[],removed=[];
+put("materiais",{id:"old1",ideiaId:"g1",ficheiro:"Slides antigos",url:"https://docs.google.com/presentation/d/ABC/edit",tipo:"Slides do pitch",em:"2026-11-01"});
 const PUB=["ideias","sessoes","live","fotos","config","feedback"];
 function handle(route){
   const req=route.request(),u=new URL(req.url()),h=req.headers(),code=h["x-inov-code"],coord=code===CODE,juri=code===JCODE,m=req.method();
   if(u.pathname.endsWith("/x.pdf"))return route.fulfill({path:"/tmp/slides.pdf",contentType:"application/pdf",headers:{"access-control-allow-origin":"*"}});
   if(u.pathname.startsWith("/storage/v1/object/sign/"))return (coord||juri)?route.fulfill({json:{signedURL:"/object/sign/materiais/x.pdf?token=1"}}):route.fulfill({status:400,json:{}});
+  if(u.pathname.startsWith("/storage/v1/object/materiais")&&!u.pathname.includes("/sign/")){
+    if(!coord)return route.fulfill({status:403,json:{message:"rls"}});
+    if(m==="POST"){uploads.push({path:decodeURIComponent(u.pathname.replace("/storage/v1/object/materiais/","")),size:(req.postDataBuffer()||[]).length});return route.fulfill({json:{Key:"ok"}});}
+    if(m==="DELETE"){removed.push(...JSON.parse(req.postData()).prefixes);return route.fulfill({json:[]});}}
   const p=u.pathname.replace("/rest/v1/","");
   if(p==="rpc/inov_coord")return route.fulfill({json:coord});
   if(p==="rpc/inov_juri")return route.fulfill({json:juri});
@@ -120,6 +126,25 @@ ok((await C.locator(".c1ord .c1ot b").allTextContents()).join("|")==="Gestão de
 ok(await C.locator('.c1ord [data-act="c2spk"]').count()===8,"botões de speaker por pessoa");
 await C.locator('.c1ord li').nth(0).locator('[data-act="c2spk"]',{hasText:"Bernardo F."}).click();await W(700);
 ok(JSON.stringify(cfg().fases.c2.ag.g1.sp)==='["Bernardo F."]',"speaker gravado em config");
+// slides do Challenge II carregados pelo coordenador
+await C.locator('.c1ord li').nth(0).locator('input[data-c2up]').setInputFiles("/tmp/slides.pdf");await W(1500);
+const mats=()=>[...store.values()].filter(r=>r.col==="materiais"&&r.data.fase==="c2").map(r=>r.data);
+ok(uploads.length===1&&uploads[0].path.startsWith("g1/c2-")&&uploads[0].size>500,"PDF enviado para o armazenamento",JSON.stringify(uploads));
+ok(mats().length===1&&mats()[0].ideiaId==="g1"&&mats()[0].tipo==="Slides do pitch","registo do material gravado",JSON.stringify(mats()));
+ok(await C.locator('.c1ord li').nth(0).locator('[data-act="c2slrm"]').count()===1,"coordenador vê os slides carregados");
+await A.click('[data-act="c1eval"][data-id="g1"]').catch(()=>{});await A.reload();await W(2500);
+await A.locator('.c1bar .pairchip').nth(0).click();await W(800);
+const slb=await A.locator(".c1slbtn").allTextContents();
+ok(slb.length===1&&slb[0].includes("slides.pdf"),"júri vê só os slides novos (os antigos deixam de aparecer)",JSON.stringify(slb));
+await A.locator(".c1slbtn").first().click();await W(2500);
+ok((await A.locator("#c1viewer .c1vc").textContent()).includes("/ 3"),"júri abre os slides novos no leitor");
+await A.click('[data-c1v="close"]');await W(300);
+await C.locator('.c1ord li').nth(0).locator('input[data-c2up]').setInputFiles("/tmp/slides.pdf");await W(1500);
+ok(mats().length===1&&uploads.length===2&&removed.length===1,"substituir apaga o PDF anterior",JSON.stringify({m:mats().length,u:uploads.length,r:removed}));
+await C.locator('.c1ord li').nth(0).locator('[data-act="c2slrm"]').click();await W(800);
+ok(mats().length===0&&removed.length===2,"retirar apaga os slides");
+await A.reload();await W(2500);await A.locator('.c1bar .pairchip').nth(0).click();await W(800);
+ok((await A.locator(".c1slbtn").allTextContents()).join().includes("Slides antigos"),"sem slides novos, o júri volta a ver os antigos");
 ok(await C.locator('.seg [data-act="c1jf"]').count()===3,"coordenador escolhe o que o painel do júri mostra (3 opções)");
 await C.click('[data-act="c1v"][data-v="res"]');await W(300);
 const row=C.locator(".c1rrow",{hasText:"Engenharia civil"});
