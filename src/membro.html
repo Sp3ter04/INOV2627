@@ -117,11 +117,13 @@ function c1Det(i,tp){tp=tp||"c1aval";const A=st.fb.filter(f=>f.tipo===tp&&f.idei
   const L=A.filter(f=>!f.ocultoMembros&&(String(f.feedback||"").trim()||String(f.perguntas||"").trim())).sort((a,b)=>String(a.enviadoEm||"").localeCompare(String(b.enviadoEm||"")));
   return `<div class="fbl"><div class="lab" style="margin:6px 0 4px">Nota média do júri (0 a 5)</div><div class="c1n">${C1K.map(([k,l])=>`<div><b>${med(k)}</b><span>${l}</span></div>`).join("")}</div>
   ${L.length?L.map(f=>{const fb=String(f.feedback||"").trim(),q=String(f.perguntas||"").trim();return `<div class="fb"><b>${esc(f.jurado||"Júri")}</b>${fb?`<p class="txt" style="margin:4px 0 0">${esc(fb)}</p>`:""}${q?`<p class="txt note" style="margin:4px 0 0">${esc(q)}</p>`:""}</div>`;}).join(""):'<p class="note">Nenhum jurado deixou feedback escrito.</p>'}</div>`;}
+/* Feedback do júri do Selection Day: escondido aos membros por agora. Muda para true quando quiseres mostrá-lo. */
+const SD_FB=false;
 const FASES={sd:["Selection Day","sd","sdaval","openSD","sdt"],c2:["Challenge II","c2","c2aval","openC2","c2t"],c1:["Challenge I","c1","c1aval","openC1","c1t"]};
 function resPh(i,k){const [N,key,tp,set,act]=FASES[k],r=i.resumoS&&i.resumoS[key]?esc(i.resumoS[key]).replace(/\n/g,"<br>"):"",o=st[set].has(i.id);
   return `<button type="button" class="res" data-a="${act}" data-id="${esc(i.id)}" aria-expanded="${o}"><span class="lab">Júri · ${N}</span>${r||`<span class="note">Ainda sem resumo do ${N}.</span>`}<span class="more">${o?"Esconder o feedback do júri ▴":"Ver o feedback de cada jurado e as notas ▾"}</span></button>${o?c1Det(i,tp):""}`;}
 function phRes(i,ph){
-  if(ph==="sd")return resPh(i,"sd")+resPh(i,"c2")+resPh(i,"c1");
+  if(ph==="sd")return (SD_FB?resPh(i,"sd"):"")+resPh(i,"c2")+resPh(i,"c1");
   if(ph==="c2")return resPh(i,"c2")+resPh(i,"c1");
   const n=fbVis(i).length,o=st.openFb.has(i.id),t=sesTxt(i);
   return resPh(i,"c1")+`<button type="button" class="res" data-a="fbt" data-id="${esc(i.id)}" aria-expanded="${o}"><span class="lab">Sessões de ideação</span>${t||'<span class="note">Ainda sem resumo.</span>'}${n?`<span class="more">${o?"Esconder os feedbacks ▴":`Ver os feedbacks das sessões (${n}) ▾`}</span>`:""}</button>${o?`<div class="fbl">${fbHtml(i)}</div>`:""}`;}
@@ -168,7 +170,7 @@ function repCard(i){const p=pend(i,"repescagem");
   return `<article class="card" id="i-${esc(i.id)}" data-q="${esc(nrm([i.titulo,i.problema,i.solucao,(i.par||[]).join(" ")].join(" ")))}"><div class="ch"><h3>${esc(i.titulo||"(sem título)")}</h3><span class="pill sb">${i.sessao||"?"}.ª sessão</span></div>
   ${metaHtml(i)}${resBlock(i)}${psHtml(i)}${reqsHtml(i)}<div class="acts">${p?'<span class="pill warn">Pedido enviado: à espera do coordenador</span>':panBtn(i,"rep","Pedir para passar ao Challenge I",1)}</div>${pan}</article>`;}
 function phHtml(ph){const isF=ph==="sd"?isSD:isC2,FN=FASES[ph][0],all=st.ideias.filter(isF).sort(ordem),mc=all.filter(isMine),list=st.c1f==="minhas"?mc:all;
-  const txt=ph==="sd"?"Estas ideias chegaram ao Selection Day. Vês o resumo e o feedback do júri em cada fase. Nas tuas, junta slides, MVP ou report; nas outras, podes pedir para colaborar.":"Estas ideias passaram ao Challenge II, com o resumo e o feedback do júri no Challenge II e no Challenge I. Nas tuas, junta documentos ou propõe alterações. Nas outras, podes pedir para colaborar.";
+  const txt=ph==="sd"?"Estas ideias chegaram ao Selection Day. Vês o resumo e o feedback do júri do Challenge II e do Challenge I. Nas tuas, junta slides, MVP ou report; nas outras, podes pedir para colaborar.":"Estas ideias passaram ao Challenge II, com o resumo e o feedback do júri no Challenge II e no Challenge I. Nas tuas, junta documentos ou propõe alterações. Nas outras, podes pedir para colaborar.";
   return `<div class="sum"><div><b>${all.length}</b><span>ideias no ${FN}</span></div><div><b>${mc.length}</b><span>tuas</span></div><div><b>${st.sug.filter(s=>(s.estado||"pendente")==="pendente").length}</b><span>pedidos por decidir</span></div></div>
   <p class="note" style="margin:0 0 10px">${txt}</p>
   <div class="chips" role="group" aria-label="Filtro"><button data-a="c1f" data-v="todas" aria-pressed="${st.c1f==="todas"}">Todas (${all.length})</button><button data-a="c1f" data-v="minhas" aria-pressed="${st.c1f==="minhas"}">As minhas (${mc.length})</button></div>
