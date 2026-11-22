@@ -31,6 +31,8 @@
       e.code = r.status === 401 || r.status === 403 ? "permission-denied" : "http-" + r.status;
       throw e;
     }
+    /* relógio do servidor (cabeçalho Date, 1 s): o temporizador do júri usa-o para todos verem o mesmo tempo */
+    const d = r.headers.get("date"); if (d) { const off = Date.parse(d) + 500 - Date.now(); if (isFinite(off)) window.INOV_SKEW = off; }
     return r.status === 204 ? null : r.json().catch(() => null);
   }
   const enc = encodeURIComponent;
@@ -39,7 +41,40 @@
   const POLL = { sugestoes: 8000, materiais: 10000, live: 3000, ideias: 4000, feedback: 4000, sessoes: 6000, config: 15000, fotos: 120000 };
   const subs = new Map(); // col -> Set of {id|null, cb, last}
   function snapCol(rows){ return { docs: rows.map(r => ({ id: r.id, data: () => r.data })) }; }
-  async function fetchCol(col){ return await req("docs?select=id,data&col=eq." + enc(col)) || []; }
+  /* Sincronização incremental (poupa egress): a 1.ª leitura traz a coleção toda; as seguintes só trazem as linhas
+     alteradas (updated_at > cursor, com uma margem de 10 s; as escritas usam a hora do servidor, por isso os relógios dos telemóveis não contam). Apagamentos apanham-se com uma lista
+     só de ids de 30 em 30 s e uma leitura completa de 5 em 5 min corrige qualquer falha. */
+  const OVERLAP = 10000, PRUNE_MS = 30000, FULL_MS = 300000;
+  const cache = new Map();
+  const maxUpd = (rows, cur) => rows.reduce((m, r) => { const t = Date.parse(r.updated_at); return isFinite(t) && t > m ? t : m; }, cur);
+  async function fetchCol(col){
+    const now = Date.now(); let c = cache.get(col);
+    if (c && c.busy) return c.busy;
+    const run = (async () => {
+      if (!c || !c.cur || now - c.fullAt > FULL_MS) {
+        const rows = await req("docs?select=id,data,updated_at&col=eq." + enc(col)) || [];
+        c = { rows: new Map(rows.map(r => [r.id, r])), cur: maxUpd(rows, 0) || 1, fullAt: now, idsAt: now, busy: null }; cache.set(col, c);
+      } else {
+        const since = new Date(Math.max(0, c.cur - OVERLAP)).toISOString();
+        /* 1.º só ids e datas (poucos bytes); depois só o conteúdo das linhas que mudaram mesmo */
+        const meta = await req("docs?select=id,updated_at&col=eq." + enc(col) + "&updated_at=gt." + enc(since)) || [];
+        const chg = meta.filter(r => { const o = c.rows.get(r.id); return !o || o.updated_at !== r.updated_at; });
+        c.cur = maxUpd(meta, c.cur);
+        for (let k = 0; k < chg.length; k += 50) {
+          const rows = await req("docs?select=id,data,updated_at&col=eq." + enc(col) + "&id=in.(" + chg.slice(k, k + 50).map(r => enc('"' + r.id + '"')).join(",") + ")") || [];
+          rows.forEach(r => c.rows.set(r.id, r));
+        }
+        if (now - c.idsAt > PRUNE_MS) {
+          const ids = await req("docs?select=id&col=eq." + enc(col)) || []; const keep = new Set(ids.map(r => r.id));
+          for (const k of [...c.rows.keys()]) if (!keep.has(k)) c.rows.delete(k);
+          c.idsAt = now;
+        }
+      }
+      return [...c.rows.values()].map(r => ({ id: r.id, data: r.data }));
+    })();
+    if (c) c.busy = run;
+    try { return await run; } finally { const k = cache.get(col); if (k) k.busy = null; }
+  }
   async function poke(col){
     const set = subs.get(col); if (!set || !set.size) return;
     let rows; try { rows = await fetchCol(col); } catch (e) { set.forEach(s => s.eb && s.eb(e)); return; }
@@ -71,11 +106,12 @@
           async get(){ const rows = await req("docs?select=id,data&col=eq." + enc(col) + "&id=eq." + enc(id)) || []; const r = rows[0]; return r ? { exists: true, data: () => r.data } : { exists: false, data: () => null }; },
           async set(o){
             await req("docs?on_conflict=col,id", { method: "POST", h: { Prefer: "resolution=merge-duplicates,return=minimal" },
-              body: JSON.stringify({ col, id, data: o, updated_at: new Date().toISOString() }) });
+              body: JSON.stringify({ col, id, data: o, updated_at: new Date(Date.now() + (window.INOV_SKEW || 0)).toISOString() }) });
             setTimeout(() => poke(col), 50);
           },
           async delete(){
             await req("docs?col=eq." + enc(col) + "&id=eq." + enc(id), { method: "DELETE", h: { Prefer: "return=minimal" } });
+            const k = cache.get(col); if (k) k.rows.delete(id);
             setTimeout(() => poke(col), 50);
           }
         };

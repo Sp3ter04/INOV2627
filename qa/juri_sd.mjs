@@ -6,7 +6,8 @@ const ROOT=path.resolve(path.dirname(new URL(import.meta.url).pathname),"..");
 const CODE="codigo-teste-123",JCODE="1fh73r",PDFJS="/tmp/pdfjs4/package/build/";
 const W=ms=>new Promise(r=>setTimeout(r,ms));
 let fails=0;const ok=(c,m,x="")=>{if(!c)fails++;console.log((c?"OK   ":"FAIL ")+m,x);};
-const store=new Map();const put=(col,d)=>store.set(col+"/"+d.id,{col,id:d.id,data:d});
+const store=new Map();const put=(col,d)=>store.set(col+"/"+d.id,{col,id:d.id,data:d,updated_at:new Date(Date.now()-3600e3).toISOString()});
+let bytes=0,gets=0;
 const I=(id,titulo,par,extra={})=>put("ideias",Object.assign({id,titulo,etapa:"sd",par,sessao:4,gosto:4,problema:"Problema de "+titulo,solucao:"Solução de "+titulo},extra));
 I("s1","Orçamentação",["Guilherme D.","Xavier S.","Maria P."]);
 I("s2","Notas de alta",["Rita M.","Francisca O."]);
@@ -34,8 +35,8 @@ function handle(route){
   if(p==="rpc/inov_coord")return route.fulfill({json:coord});
   if(p==="rpc/inov_juri")return route.fulfill({json:juri});
   const q=k=>{const v=u.searchParams.get(k);return v&&v.startsWith("eq.")?v.slice(3):null;};
-  if(m==="GET"){const col=q("col"),id=q("id");const rows=[...store.values()].filter(r=>(!col||r.col===col)&&(!id||r.id===id)&&(coord||PUB.includes(r.col)||(juri&&r.col==="materiais")));return route.fulfill({json:rows.map(r=>({id:r.id,col:r.col,data:r.data}))});}
-  if(m==="POST"){let b=JSON.parse(req.postData());b=Array.isArray(b)?b:[b];if(b.some(r=>!coord&&!["ideias","feedback","pedidos"].includes(r.col)))return route.fulfill({status:403,body:"rls"});b.forEach(r=>store.set(r.col+"/"+r.id,{col:r.col,id:r.id,data:r.data}));return route.fulfill({status:201,body:""});}
+  if(m==="GET"){const col=q("col"),id=q("id");const rawId=u.searchParams.get("id"),idf=rawId?(rawId.startsWith("in.(")?(x=>rawId.slice(4,-1).split(",").map(z=>decodeURIComponent(z).replace(/^"|"$/g,"")).includes(x)):(x=>x===id)):null;const gt=u.searchParams.get("updated_at"),since=gt&&gt.startsWith("gt.")?Date.parse(gt.slice(3)):0;const rows=[...store.values()].filter(r=>(!col||r.col===col)&&(!idf||idf(r.id))&&(!since||Date.parse(r.updated_at)>since)&&(coord||PUB.includes(r.col)||(juri&&r.col==="materiais")));const out=rows.map(r=>({id:r.id,col:r.col,data:/data/.test(u.searchParams.get("select")||"")?r.data:undefined,updated_at:r.updated_at}));gets++;bytes+=JSON.stringify(out).length;return route.fulfill({json:out,headers:{date:new Date().toUTCString(),"access-control-expose-headers":"Date"}});}
+  if(m==="POST"){let b=JSON.parse(req.postData());b=Array.isArray(b)?b:[b];if(b.some(r=>!coord&&!["ideias","feedback","pedidos"].includes(r.col)))return route.fulfill({status:403,body:"rls"});b.forEach(r=>store.set(r.col+"/"+r.id,{col:r.col,id:r.id,data:r.data,updated_at:r.updated_at||new Date().toISOString()}));return route.fulfill({status:201,body:""});}
   if(m==="DELETE"){store.delete(q("col")+"/"+q("id"));return route.fulfill({status:204,body:""});}
   return route.fulfill({status:400,body:"?"});
 }
@@ -51,6 +52,7 @@ async function open(pathname,{code,w,h,jurado}={}){
   await p.goto("http://inov.test"+pathname);await W(1500);return p;
 }
 const cfg=()=>(store.get("config/main")||{data:{}}).data;
+const cfgLive=()=>(store.get("live/estado")||{data:{}}).data;
 const doc=id=>(store.get("feedback/"+id)||{}).data;
 const A=await open("/juri",{code:JCODE});
 await A.click('[data-act="jset"][data-v="Miguel Gomes"]');await W(600);
@@ -81,6 +83,19 @@ ok(A.errs.length===0,"sem erros no júri",A.errs.join("|"));
 // coordenador: carregar PowerPoint do SD
 const C=await open("/coordenador",{code:CODE});
 await C.click('[data-go="hub"]');await W(400);await C.click('[data-tab="hub:sd"]');await W(600);
+// temporizador Q&A iniciado na aba do júri do coordenador (/coordenador/juri)
+const H=await open("/coordenador/juri",{code:CODE,jurado:"Miguel Gomes"});
+ok(await H.locator("#qapill.idle").count()===1&&/Iniciar para todos/.test(await H.locator("#qapill").textContent()),"coordenador vê «Iniciar para todos» no painel do júri");
+ok(await A.locator("#qapill").count()===0,"o jurado não vê nada enquanto não inicia");
+await H.click('#qapill [data-v="start"]');await W(5000);
+const pj=await A.locator("#qapill b").textContent().catch(()=>"");
+ok(/^[56]:\d\d$/.test(pj),"ao iniciar no painel do júri, o jurado vê o tempo",pj);
+await H.click('#qapill [data-v="reset"]');await W(4500);
+ok(await A.locator("#qapill").count()===0,"repor no painel do júri esconde o selo ao jurado");
+// egress: em repouso só chegam alterações
+const b0=bytes,g0=gets;await W(12000);
+console.log("repouso 12 s:",gets-g0,"pedidos,",bytes-b0,"bytes (coleção completa ≈",JSON.stringify([...store.values()].map(r=>r.data)).length,")");
+ok(bytes-b0<12000,"em repouso quase não há dados a descer",String(bytes-b0));
 // temporizador Q&A
 ok(await A.locator("#qapill").count()===0,"sem selo quando o timer não foi iniciado");
 await C.click('[data-act="c1qa"][data-v="start"]');await W(5500);
@@ -88,6 +103,11 @@ const pt=await A.locator("#qapill b").textContent().catch(()=>"");
 ok(/^[56]:\d\d$/.test(pt)&&pt!=="0:00","júri vê o timer a contar",pt);
 ok(await A.evaluate(()=>getComputedStyle(document.getElementById("qapill")).pointerEvents)==="none","selo do júri não bloqueia cliques");
 ok(await A.locator("#qapill button").count()===0,"júri sem botões no selo");
+// o júri não consegue parar nem repor, nem com um botão injetado nem escrevendo na base de dados
+await A.evaluate(()=>{const x=document.createElement("button");x.dataset.act="c1qa";x.dataset.v="reset";x.id="hack";document.body.appendChild(x);x.click();});await W(800);
+ok(await A.locator("#qapill").count()===1&&!!(cfgLive().qa&&cfgLive().qa.fim),"botão injetado pelo júri não pára o timer");
+const w=await A.evaluate(async()=>{const r=await fetch("https://x.supabase.co/rest/v1/docs?on_conflict=col,id",{method:"POST",headers:{"x-inov-code":"1fh73r","content-type":"application/json"},body:JSON.stringify({col:"live",id:"estado",data:{id:"estado",qa:null}})});return r.status;});
+ok(w===403&&!!(cfgLive().qa&&cfgLive().qa.fim),"o júri não consegue escrever o estado ao vivo (403)",String(w));
 await C.click('#qapill [data-v="pause"]');await W(5000);
 const p1=await A.locator("#qapill b").textContent();await W(2200);const p2=await A.locator("#qapill b").textContent();
 ok(p1===p2&&/em pausa/.test(await A.locator("#qapill").textContent()),"pausa congela",p1+" "+p2);

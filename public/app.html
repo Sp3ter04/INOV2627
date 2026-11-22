@@ -391,7 +391,7 @@ td .ps b{display:block;font-family:var(--display);font-size:10.5px;letter-spacin
 .qapill i{position:absolute;left:0;bottom:0;height:3px;background:#4cc9f0;transition:width .5s linear}
 .qapill.warn{background:rgba(180,83,9,.92)}.qapill.warn i{background:#fde68a}
 .qapill.end{background:rgba(185,28,28,.94);animation:qapulse 1s ease-in-out infinite}.qapill.end i{width:0!important}
-.qapill.paused b{opacity:.65}
+.qapill.paused b{opacity:.65}.qapill.idle{opacity:.55}.qapill.idle:hover{opacity:1}.qapill.idle i{display:none}
 @keyframes qapulse{50%{opacity:.78}}@media (prefers-reduced-motion:reduce){.qapill.end{animation:none}}
 @media(max-width:560px){.qapill{right:50%;transform:translateX(50%);bottom:8px}.qapill .qal:first-child{display:none}}
 .jhero{background:#175dab;color:#fff;border-radius:12px;padding:18px;display:flex;flex-direction:column;gap:16px;margin-bottom:14px}
@@ -780,7 +780,7 @@ async function boot(){
   softRender();
   try{const sm=await window.claude.use("sample");if(sm){S.sample=sm;softRender();}}catch(e){}
   try{const rm=await window.claude.use("room");if(rm){S.room=rm;rm.on("chg",applyRemote,()=>{});}}catch(e){}
-  setInterval(()=>{if(document.hidden||!S.db)return;LIVE_COLS.forEach(refresh);},4000);
+  setInterval(()=>{if(document.hidden||!S.db)return;LIVE_COLS.forEach(refresh);},20000);
   document.addEventListener("visibilitychange",()=>{if(!document.hidden&&S.db)LIVE_COLS.forEach(refresh);});
 }
 function setDb(s){S.dbState=s;const el=document.getElementById("st-db");el.className="st "+s;el.querySelector("span").textContent=s==="on"?"Dados guardados na base de dados":s==="off"?"Sem base de dados (só leitura)":"A ligar…";}
@@ -1759,15 +1759,16 @@ function liveState(){return S.live.get("estado")||{id:"estado",sessao:1,parAtual
 function setLive(p){const L=Object.assign({},liveState(),p,{id:"estado"});S.live.set("estado",L);save("live","estado");}
 /* ---- Temporizador de perguntas e respostas (6 min): o coordenador inicia, o júri vê um selo discreto no canto ---- */
 const QA_MS=6*60000;
-function qaLeft(){const q=liveState().qa||{};if(q.fim)return Math.max(0,q.fim-Date.now());return q.resta!=null?q.resta:null;}
+const nowS=()=>Date.now()+(window.INOV_SKEW||0);   /* hora do servidor: todos os ecrãs contam o mesmo tempo */
+function qaLeft(){const q=liveState().qa||{};if(q.fim)return Math.max(0,q.fim-nowS());return q.resta!=null?q.resta:null;}
 function qaTick(){let el=document.getElementById("qapill");const q=liveState().qa||{},l=qaLeft();
-  if(l==null||!(S.mode==="juri"||S.isOwner)){if(el)el.remove();return;}
-  const own=!!S.isOwner,run=!!q.fim,txt=Math.floor(l/60000)+":"+String(Math.floor(l%60000/1000)).padStart(2,"0");
+  if(l==null&&!(S.isOwner&&S.mode==="juri")||!(S.mode==="juri"||S.isOwner)){if(el)el.remove();return;}
+  const own=!!S.isOwner,run=!!q.fim,idle=l==null,txt=Math.floor((l==null?QA_MS:l)/60000)+":"+String(Math.floor(((l==null?QA_MS:l)%60000)/1000)).padStart(2,"0");
   if(!el){el=document.createElement("div");el.id="qapill";el.setAttribute("role","timer");el.setAttribute("aria-label","Tempo para perguntas e respostas");document.body.appendChild(el);}
-  el.className="qapill"+(l===0?" end":l<=60000?" warn":"")+(run?"":" paused");
-  const k=txt+"|"+run+"|"+own;
-  if(el._k!==k){el._k=k;el.innerHTML=`<span class="qal">Perguntas e respostas</span><b>${txt}</b>${l===0?'<span class="qal">Tempo!</span>':!run?'<span class="qal">em pausa</span>':""}${own?`<button type="button" data-act="c1qa" data-v="${run?"pause":"start"}" aria-label="${run?"Pausar":"Retomar"}">${run?"❚❚":"▶"}</button><button type="button" data-act="c1qa" data-v="reset" aria-label="Repor e esconder">✕</button>`:""}<i></i>`;}
-  const bar=el.querySelector("i");if(bar)bar.style.width=Math.round(l/QA_MS*100)+"%";}
+  el.className="qapill"+(l===0?" end":l!=null&&l<=60000?" warn":"")+(run||idle?"":" paused")+(idle?" idle":"");
+  const k=txt+"|"+run+"|"+own+"|"+idle;
+  if(el._k!==k){el._k=k;el.innerHTML=`<span class="qal">Perguntas e respostas</span><b>${txt}</b>${l===0?'<span class="qal">Tempo!</span>':idle?"":!run?'<span class="qal">em pausa</span>':""}${own?(idle?`<button type="button" data-act="c1qa" data-v="start" aria-label="Iniciar o tempo para todos">▶ Iniciar para todos</button>`:`<button type="button" data-act="c1qa" data-v="${run?"pause":"start"}" aria-label="${run?"Pausar":"Retomar"}">${run?"❚❚":"▶"}</button><button type="button" data-act="c1qa" data-v="reset" aria-label="Repor e esconder">✕</button>`):""}<i></i>`;}
+  const bar=el.querySelector("i");if(bar)bar.style.width=Math.round((l==null?1:l/QA_MS)*100)+"%";}
 function qaCtl(){const q=liveState().qa||{},l=qaLeft(),run=!!q.fim;
   return `<div class="row note" style="gap:8px">Perguntas e respostas (6 min) — o júri vê o tempo num selo no canto do ecrã: ${l==null?`<button type="button" class="btn sm pri" data-act="c1qa" data-v="start">▶ Iniciar 6:00</button>`:`<b>${Math.floor(l/60000)}:${String(Math.floor(l%60000/1000)).padStart(2,"0")}</b>${run?`<button type="button" class="btn sm" data-act="c1qa" data-v="pause">Pausar</button>`:l>0?`<button type="button" class="btn sm pri" data-act="c1qa" data-v="start">Retomar</button>`:""}<button type="button" class="btn sm" data-act="c1qa" data-v="reset">Repor e esconder</button>`}</div>`;}
 setInterval(qaTick,500);
@@ -2068,7 +2069,7 @@ document.addEventListener("click",e=>{const b=e.target.closest&&e.target.closest
   else if(a==="c1eval"){S.c1Tab="apres";S.c1Sel=id;S.c1Follow=id===liveState()[PH+"Atual"];render();window.scrollTo(0,0);}
   else if(a==="c1follow"){S.c1Follow=true;render();window.scrollTo(0,0);}
   else if(a==="c1qa"){if(!S.isOwner)return;const q=liveState().qa||{},l=qaLeft();
-    if(v==="start")setLive({qa:{fim:Date.now()+(l!=null&&l>0?l:QA_MS)}});else if(v==="pause")setLive({qa:{resta:l||0}});else setLive({qa:null});
+    if(v==="start")setLive({qa:{fim:nowS()+(l!=null&&l>0?l:QA_MS)}});else if(v==="pause")setLive({qa:{resta:l||0}});else setLive({qa:null});
     render();qaTick();}
   else if(a==="c1now"){if(!S.isOwner)return;setLive({[PH+"Atual"]:id||""});S.c1Follow=true;render();toast(id?"O júri passa a ver esta ideia.":"Ninguém a apresentar.");}
   else if(a==="c1more"){S.c1More=S.c1More||{};S.c1More[id]=!S.c1More[id];render();}
