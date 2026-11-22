@@ -81,6 +81,24 @@ ok(A.errs.length===0,"sem erros no júri",A.errs.join("|"));
 // coordenador: carregar PowerPoint do SD
 const C=await open("/coordenador",{code:CODE});
 await C.click('[data-go="hub"]');await W(400);await C.click('[data-tab="hub:sd"]');await W(600);
+// temporizador Q&A
+ok(await A.locator("#qapill").count()===0,"sem selo quando o timer não foi iniciado");
+await C.click('[data-act="c1qa"][data-v="start"]');await W(5500);
+const pt=await A.locator("#qapill b").textContent().catch(()=>"");
+ok(/^[56]:\d\d$/.test(pt)&&pt!=="0:00","júri vê o timer a contar",pt);
+ok(await A.evaluate(()=>getComputedStyle(document.getElementById("qapill")).pointerEvents)==="none","selo do júri não bloqueia cliques");
+ok(await A.locator("#qapill button").count()===0,"júri sem botões no selo");
+await C.click('#qapill [data-v="pause"]');await W(5000);
+const p1=await A.locator("#qapill b").textContent();await W(2200);const p2=await A.locator("#qapill b").textContent();
+ok(p1===p2&&/em pausa/.test(await A.locator("#qapill").textContent()),"pausa congela",p1+" "+p2);
+await C.click('#qapill [data-v="start"]');await W(500);
+// perto do fim
+await C.evaluate(()=>{const L=Object.assign({},S.live.get("estado"),{qa:{fim:Date.now()+30000}});S.live.set("estado",L);save("live","estado");});await W(5000);
+ok(await A.locator("#qapill.warn").count()===1,"último minuto fica âmbar");
+await C.evaluate(()=>{const L=Object.assign({},S.live.get("estado"),{qa:{fim:Date.now()-1000}});S.live.set("estado",L);save("live","estado");});await W(5000);
+ok(await A.locator("#qapill.end").count()===1&&/Tempo/.test(await A.locator("#qapill").textContent()),"a zero mostra «Tempo!»");
+await C.click('#qapill [data-v="reset"]');await W(5000);
+ok(await A.locator("#qapill").count()===0,"repor esconde o selo");
 console.log("upload inputs:",await C.locator('input[data-c2up]').count());
 const inp=C.locator('input[data-c2up="s1"]');
 if(await inp.count()){await C.evaluate(()=>{window.INOV_UPLOAD=window.INOV_UPLOAD||(async(p,f)=>fetch("https://x.supabase.co/storage/v1/object/materiais/"+p,{method:"POST",body:f}));});
