@@ -1928,7 +1928,7 @@ function c1Todas(list){const q=S.c1q||"";
         <div class="c1blk"><span class="jc-lbl">Resumo do feedback nas sessões de ideação</span><p style="margin:2px 0 0">${c1Res(i)||'<span class="note">Sem resumo.</span>'}</p></div>
         <div class="c1blk"><span class="jc-lbl">Slides e validação</span>${c1MatHtml(i)}</div></details></article>`;}).join("")}</div>`;}
 const SU={kblmh7rcmb:"SquadDock",["1tlxjfh7d5g1"]:"Documentos de Civil",la3f8pycy8vs:"Notas de alta",["5aiiw5h9qgna"]:"Manutenção Industrial",z0drifb1wl8u:"Chave",["2yag10rgbcf"]:"Passaporte Digital",b209vuw25iyn:"Cognify",mlvo1t7vddgl:"Forja"};
-const lgo=(i,z)=>PH==="sd"&&SU[i.id]?`<img src="/logos/${i.id}.png" alt="" width="${z}" height="${z}" style="border-radius:10px;background:#fff;border:1px solid var(--line);object-fit:contain;flex:none">`:"";
+const lgo=(i,z)=>PH==="sd"&&SU[i.id]?`<img src="/logos/${i.id}.png" alt="" width="${z}" height="${z}" style="border-radius:22%;object-fit:contain;flex:none">`:"";
 const idTit=i=>PH==="sd"&&SU[i.id]?`${esc(SU[i.id])}<small class="note" style="display:block;font-weight:500">${esc(i.titulo||"")}</small>`:esc(i.titulo||"(sem título)");
 const sdPickId=j=>"sdpick__"+slug(j);
 const sdPick=()=>S.jurado?S.feedback.get(sdPickId(S.jurado)):null;
