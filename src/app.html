@@ -1851,12 +1851,13 @@ function c1Doc(iid){const id=c1Id(iid,S.jurado);let f=S.feedback.get(id);
 function c1Set(iid,fn){if(!S.jurado)return;const f=c1Doc(iid);fn(f);f.updatedAt=new Date().toISOString();save("feedback",f.id);}
 function c1Cur(list){const L=liveState();if(S.c1Follow!==false&&L[PH+"Atual"]&&list.some(i=>i.id===L[PH+"Atual"]))return L[PH+"Atual"];
   if(S.c1Sel&&list.some(i=>i.id===S.c1Sel))return S.c1Sel;return L[PH+"Atual"]&&list.some(i=>i.id===L[PH+"Atual"])?L[PH+"Atual"]:(list[0]&&list[0].id);}
-function c1Mats(i){const ms=matsOf(i.id),a=(i.aval&&i.aval.c1)||{};
+function c1Mats(i){const ms=matsOf(i.id).filter(m=>PH!=="c1"||!m.fase||m.fase==="c1"),a=(i.aval&&i.aval.c1)||{};
   const isSl=m=>/slide|pitch|apresenta/i.test(m.tipo||"")||/\.pdf$/i.test(m.ficheiro||"")&&/slide|pitch|deck|apresenta/i.test(m.ficheiro||"");
   const slides=ms.filter(m=>m.path&&isSl(m)),links=ms.filter(m=>m.url),files=ms.filter(m=>m.path&&!isSl(m));
   const extra=[];if(a.slides)extra.push({url:a.slides,ficheiro:"Slides",tipo:"Slides do pitch",slide:true});if(a.site)extra.push({url:a.site,ficheiro:"Site / protótipo",tipo:"MVP / protótipo"});
   /* Challenge II: só os slides carregados para o Challenge II; os ficheiros antigos continuam no Challenge I e na área de membro */
-  if(PH!=="c1"){const sl=ms.filter(m=>m.fase===PH&&m.path),pdf=m=>/\.pdf$/i.test(m.ficheiro||"");return {slides:sl.filter(pdf),links:ms.filter(m=>m.fase===PH&&m.url),linkSlides:[],files:sl.filter(m=>!pdf(m))};}
+  if(PH!=="c1"){const gen=m=>/^(MVP|Resumo Executivo)/i.test(m.tipo||"")&&(m.path||m.url),pdf=m=>/\.pdf$/i.test(m.ficheiro||""),slT=m=>/slide|pitch/i.test(m.tipo||""),mine=ms.filter(m=>m.fase===PH&&!gen(m)),ge=ms.filter(gen);
+    return {slides:mine.filter(m=>m.path&&pdf(m)),links:[...mine.filter(m=>m.url&&!slT(m)),...ge.filter(m=>m.url)],linkSlides:mine.filter(m=>m.url&&slT(m)),files:[...mine.filter(m=>m.path&&!pdf(m)),...ge.filter(m=>m.path)]};}
   return {slides,links:[...links,...extra.filter(x=>!x.slide)],linkSlides:extra.filter(x=>x.slide).concat(links.filter(m=>/slide|pitch|apresenta/i.test(m.tipo||""))),files};}
 function c1MatHtml(i,big){const M=c1Mats(i);const ext=f=>(String(f||"").split(".").pop()||"").slice(0,4).toUpperCase();
   const sl=[...M.slides.map(m=>`<button type="button" class="btn ${big?"pri":""} c1slbtn" data-act="c1view" data-p="${esc(m.path)}" data-t="${esc(m.ficheiro)}"><span aria-hidden="true">▶</span> Ver slides <small>${esc(m.ficheiro)}</small></button>`),

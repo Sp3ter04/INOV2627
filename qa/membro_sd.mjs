@@ -68,13 +68,13 @@ ok(await P.getByText("pedir para matar").count()===0,"sem «Má validação: ped
 ok(await P.locator('#i-sd1 [data-a="pan"][data-k="mat"]',{hasText:"Juntar documento"}).count()===1,"botão «Juntar documento» nas minhas ideias");
 ok(await P.locator('#i-sd2 [data-a="pan"][data-k="mat"]').count()===0&&await P.locator('#i-sd2 [data-a="pan"][data-k="col"]').count()===1,"nas dos outros só «Pedir para colaborar»");
 await P.click('#i-sd1 [data-a="pan"][data-k="mat"]');await W(300);
-ok(await P.locator("#i-sd1 .kind").count()===4,"4 tipos: Slides, MVP, Report, Outro",(await P.locator("#i-sd1 .kind b").allTextContents()).join());
+ok(await P.locator("#i-sd1 .kind").count()===6,"6 tipos: Slides SD/C2/C1, Resumo Executivo, MVP, Outro",(await P.locator("#i-sd1 .kind b").allTextContents()).join());
 // slides pptx
-await P.locator('#i-sd1 .kind',{hasText:"Slides"}).click();
+await P.locator('#i-sd1 .kind',{hasText:"Slides Challenge II"}).click();
 await P.setInputFiles("#f-sd1",{name:"Slides SD.pptx",mimeType:"application/vnd.openxmlformats-officedocument.presentationml.presentation",buffer:Buffer.from("PK-x")});
 await P.click('#i-sd1 [data-a="doc"]');await W(900);
 const mats=()=>[...store.values()].filter(r=>r.col==="materiais").map(r=>r.data);
-ok(mats().some(m=>m.ficheiro==="Slides SD.pptx"&&m.tipo==="Slides do pitch"&&m.fase==="sd"),"slides PowerPoint juntados com fase sd",JSON.stringify(mats().map(m=>[m.ficheiro,m.tipo,m.fase])));
+ok(mats().some(m=>m.ficheiro==="Slides SD.pptx"&&m.tipo==="Slides Challenge II"&&m.fase==="c2"),"slides PowerPoint juntados com fase sd",JSON.stringify(mats().map(m=>[m.ficheiro,m.tipo,m.fase])));
 ok(uploads.some(x=>/sd1\//.test(x)),"ficheiro enviado para a pasta da ideia");
 // MVP por link
 await P.click('#i-sd1 [data-a="pan"][data-k="mat"]');await W(200);
@@ -82,7 +82,7 @@ if(await P.locator("#lu-sd1").count()===0)await P.click('#i-sd1 [data-a="pan"][d
 await P.locator('#i-sd1 .kind',{hasText:"MVP"}).click();await P.fill("#lu-sd1","figma.com/proto/abc");await P.fill("#ln-sd1","MVP Figma");
 await P.click('#i-sd1 [data-a="doc"]');await W(700);
 ok(mats().some(m=>m.url==="https://figma.com/proto/abc"&&m.tipo==="MVP / protótipo"&&m.fase==="sd"),"link do MVP juntado");
-ok(await P.locator("#i-sd1 .dchip").count()===2,"os 2 documentos aparecem no cartão");
+ok(await P.locator("#i-sd1 .drow").count()===2,"os 2 documentos aparecem no cartão");
 // vazio
 await P.click('#i-sd1 [data-a="pan"][data-k="mat"]');await W(200);
 if(await P.locator("#lu-sd1").count()===0)await P.click('#i-sd1 [data-a="pan"][data-k="mat"]');

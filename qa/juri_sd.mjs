@@ -21,6 +21,9 @@ put("fotos",{id:"main",fotos:{}});
 const uploads=[],removed=[];
 put("materiais",{id:"old1",ideiaId:"s1",ficheiro:"slides-c2.pdf",path:"s1/c2-old.pdf",tipo:"Slides do pitch",fase:"c2",em:"2026-11-10"});
 put("materiais",{id:"old2",ideiaId:"s1",ficheiro:"slides-c1.pdf",path:"s1/old.pdf",tipo:"Slides do pitch",em:"2026-11-01"});
+put("materiais",{id:"m-res",ideiaId:"s1",ficheiro:"Resumo.docx",path:"s1/res.docx",tipo:"Resumo Executivo",em:"2026-11-20"});
+put("materiais",{id:"m-mvp",ideiaId:"s1",ficheiro:"MVP Figma",url:"https://figma.com/x",tipo:"MVP / protótipo",fase:"sd",em:"2026-11-20"});
+put("materiais",{id:"m-c1s",ideiaId:"s1",ficheiro:"slides-c1-novo.pdf",path:"s1/c1.pdf",tipo:"Slides Challenge I",fase:"c1",em:"2026-11-20"});
 put("materiais",{id:"new1",ideiaId:"s2",ficheiro:"sd-notas.pdf",path:"s2/sd-new.pdf",tipo:"Slides do pitch",fase:"sd",em:"2026-11-20"});
 const PUB=["ideias","sessoes","live","fotos","config","feedback"];
 function handle(route){
@@ -65,6 +68,8 @@ await A.evaluate(()=>document.querySelectorAll("details").forEach(d=>d.open=true
 const t=await A.locator("#c1list").textContent();
 ok(!t.includes("slides-c2.pdf")&&!t.includes("slides-c1.pdf"),"slides antigos (C1/C2) não aparecem no SD");
 ok(t.includes("sd-notas.pdf")||await A.locator(".c1slbtn").count()>0,"slides do SD aparecem");
+ok(t.includes("Resumo.docx")&&t.includes("MVP Figma"),"Resumo Executivo e MVP aparecem ao júri do SD");
+ok(!t.includes("slides-c1-novo.pdf"),"slides do Challenge I não aparecem no SD");
 ok(await A.locator(".jc-ppl .chipp").count()>=6,"as 3 pessoas aparecem nos cartões");
 // top 3
 await A.click('[data-act="c1tab"][data-v="top3"]');await W(300);
