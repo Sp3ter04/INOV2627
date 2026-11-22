@@ -1856,7 +1856,7 @@ function c1Mats(i){const ms=matsOf(i.id),a=(i.aval&&i.aval.c1)||{};
   const slides=ms.filter(m=>m.path&&isSl(m)),links=ms.filter(m=>m.url),files=ms.filter(m=>m.path&&!isSl(m));
   const extra=[];if(a.slides)extra.push({url:a.slides,ficheiro:"Slides",tipo:"Slides do pitch",slide:true});if(a.site)extra.push({url:a.site,ficheiro:"Site / protótipo",tipo:"MVP / protótipo"});
   /* Challenge II: só os slides carregados para o Challenge II; os ficheiros antigos continuam no Challenge I e na área de membro */
-  if(PH!=="c1"){const sl=ms.filter(m=>m.fase===PH&&m.path),pdf=m=>/\.pdf$/i.test(m.ficheiro||"");return {slides:sl.filter(pdf),links:[],linkSlides:[],files:sl.filter(m=>!pdf(m))};}
+  if(PH!=="c1"){const sl=ms.filter(m=>m.fase===PH&&m.path),pdf=m=>/\.pdf$/i.test(m.ficheiro||"");return {slides:sl.filter(pdf),links:ms.filter(m=>m.fase===PH&&m.url),linkSlides:[],files:sl.filter(m=>!pdf(m))};}
   return {slides,links:[...links,...extra.filter(x=>!x.slide)],linkSlides:extra.filter(x=>x.slide).concat(links.filter(m=>/slide|pitch|apresenta/i.test(m.tipo||""))),files};}
 function c1MatHtml(i,big){const M=c1Mats(i);const ext=f=>(String(f||"").split(".").pop()||"").slice(0,4).toUpperCase();
   const sl=[...M.slides.map(m=>`<button type="button" class="btn ${big?"pri":""} c1slbtn" data-act="c1view" data-p="${esc(m.path)}" data-t="${esc(m.ficheiro)}"><span aria-hidden="true">▶</span> Ver slides <small>${esc(m.ficheiro)}</small></button>`),

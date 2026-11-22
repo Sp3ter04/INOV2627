@@ -19,7 +19,11 @@ textarea{min-height:110px;resize:vertical}
 button{font:inherit;cursor:pointer;min-height:44px;padding:8px 16px;border-radius:8px;border:1px solid var(--line-2);background:var(--surface);color:var(--fg);font-weight:700}
 button.pri{background:var(--brand);color:var(--on-brand);border-color:var(--brand)}button.lnk{border:0;background:none;color:var(--brand);padding:8px}
 button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:3px solid var(--brand);outline-offset:2px}
-.tabs{display:flex;gap:6px;margin:0 0 14px}.tabs button{flex:1}.tabs button[aria-pressed=true]{background:var(--brand);color:var(--on-brand);border-color:var(--brand)}
+.tabs{display:flex;gap:6px;margin:0 0 14px;position:sticky;top:0;z-index:5;background:var(--bg);padding:8px 0}.tabs button{flex:1;display:flex;flex-direction:column;align-items:center;gap:1px;padding:8px 6px;line-height:1.15}.tabs button small{font-weight:500;opacity:.75;font-size:.74rem}.tabs button[aria-pressed=true]{background:var(--brand);color:var(--on-brand);border-color:var(--brand)}
+.kinds{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px}.kind{display:block;margin:0;cursor:pointer}.kind input{position:absolute;opacity:0;pointer-events:none}.kind span{display:flex;flex-direction:column;gap:1px;border:2px solid var(--line);border-radius:10px;padding:9px 12px;background:var(--surface)}.kind b{font-size:.95rem}.kind small{color:var(--muted);font-size:.78rem}.kind:has(input:checked) span{border-color:var(--brand);background:var(--brand-soft)}.kind:has(input:focus-visible) span{outline:2px solid var(--brand);outline-offset:2px}
+.dchips{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 0}.dchip{all:unset;box-sizing:border-box;cursor:pointer;display:inline-flex;align-items:center;gap:6px;max-width:100%;padding:6px 10px;border:1px solid var(--line);border-radius:99px;background:var(--surface-2);font-size:.82rem;font-weight:600;color:var(--fg)}.dchip:hover{border-color:var(--brand)}.dchip:focus-visible{outline:2px solid var(--brand)}.dchip i{font-style:normal;color:var(--brand)}.dchip small{color:var(--muted);font-weight:500}
+.stg-sd{background:var(--ok-soft,#d3f9d8);color:var(--ok,#2b8a3e)}.stg-c2{background:var(--brand-soft);color:var(--brand)}
+.acts .pri{min-height:44px}
 .stars{color:var(--line-2);letter-spacing:2px;white-space:nowrap}.stars .on{color:#e0a100}
 .pp{display:inline-flex;margin-left:4px}.pp img,.pp i{width:26px;height:26px;border-radius:50%;border:2px solid var(--surface);margin-left:-6px;object-fit:cover;background:var(--brand-soft);color:var(--brand);font:700 .62rem/22px var(--body);text-align:center;font-style:normal;display:inline-block}
 .meta{display:flex;flex-wrap:wrap;gap:8px;align-items:center;color:var(--muted);font-size:.85rem;margin:4px 0 10px}
@@ -37,7 +41,7 @@ details{border-top:1px solid var(--line);padding-top:8px;margin-top:10px}summary
 .ps2{display:grid;grid-template-columns:1fr 1fr;gap:12px}.ps2>div{background:var(--surface-2);border-radius:8px;padding:8px 12px}
 .acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
 @media (max-width:620px){.ps2{grid-template-columns:1fr}.sum{grid-template-columns:1fr 1fr 1fr}}
-@media (max-width:520px){.tabs{flex-direction:column}}
+@media (max-width:520px){.tabs button{font-size:.84rem;padding:7px 2px;min-width:0}.tabs button small{font-size:.68rem}.kinds{gap:6px}}
 .adm{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;padding:10px 16px;background:var(--warn-soft);color:var(--fg);border-bottom:1px solid var(--line)}
 .adm b{color:var(--warn)}.adm select{width:auto;min-height:36px;padding:4px 8px}.adm label{display:inline-flex;gap:6px;align-items:center;margin:0;font-weight:600;font-size:.88rem}.adm input[type=checkbox]{width:auto;min-height:0}
 .adm button{min-height:36px;padding:4px 12px}
@@ -58,7 +62,7 @@ details{border-top:1px solid var(--line);padding-top:8px;margin-top:10px}summary
 <div id="app"></div>
 <script>
 const U="https://hggrgaktnacmmgmaoeib.supabase.co",K="sb_publishable_em1gUMD7EQjI8n1hCE18tQ_DSy-eAsR",DOM="@junitec.pt",LS_CODE="inov-coord-code",SS_ADM="inov-membro-admin";
-const st={ses:null,nome:"",ideias:[],fb:[],fotos:{},sug:[],mat:[],tab:"",c1f:"todas",msg:null,load:false,view:"",sim:true,membros:[],openFb:new Set(),openC1:new Set(),openC2:new Set(),pan:"",q:""};
+const st={ses:null,nome:"",ideias:[],fb:[],fotos:{},sug:[],mat:[],tab:"",c1f:"todas",msg:null,load:false,view:"",sim:true,membros:[],openFb:new Set(),openC1:new Set(),openC2:new Set(),openSD:new Set(),pan:"",q:""};
 const $=s=>document.querySelector(s);
 const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const lc=s=>String(s||"").toLowerCase();
@@ -83,6 +87,7 @@ const isMine=i=>!!i&&(i.par||[]).includes(st.nome);
 const ETAPA={c1:1,c2:2,sd:3,startup:4};
 const isC1=i=>(ETAPA[i.etapa]||0)>=1;
 const isC2=i=>(ETAPA[i.etapa]||0)>=2;
+const isSD=i=>(ETAPA[i.etapa]||0)>=3;
 async function loadAll(){st.load=true;render();
   const [i,f,fo,su,ma,nm]=await Promise.all([docs("ideias"),docs("feedback"),docs("fotos"),docs("sugestoes"),docs("materiais"),isAdm()?Promise.resolve(st.nome):rest("rpc/inov_nome",{method:"POST",body:"{}"})]);
   st.ideias=i;st.fb=f;st.fotos=(fo.find(x=>x.fotos)||{}).fotos||{};st.nome=nm||(st.ses.user.user_metadata||{}).nome||"";
@@ -112,14 +117,14 @@ function c1Det(i,tp){tp=tp||"c1aval";const A=st.fb.filter(f=>f.tipo===tp&&f.idei
   const L=A.filter(f=>!f.ocultoMembros&&(String(f.feedback||"").trim()||String(f.perguntas||"").trim())).sort((a,b)=>String(a.enviadoEm||"").localeCompare(String(b.enviadoEm||"")));
   return `<div class="fbl"><div class="lab" style="margin:6px 0 4px">Nota média do júri (0 a 5)</div><div class="c1n">${C1K.map(([k,l])=>`<div><b>${med(k)}</b><span>${l}</span></div>`).join("")}</div>
   ${L.length?L.map(f=>{const fb=String(f.feedback||"").trim(),q=String(f.perguntas||"").trim();return `<div class="fb"><b>${esc(f.jurado||"Júri")}</b>${fb?`<p class="txt" style="margin:4px 0 0">${esc(fb)}</p>`:""}${q?`<p class="txt note" style="margin:4px 0 0">${esc(q)}</p>`:""}</div>`;}).join(""):'<p class="note">Nenhum jurado deixou feedback escrito.</p>'}</div>`;}
-function phRes(i,ph){const r=i.resumoS&&i.resumoS.c1?esc(i.resumoS.c1).replace(/\n/g,"<br>"):"";
-  const o1=st.openC1.has(i.id);
-  const c1b=`<button type="button" class="res" data-a="c1t" data-id="${esc(i.id)}" aria-expanded="${o1}"><span class="lab">Resumo do feedback do júri · Challenge I</span>${r||'<span class="note">Ainda sem resumo do Challenge I.</span>'}<span class="more">${o1?"Esconder o feedback do júri ▴":"Ver o feedback de cada jurado e as notas ▾"}</span></button>${o1?c1Det(i):""}`;
-  const r2=i.resumoS&&i.resumoS.c2?esc(i.resumoS.c2).replace(/\n/g,"<br>"):"",o2=st.openC2.has(i.id);
-  const c2b=`<button type="button" class="res" data-a="c2t" data-id="${esc(i.id)}" aria-expanded="${o2}"><span class="lab">Resumo do feedback do júri · Challenge II</span>${r2||'<span class="note">Ainda sem resumo do Challenge II.</span>'}<span class="more">${o2?"Esconder o feedback do júri ▴":"Ver o feedback de cada jurado e as notas ▾"}</span></button>${o2?c1Det(i,"c2aval"):""}`;
-  if(ph==="c2")return c2b+c1b;
+const FASES={sd:["Selection Day","sd","sdaval","openSD","sdt"],c2:["Challenge II","c2","c2aval","openC2","c2t"],c1:["Challenge I","c1","c1aval","openC1","c1t"]};
+function resPh(i,k){const [N,key,tp,set,act]=FASES[k],r=i.resumoS&&i.resumoS[key]?esc(i.resumoS[key]).replace(/\n/g,"<br>"):"",o=st[set].has(i.id);
+  return `<button type="button" class="res" data-a="${act}" data-id="${esc(i.id)}" aria-expanded="${o}"><span class="lab">Júri · ${N}</span>${r||`<span class="note">Ainda sem resumo do ${N}.</span>`}<span class="more">${o?"Esconder o feedback do júri ▴":"Ver o feedback de cada jurado e as notas ▾"}</span></button>${o?c1Det(i,tp):""}`;}
+function phRes(i,ph){
+  if(ph==="sd")return resPh(i,"sd")+resPh(i,"c2")+resPh(i,"c1");
+  if(ph==="c2")return resPh(i,"c2")+resPh(i,"c1");
   const n=fbVis(i).length,o=st.openFb.has(i.id),t=sesTxt(i);
-  return c1b+`<button type="button" class="res" data-a="fbt" data-id="${esc(i.id)}" aria-expanded="${o}"><span class="lab">Resumo do feedback das sessões de ideação</span>${t||'<span class="note">Ainda sem resumo.</span>'}${n?`<span class="more">${o?"Esconder os feedbacks ▴":`Ver os feedbacks das sessões (${n}) ▾`}</span>`:""}</button>${o?`<div class="fbl">${fbHtml(i)}</div>`:""}`;}
+  return resPh(i,"c1")+`<button type="button" class="res" data-a="fbt" data-id="${esc(i.id)}" aria-expanded="${o}"><span class="lab">Sessões de ideação</span>${t||'<span class="note">Ainda sem resumo.</span>'}${n?`<span class="more">${o?"Esconder os feedbacks ▴":`Ver os feedbacks das sessões (${n}) ▾`}</span>`:""}</button>${o?`<div class="fbl">${fbHtml(i)}</div>`:""}`;}
 function resBlock(i){const n=fbVis(i).length,o=st.openFb.has(i.id),t=resTxt(i);
   return `<button type="button" class="res" data-a="fbt" data-id="${esc(i.id)}" aria-expanded="${o}"><span class="lab">Resumo do feedback do júri</span>${t||'<span class="note">Ainda sem resumo.</span>'}<span class="more">${o?"Esconder os feedbacks ▴":`Ver todos os feedbacks (${n}) ▾`}</span></button>${o?`<div class="fbl">${fbHtml(i)}</div>`:""}`;}
 function psHtml(i,open){return `<details${open?" open":""}><summary>Problema e solução</summary><div class="ps2 c"><div><div class="lab" style="margin-top:4px">Problema</div><p class="txt">${esc(i.problema||"—")}</p></div><div><div class="lab" style="margin-top:4px">Solução</div><p class="txt">${esc(i.solucao||"—")}</p></div></div></details>`;}
@@ -132,42 +137,47 @@ function fileList(ma){return ma.length?ma.map(m=>`<div class="fb">${m.url?`<a cl
 function filePick(i,pre,req){const ma=st.mat.filter(m=>m.ideiaId===i.id);
   return `<div class="lab">${req?"Ficheiros de validação (obrigatório, pelo menos 1)":"Ficheiros de apoio (opcional)"}</div>${ma.map(m=>`<label class="chk"><input type="checkbox" class="${pre}-old" value="${esc(m.id)}"> ${esc(m.ficheiro)} <span class="note">· ${esc(m.tipo)}</span></label>`).join("")}
   <label for="${pre}-f-${esc(i.id)}">${ma.length?"Ou junta novos":"Juntar ficheiros"} (PDF, Word, Excel, PowerPoint, imagem… até 25 MB cada)</label><input type="file" multiple id="${pre}-f-${esc(i.id)}" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.csv,.txt,.png,.jpg,.jpeg">`;}
-function matHtml(i){const ma=st.mat.filter(m=>m.ideiaId===i.id);return fileList(ma)+
-  `<p class="note" style="margin:10px 0 0">O júri vê estes ficheiros no Challenge. Os <b>slides do pitch em PDF</b> abrem num leitor página a página.</p>
-  <label for="t-${esc(i.id)}">Tipo</label><select id="t-${esc(i.id)}"><option>Slides do pitch</option><option>Validação de mercado</option><option>Pesquisa</option><option>Outro</option></select>
-  <label for="f-${esc(i.id)}">Ficheiro (slides em PDF, Word, Excel, imagem… até 25 MB)</label><input type="file" id="f-${esc(i.id)}" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.csv,.txt,.png,.jpg,.jpeg"><div class="row"><button class="pri" data-a="up" data-id="${esc(i.id)}">Enviar ficheiro</button></div>
-  <div class="lab" style="margin-top:14px">Ou junta um link</div><label for="lu-${esc(i.id)}">Link (MVP, protótipo, Figma, Google Slides…)</label><input id="lu-${esc(i.id)}" type="url" inputmode="url" placeholder="https://…">
-  <label for="ln-${esc(i.id)}">Nome do link</label><input id="ln-${esc(i.id)}" maxlength="80" placeholder="Ex.: MVP no Figma">
-  <label for="lt-${esc(i.id)}">Tipo</label><select id="lt-${esc(i.id)}"><option>MVP / protótipo</option><option>Slides do pitch</option><option>Validação de mercado</option><option>Outro</option></select><div class="row"><button data-a="link" data-id="${esc(i.id)}">Juntar link</button></div>`;}
+const DOCK=[["slides","Slides","PowerPoint ou PDF","Slides do pitch"],["mvp","MVP","link ou ficheiro","MVP / protótipo"],["report","Report","PDF ou Word","Report"],["outro","Outro","qualquer ficheiro","Outro"]];
+function matHtml(i){const ma=st.mat.filter(m=>m.ideiaId===i.id),I=esc(i.id);return (ma.length?fileList(ma):"")+
+  `<div class="lab" style="margin-top:12px">1. O que queres juntar?</div>
+  <div class="kinds" role="radiogroup" aria-label="Tipo de documento">${DOCK.map(([v,l,sub],k)=>`<label class="kind"><input type="radio" name="dk-${I}" value="${v}"${k?"":" checked"}><span><b>${l}</b><small>${sub}</small></span></label>`).join("")}</div>
+  <div class="lab" style="margin-top:12px">2. Escolhe o ficheiro e/ou cola o link</div>
+  <label for="f-${I}">Ficheiro (PowerPoint, PDF, Word… até 25 MB)</label><input type="file" id="f-${I}" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.csv,.txt,.png,.jpg,.jpeg">
+  <label for="lu-${I}">Link (MVP, protótipo, Figma, Google Slides…)</label><input id="lu-${I}" type="url" inputmode="url" placeholder="https://…">
+  <label for="ln-${I}">Nome (opcional)</label><input id="ln-${I}" maxlength="80" placeholder="Ex.: MVP no Figma">
+  <div class="row"><button class="pri" data-a="doc" data-id="${I}">Juntar documento</button></div>
+  <p class="note" style="margin:8px 0 0">O júri vê estes documentos. Os slides em PDF abrem num leitor página a página; os PowerPoint ficam para descarregar.</p>`;}
 function altHtml(i,withTitle){return `<label for="at-${esc(i.id)}">Título</label><input id="at-${esc(i.id)}" maxlength="120" value="${esc(i.titulo||"")}"${withTitle?"":" disabled"}>
   <label for="p-${esc(i.id)}">Problema (ideia)</label><textarea id="p-${esc(i.id)}">${esc(i.problema||"")}</textarea>
   <label for="s-${esc(i.id)}">Solução</label><textarea id="s-${esc(i.id)}">${esc(i.solucao||"")}</textarea>
   <label for="n-${esc(i.id)}">Porquê? (opcional)</label><input id="n-${esc(i.id)}"><div class="row"><button class="pri" data-a="sug" data-id="${esc(i.id)}">Enviar proposta ao coordenador</button></div><p class="note">O título e a descrição só mudam depois de o coordenador aceitar.</p>`;}
 const panBtn=(i,k,label,pri)=>{const on=st.pan===i.id+"|"+k;return `<button${pri?' class="pri"':""} data-a="pan" data-id="${esc(i.id)}" data-k="${k}" aria-expanded="${on}">${label}</button>`;};
 const panOn=(i,k)=>st.pan===i.id+"|"+k;
-function c1Card(i,ph){ph=ph||"c1";const mine=isMine(i),FN=ph==="c2"?"Challenge II":"Challenge I";
+function docsHtml(i){const ma=st.mat.filter(m=>m.ideiaId===i.id);if(!ma.length)return "";return `<div class="dchips" aria-label="Documentos da ideia">${ma.map(m=>m.url?`<a class="dchip" href="${esc(/^https?:\/\//i.test(m.url)?m.url:"https://"+m.url)}" target="_blank" rel="noopener" title="${esc(m.tipo||"")}"><i>↗</i>${esc(m.ficheiro||m.url)}<small>${esc(m.tipo||"Link")}</small></a>`:`<button type="button" class="dchip" data-a="dl" data-p="${esc(m.path)}" title="${esc(m.tipo||"")}"><i>⬇</i>${esc(m.ficheiro)}<small>${esc(m.tipo||"")}</small></button>`).join("")}</div>`;}
+function c1Card(i,ph){ph=ph||"c1";const mine=isMine(i),FN=FASES[ph][0];
   let pan="";
   if(panOn(i,"mat"))pan=`<div class="pan"><h4>Documentos da ideia</h4>${matHtml(i)}</div>`;
   else if(panOn(i,"alt"))pan=`<div class="pan"><h4>Propor alteração do título, da ideia e da solução</h4>${altHtml(i,true)}</div>`;
-  else if(panOn(i,"matar"))pan=`<div class="pan"><h4>A validação correu mal: pedir para matar a ideia</h4><p class="note">O coordenador decide. Se aceitar, a ideia sai do ${FN}.</p><label for="mj-${esc(i.id)}">O que mostrou a validação? (obrigatório)</label><textarea id="mj-${esc(i.id)}" placeholder="Ex.: 12 entrevistas a clínicas, nenhuma sente o problema; quem paga já usa a solução X"></textarea>${filePick(i,"mk",false)}<div class="row"><button class="pri" data-a="matar" data-id="${esc(i.id)}" style="background:var(--bad);border-color:var(--bad)">Enviar pedido para matar</button></div></div>`;
   else if(panOn(i,"col"))pan=`<div class="pan"><h4>Pedir para colaborar nesta ideia</h4><label for="cj-${esc(i.id)}">Porque queres colaborar e o que podes trazer? (obrigatório)</label><textarea id="cj-${esc(i.id)}" placeholder="Ex.: conheço o setor, tenho contactos em 3 clínicas, posso fazer as entrevistas"></textarea><div class="row"><button class="pri" data-a="col" data-id="${esc(i.id)}">Enviar pedido ao coordenador</button></div><p class="note">Se o coordenador aceitar, passas a fazer parte da ideia.</p></div>`;
-  const acts=mine?`<div class="acts">${panBtn(i,"mat","Juntar documento",1)}${panBtn(i,"alt","Propor alteração")}${pend(i,"matar")?'<span class="pill bad" style="align-self:center">Pedido para matar enviado</span>':panBtn(i,"matar","Má validação: pedir para matar")}</div>`
+  const acts=mine?`<div class="acts">${panBtn(i,"mat","Juntar documento",1)}${panBtn(i,"alt","Propor alteração")}</div>`
     :`<div class="acts">${pend(i,"colaborar")||pend(i,"participar")?'<span class="pill warn">Pedido para colaborar enviado</span>':panBtn(i,"col","Pedir para colaborar",1)}</div>`;
-  return `<article class="card" id="i-${esc(i.id)}" data-q="${esc(nrm([i.titulo,i.problema,i.solucao,(i.par||[]).join(" ")].join(" ")))}"><div class="ch"><h3>${esc(i.titulo||"(sem título)")}</h3><span class="sb">${mine?'<span class="pill ok">Tua ideia</span> ':""}<span class="pill">${FN}</span></span></div>
-  ${metaHtml(i)}${phRes(i,ph)}${psHtml(i)}${!mine&&st.mat.some(m=>m.ideiaId===i.id)?`<details><summary>Ficheiros</summary>${fileList(st.mat.filter(m=>m.ideiaId===i.id))}</details>`:""}${reqsHtml(i)}${acts}${pan}</article>`;}
+  return `<article class="card" id="i-${esc(i.id)}" data-q="${esc(nrm([i.titulo,i.problema,i.solucao,(i.par||[]).join(" ")].join(" ")))}"><div class="ch"><h3>${esc(i.titulo||"(sem título)")}</h3><span class="sb">${mine?'<span class="pill ok">Tua ideia</span> ':""}<span class="pill stg-${ph}">${FN}</span></span></div>
+  ${metaHtml(i)}${docsHtml(i)}${phRes(i,ph)}${psHtml(i)}${reqsHtml(i)}${acts}${pan}</article>`;}
 function repCard(i){const p=pend(i,"repescagem");
   const pan=panOn(i,"rep")?`<div class="pan"><h4>Pedir para passar ao Challenge I</h4><p class="note">Explica o que mudou desde a sessão de ideação e junta a validação que o mostra (entrevistas, inquéritos, contactos…).</p><label for="rj-${esc(i.id)}">Justificação (obrigatório)</label><textarea id="rj-${esc(i.id)}" placeholder="Ex.: falámos com 8 empresas do setor e 5 confirmaram o problema e o valor que pagariam"></textarea>${filePick(i,"rk",true)}<div class="row"><button class="pri" data-a="rep" data-id="${esc(i.id)}">Enviar pedido ao coordenador</button></div></div>`:"";
   return `<article class="card" id="i-${esc(i.id)}" data-q="${esc(nrm([i.titulo,i.problema,i.solucao,(i.par||[]).join(" ")].join(" ")))}"><div class="ch"><h3>${esc(i.titulo||"(sem título)")}</h3><span class="pill sb">${i.sessao||"?"}.ª sessão</span></div>
   ${metaHtml(i)}${resBlock(i)}${psHtml(i)}${reqsHtml(i)}<div class="acts">${p?'<span class="pill warn">Pedido enviado: à espera do coordenador</span>':panBtn(i,"rep","Pedir para passar ao Challenge I",1)}</div>${pan}</article>`;}
-function c2Html(){const c2=st.ideias.filter(isC2).sort(ordem),mc=c2.filter(isMine),list=st.c1f==="minhas"?mc:c2;
-  return `<div class="sum"><div><b>${c2.length}</b><span>ideias no Challenge II</span></div><div><b>${mc.length}</b><span>tuas no Challenge II</span></div><div><b>${st.sug.filter(s=>(s.estado||"pendente")==="pendente").length}</b><span>pedidos por decidir</span></div></div>
-  <p class="note" style="margin:0 0 10px">Estas são as ideias que passaram ao Challenge II, com o resumo e o feedback do júri no Challenge II e no Challenge I. Nas tuas, junta documentos ou propõe alterações. Nas outras, podes pedir para colaborar.</p>
-  <div class="chips" role="group" aria-label="Filtro"><button data-a="c1f" data-v="todas" aria-pressed="${st.c1f==="todas"}">Todas as ideias (${c2.length})</button><button data-a="c1f" data-v="minhas" aria-pressed="${st.c1f==="minhas"}">As minhas ideias (${mc.length})</button></div>
+function phHtml(ph){const isF=ph==="sd"?isSD:isC2,FN=FASES[ph][0],all=st.ideias.filter(isF).sort(ordem),mc=all.filter(isMine),list=st.c1f==="minhas"?mc:all;
+  const txt=ph==="sd"?"Estas ideias chegaram ao Selection Day. Vês o resumo e o feedback do júri em cada fase. Nas tuas, junta slides, MVP ou report; nas outras, podes pedir para colaborar.":"Estas ideias passaram ao Challenge II, com o resumo e o feedback do júri no Challenge II e no Challenge I. Nas tuas, junta documentos ou propõe alterações. Nas outras, podes pedir para colaborar.";
+  return `<div class="sum"><div><b>${all.length}</b><span>ideias no ${FN}</span></div><div><b>${mc.length}</b><span>tuas</span></div><div><b>${st.sug.filter(s=>(s.estado||"pendente")==="pendente").length}</b><span>pedidos por decidir</span></div></div>
+  <p class="note" style="margin:0 0 10px">${txt}</p>
+  <div class="chips" role="group" aria-label="Filtro"><button data-a="c1f" data-v="todas" aria-pressed="${st.c1f==="todas"}">Todas (${all.length})</button><button data-a="c1f" data-v="minhas" aria-pressed="${st.c1f==="minhas"}">As minhas (${mc.length})</button></div>
   <input id="q" type="search" placeholder="Procurar ideias, problemas, pessoas…" aria-label="Procurar ideias" style="margin:0 0 10px">
-  ${st.load?`<p>A carregar…</p>`:list.length?list.map(i=>c1Card(i,"c2")).join(""):`<div class="card"><p style="margin:0">${st.c1f==="minhas"?"Nenhuma ideia tua passou ao Challenge II.":"Ainda não há ideias no Challenge II."}</p></div>`}`;}
+  ${st.load?`<p>A carregar…</p>`:list.length?list.map(i=>c1Card(i,ph)).join(""):`<div class="card"><p style="margin:0">${st.c1f==="minhas"?"Nenhuma ideia tua está no "+FN+".":"Ainda não há ideias no "+FN+"."}</p></div>`}`;}
+const c2Html=()=>phHtml("c2"),sdHtml=()=>phHtml("sd");
 function c1Html(){const c1=st.ideias.filter(isC1).sort(ordem),mc=c1.filter(isMine),list=st.c1f==="minhas"?mc:c1,out=st.ideias.filter(i=>isMine(i)&&!isC1(i)).sort(ordem);
   return `<div class="sum"><div><b>${c1.length}</b><span>ideias no Challenge I</span></div><div><b>${mc.length}</b><span>tuas no Challenge I</span></div><div><b>${st.sug.filter(s=>(s.estado||"pendente")==="pendente").length}</b><span>pedidos por decidir</span></div></div>
-  <p class="note" style="margin:0 0 10px">Estas são as ideias que passaram ao Challenge I. Nas tuas, junta documentos, propõe alterações ou, se a validação correu mal, pede para a matar. Nas outras, podes pedir para colaborar.</p>
+  <p class="note" style="margin:0 0 10px">Estas são as ideias que passaram ao Challenge I. Nas tuas, junta documentos ou propõe alterações. Nas outras, podes pedir para colaborar.</p>
   <div class="chips" role="group" aria-label="Filtro"><button data-a="c1f" data-v="todas" aria-pressed="${st.c1f==="todas"}">Todas as ideias (${c1.length})</button><button data-a="c1f" data-v="minhas" aria-pressed="${st.c1f==="minhas"}">As minhas ideias (${mc.length})</button></div>
   <input id="q" type="search" placeholder="Procurar ideias, problemas, pessoas…" aria-label="Procurar ideias" style="margin:0 0 10px">
   ${st.load?`<p>A carregar…</p>`:list.length?list.map(i=>c1Card(i,"c1")).join(""):`<div class="card"><p style="margin:0">Nenhuma ideia tua passou ao Challenge I. Vê abaixo como pedir.</p></div>`}
@@ -215,13 +225,13 @@ function render(){const A=$("#app");
    <form id="cf"><label for="n1">Nova palavra-passe</label><input id="n1" type="password" minlength="8" autocomplete="new-password" required><label for="n2">Repetir</label><input id="n2" type="password" minlength="8" autocomplete="new-password" required><div class="row"><button class="pri" style="flex:1">Guardar</button></div></form></div></div>`;
    $("#cf").onsubmit=async e=>{e.preventDefault();const a=$("#n1").value,b=$("#n2").value,em=st.ses.user.email;if(a!==b){st.msg="As palavras-passe não coincidem.";return render();}if(a.length<8||a===em.split("@")[0]||a===em){st.msg="Escolhe uma palavra-passe diferente do email e com 8 ou mais caracteres.";return render();}
     try{await fresh();const u=await auth("user",{password:a,data:{must_change:false}},"PUT");st.ses.user=u;st.msg=null;await start();}catch(x){st.msg=x.message;render();}};return;}
-  const nc2=st.ideias.filter(isC2).length;if(!st.load&&!st.tabAuto){st.tabAuto=1;if(!st.tabUser)st.tab=nc2?"c2":"c1";}else if(!["c1","c2","minhas"].includes(st.tab))st.tab="c1";
+  const nc2=st.ideias.filter(isC2).length,nsd=st.ideias.filter(isSD).length;if(!st.load&&!st.tabAuto){st.tabAuto=1;if(!st.tabUser)st.tab=nsd?"sd":nc2?"c2":"c1";}else if(!["sd","c2","c1"].includes(st.tab))st.tab="c1";
   const mine=st.ideias.filter(isMine).sort(ordem),all=[...st.ideias].sort(ordem),nc1=st.ideias.filter(isC1).length,base=mine,list=base.filter(i=>!st.fs||Number(i.sessao)===st.fs);
   const ses=[...new Set(base.map(i=>Number(i.sessao)||0))].filter(Boolean).sort(),pendN=st.sug.filter(s=>(s.estado||"pendente")==="pendente").length,fbN=st.fb.filter(f=>mine.some(i=>i.id===f.ideiaId)).length;
   A.innerHTML=`${isAdm()?admBar():""}<div class="bar"><span class="pp" style="margin-left:6px">${av(st.nome)}</span><div class="sp"><b>${esc(st.nome||myEmail())}</b><small>Inovação 26/27</small></div>${isAdm()?"":`<button data-a="pw" class="lnk">Palavra-passe</button>`}<button data-a="out">Sair</button></div>
   <div class="wrap">${st.msg?`<div class="msg ${st.err?"err":""}" role="status">${esc(st.msg)}</div>`:""}
-  <div class="tabs" role="group"><button data-a="tab" data-t="c2" aria-pressed="${st.tab==="c2"}">Challenge II (${nc2})</button><button data-a="tab" data-t="c1" aria-pressed="${st.tab==="c1"}">Challenge I (${nc1})</button><button data-a="tab" data-t="minhas" aria-pressed="${st.tab==="minhas"}">As minhas ideias (${mine.length})</button></div>
-  ${st.tab==="c2"?c2Html():st.tab==="c1"?c1Html():`${st.tab==="minhas"?`<div class="sum"><div><b>${mine.length}</b><span>ideias tuas</span></div><div><b>${fbN}</b><span>feedbacks do júri</span></div><div><b>${pendN}</b><span>pedidos por decidir</span></div></div>`:""}
+  <div class="tabs" role="tablist" aria-label="Fase"><button role="tab" data-a="tab" data-t="sd" aria-pressed="${st.tab==="sd"}" aria-selected="${st.tab==="sd"}"><span>Selection Day</span><small>${nsd} ideias</small></button><button role="tab" data-a="tab" data-t="c2" aria-pressed="${st.tab==="c2"}" aria-selected="${st.tab==="c2"}"><span>Challenge II</span><small>${nc2} ideias</small></button><button role="tab" data-a="tab" data-t="c1" aria-pressed="${st.tab==="c1"}" aria-selected="${st.tab==="c1"}"><span>Challenge I</span><small>${nc1} ideias</small></button></div>
+  ${st.tab==="sd"?sdHtml():st.tab==="c2"?c2Html():st.tab==="c1"?c1Html():`${st.tab==="minhas"?`<div class="sum"><div><b>${mine.length}</b><span>ideias tuas</span></div><div><b>${fbN}</b><span>feedbacks do júri</span></div><div><b>${pendN}</b><span>pedidos por decidir</span></div></div>`:""}
   <div class="row" style="margin:0 0 12px;align-items:center"><button class="pri" data-a="novo">+ Nova ideia</button><span class="note">${st.tab==="minhas"?"Junta ficheiros e sugere melhorias às tuas ideias.":"Lê tudo, incluindo o feedback. Se ajudaste numa ideia, pede para participar."}</span></div>${st.novo?novoHtml():""}
   <input id="q" type="search" placeholder="Procurar ideias, problemas, pessoas…" aria-label="Procurar ideias" style="margin:0 0 10px">
   ${ses.length>1?`<div class="chips" role="group" aria-label="Sessão"><button data-a="fs" data-v="0" aria-pressed="${!st.fs}">Todas as sessões</button>${ses.map(k=>`<button data-a="fs" data-v="${k}" aria-pressed="${st.fs===k}">${k}.ª sessão</button>`).join("")}</div>`:""}
@@ -234,9 +244,9 @@ const nid=p=>p+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 const simulando=()=>isAdm()&&st.sim;
 async function put(col,d){if(isAdm()){d.teste=true;d.adminPor="coordenador";}if(simulando())return d;await rest("docs",{method:"POST",body:JSON.stringify({col,id:d.id,data:d})});return d;}
 const SIMN=" (simulação: nada foi gravado)";
-async function upload(id,f,tipo){if(f.size>26214400)throw new Error("«"+f.name+"» tem mais de 25 MB.");
+async function upload(id,f,tipo,fase){if(f.size>26214400)throw new Error("«"+f.name+"» tem mais de 25 MB.");
   const safe=f.name.normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^A-Za-z0-9._-]+/g,"_");
-  const mid=nid("m"),d={id:mid,email:myEmail(),nome:st.nome,ideiaId:id,ficheiro:f.name,path:"",tipo,tamanho:f.size,em:new Date().toISOString()};
+  const mid=nid("m"),d={id:mid,email:myEmail(),nome:st.nome,ideiaId:id,ficheiro:f.name,path:"",tipo,tamanho:f.size,em:new Date().toISOString()};if(fase)d.fase=fase;
   /* No modo admin os ficheiros não sobem ao Storage: ficam simulados no ecrã. */
   if(isAdm()){d.path="simulado/"+mid;d.simulado=true;d.teste=true;st.mat.push(d);return d;}
   await fresh();const path=id+"/"+Date.now().toString(36)+"-"+safe;
@@ -254,6 +264,7 @@ document.addEventListener("click",async ev=>{const b=ev.target.closest("[data-a]
   if(a==="tab"){st.tab=b.dataset.t;st.tabUser=1;st.fs=0;st.msg=null;st.pan="";render();}
   else if(a==="c1f"){st.c1f=b.dataset.v;render();}
   else if(a==="c1t"){st.openC1.has(id)?st.openC1.delete(id):st.openC1.add(id);render();keep();}
+  else if(a==="sdt"){st.openSD.has(id)?st.openSD.delete(id):st.openSD.add(id);render();keep();}
   else if(a==="c2t"){st.openC2.has(id)?st.openC2.delete(id):st.openC2.add(id);render();keep();}
   else if(a==="fbt"){st.openFb.has(id)?st.openFb.delete(id):st.openFb.add(id);render();keep();}
   else if(a==="pan"){const k=id+"|"+b.dataset.k;st.pan=st.pan===k?"":k;render();keep();const art=document.getElementById("i-"+id),p=art&&art.querySelector(".pan");if(p){p.scrollIntoView({behavior:"smooth",block:"nearest"});const f=p.querySelector("textarea,input:not([disabled]),select");if(f)f.focus({preventScroll:true});}}
@@ -278,20 +289,18 @@ document.addEventListener("click",async ev=>{const b=ev.target.closest("[data-a]
     await pedido("participar",i,{nota:n});flash("Pedido enviado. Se o coordenador aceitar, passas a fazer parte da ideia."+sim);}
   else if(a==="col"){const n=$("#cj-"+id).value.trim(),i=ideia(id);if(!n){flash("Explica porque queres colaborar e o que podes trazer.",1);return;}
     await pedido("colaborar",i,{nota:n,fase:"c1"});st.pan="";flash("Pedido para colaborar enviado. Se o coordenador aceitar, passas a fazer parte da ideia."+sim);}
-  else if(a==="matar"){const n=$("#mj-"+id).value.trim(),i=ideia(id);if(!n){flash("Explica o que mostrou a validação.",1);return;}
-    b.disabled=true;const fs=await filesFrom("mk",id,"Validação (pedido para matar)");
-    await pedido("matar",i,{nota:n,fase:"c1",ficheiros:fs});st.pan="";flash("Pedido para matar a ideia enviado ao coordenador."+sim);}
   else if(a==="rep"){const n=$("#rj-"+id).value.trim(),i=ideia(id),inp=$("#rk-f-"+id),nOld=document.querySelectorAll(".rk-old:checked").length,nNew=inp&&inp.files?inp.files.length:0;
     if(!n){flash("Escreve a justificação.",1);return;}if(!nOld&&!nNew){flash("Junta pelo menos um ficheiro de validação.",1);return;}
     b.disabled=true;const fs=await filesFrom("rk",id,"Validação (pedido Challenge I)");
     await pedido("repescagem",i,{nota:n,fase:"c1",ficheiros:fs});st.pan="";flash("Pedido para passar ao Challenge I enviado ao coordenador."+sim);}
   else if(a==="fs"){st.fs=Number(b.dataset.v)||0;render();}
-  else if(a==="up"){const f=$("#f-"+id).files[0];if(!f){flash("Escolhe primeiro um ficheiro.",1);return;}
-    await upload(id,f,$("#t-"+id).value);st.msg="Ficheiro enviado."+(isAdm()?" (modo admin: ficheiro simulado, não foi enviado)":"");st.err=false;render();keep();}
-  else if(a==="link"){let u=$("#lu-"+id).value.trim();const nm=$("#ln-"+id).value.trim(),tp=$("#lt-"+id).value;if(!u){flash("Escreve o link.",1);return;}if(!/^https?:\/\//i.test(u))u="https://"+u;
-    try{new URL(u);}catch(x){flash("Esse link não parece válido.",1);return;}
-    const d={id:nid("m"),email:myEmail(),nome:st.nome,ideiaId:id,ficheiro:nm||u.replace(/^https?:\/\//,"").slice(0,60),url:u,tipo:tp,em:new Date().toISOString()};
-    await put("materiais",d);st.mat.push(d);st.msg="Link juntado."+sim;st.err=false;render();keep();}
+  else if(a==="doc"){const I=ia=>document.getElementById(ia+id),f=I("f-").files[0];let u=I("lu-").value.trim();const nm=I("ln-").value.trim(),k=(document.querySelector(`input[name="dk-${id}"]:checked`)||{}).value||"outro",tp=(DOCK.find(x=>x[0]===k)||DOCK[3])[3],fase=["sd","c2","c1"].includes(st.tab)?st.tab:"";
+    if(!f&&!u){flash("Escolhe um ficheiro ou cola um link.",1);return;}
+    if(u){if(!/^https?:\/\//i.test(u))u="https://"+u;try{new URL(u);}catch(x){flash("Esse link não parece válido.",1);return;}}
+    b.disabled=true;
+    if(f)await upload(id,f,tp,fase);
+    if(u){const d={id:nid("m"),email:myEmail(),nome:st.nome,ideiaId:id,ficheiro:nm||u.replace(/^https?:\/\//,"").slice(0,60),url:u,tipo:tp,em:new Date().toISOString()};if(fase)d.fase=fase;await put("materiais",d);st.mat.push(d);}
+    st.msg="Documento juntado."+(isAdm()?" (modo admin: simulado, nada foi enviado)":"");st.err=false;render();keep();}
   else if(a==="dl"){if(String(b.dataset.p).startsWith("simulado/")){flash("Ficheiro simulado no modo admin: não existe no servidor.",1);return;}
     await fresh();const r=await fetch(U+"/storage/v1/object/sign/materiais/"+b.dataset.p,{method:"POST",headers:hdr({"Content-Type":"application/json"}),body:JSON.stringify({expiresIn:300})});const j=await r.json();if(!r.ok)throw new Error("Sem acesso ao ficheiro.");window.open(U+"/storage/v1"+j.signedURL,"_blank","noopener");}
   else if(a==="rm"){if(!confirm("Remover este ficheiro?"))return;const m=st.mat.find(x=>x.id===id);
