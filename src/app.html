@@ -1991,7 +1991,7 @@ async function c2Upload(iid,f){
   try{const safe=f.name.normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^A-Za-z0-9._-]+/g,"_");
     const path=iid+"/"+PH+"-"+Date.now().toString(36)+"-"+safe;await window.INOV_UPLOAD(path,f);
     const old=c2Sl({id:iid});
-    const id="mc2"+uid(),d={id,ideiaId:iid,ficheiro:f.name,path,tipo:"Slides do pitch",fase:PH,nome:"Coordenação",email:"",tamanho:f.size,em:new Date().toISOString()};
+    const id="mc2"+uid(),d={id,ideiaId:iid,ficheiro:f.name,path,tipo:"Slides "+(PH==="sd"?"Selection Day":PH==="c2"?"Challenge II":"Challenge I"),fase:PH,nome:"Coordenação",email:"",tamanho:f.size,em:new Date().toISOString()};
     S.materiais.set(id,d);save("materiais",id);
     for(const m of old)await c2SlDel(m.id,true);
     toast("Slides carregados.");}
