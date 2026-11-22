@@ -1070,7 +1070,7 @@ document.addEventListener("click",e=>{const b=e.target.closest("[data-act]");if(
 function memberOpts(){return `<datalist id="dl-membros">${S.cfg.membros.map(m=>`<option value="${esc(m)}">`).join("")}</datalist>`;}
 function atEvents(){
   const E=[],ide=id=>{const i=S.ideias.get(id);return i?i.titulo||"(sem título)":"(ideia apagada)";};
-  [...S.feedback.values()].forEach(f=>E.push({t:f.enviadoEm||f.updatedAt||f.d||"",who:f.jurado||"?",role:"Júri",what:/^c[12]aval$/.test(f.tipo)?"avaliou no "+(f.tipo==="c2aval"?"Challenge II":"Challenge I"):isC(f)?"deixou um comentário":isQ(f)?"fez uma pergunta":"deu o veredito "+verdLabel(f),txt:f.comentario||"",idea:ide(f.ideiaId),iid:f.ideiaId}));
+  [...S.feedback.values()].filter(f=>f.tipo!=="sdpick").forEach(f=>E.push({t:f.enviadoEm||f.updatedAt||f.d||"",who:f.jurado||"?",role:"Júri",what:/^(c[12]|sd)aval$/.test(f.tipo)?"avaliou no "+(f.tipo==="sdaval"?"Selection Day":f.tipo==="c2aval"?"Challenge II":"Challenge I"):isC(f)?"deixou um comentário":isQ(f)?"fez uma pergunta":"deu o veredito "+verdLabel(f),txt:f.comentario||"",idea:ide(f.ideiaId),iid:f.ideiaId}));
   [...S.sugestoes.values()].forEach(x=>{E.push({t:x.em||x.updatedAt||"",who:x.nome||x.email||"?",role:"Membro",what:({participar:"pediu para participar",colaborar:"pediu para colaborar",matar:"pediu para matar a ideia",repescagem:"pediu para passar ao Challenge I"})[x.tipo]||"sugeriu melhorar a descrição",txt:x.nota||"",idea:ide(x.ideiaId),iid:x.ideiaId});
     if(x.decididoEm&&(x.estado||"pendente")!=="pendente")E.push({t:x.decididoEm,who:"Coordenador",role:"Coordenador",what:(x.estado==="aceite"?"aceitou":"recusou")+" o pedido de "+(x.nome||x.email||"?"),txt:"",idea:ide(x.ideiaId),iid:x.ideiaId});});
   [...S.materiais.values()].forEach(m=>E.push({t:m.em||"",who:m.nome||m.email||"?",role:"Membro",what:"juntou um ficheiro ("+(m.tipo||"Outro")+")",txt:m.ficheiro||"",idea:ide(m.ideiaId),iid:m.ideiaId}));
@@ -1286,7 +1286,7 @@ function ideaForm(i,ph){
   return `<div class="form">
     ${b("titulo","Título")}
     <label class="l">Tipo<select class="field" data-b="ideias|${i.id}|tipo"><option value="">—</option>${TIPO_IDEIA.map(([k,l])=>`<option value="${k}" ${i.tipo===k?"selected":""}>${l}</option>`).join("")}</select></label>
-    <div class="row"><label class="l" style="flex:1">Membro A<input class="field" list="dl-membros" data-b="ideias|${i.id}|par.0" value="${esc((i.par||[])[0]||"")}"></label><label class="l" style="flex:1">Membro B<input class="field" list="dl-membros" data-b="ideias|${i.id}|par.1" value="${esc((i.par||[])[1]||"")}"></label>${(i.par||[])[2]!==undefined?`<label class="l" style="flex:1">Membro C<input class="field" list="dl-membros" data-b="ideias|${i.id}|par.2" value="${esc((i.par||[])[2]||"")}"></label>`:""}<label class="l">Sessão<select class="field" data-b="ideias|${i.id}|sessao" data-type="num">${[1,2,3,4].map(n=>`<option ${i.sessao===n?"selected":""}>${n}</option>`).join("")}</select></label></div>
+    <div class="row"><label class="l" style="flex:1">Membro A<input class="field" list="dl-membros" data-b="ideias|${i.id}|par.0" value="${esc((i.par||[])[0]||"")}"></label><label class="l" style="flex:1">Membro B<input class="field" list="dl-membros" data-b="ideias|${i.id}|par.1" value="${esc((i.par||[])[1]||"")}"></label><label class="l" style="flex:1">Membro C<input class="field" list="dl-membros" data-b="ideias|${i.id}|par.2" value="${esc((i.par||[])[2]||"")}" placeholder="opcional"></label><label class="l">Sessão<select class="field" data-b="ideias|${i.id}|sessao" data-type="num">${[1,2,3,4].map(n=>`<option ${i.sessao===n?"selected":""}>${n}</option>`).join("")}</select></label></div>
     ${b("problema","Problema",1)}${b("solucao","Solução",1)}
     ${b("notas","Notas do coordenador",1,"O que investigar a seguir, perguntas, contactos…")}
     ${ph?"":resumoIdeia(i)}
@@ -1304,7 +1304,7 @@ function faseCard(i,k,f,F,J,prev){
   const nx=NEXT[f],onx=rank(i.etapa)>=rank(nx);
   const ctl=f==="sd"?(rank(i.etapa)>rank(f)?`<span class="stage ${i.etapa}">${ETAPA_L[i.etapa]}</span>`:""):`<label class="c1t ${onx?"on":""}"><input type="checkbox" data-act="fnext" data-id="${i.id}" data-f="${f}" ${onx?"checked":""}>${onx?"Passa ao "+ETAPA_L[nx]:"Passar ao "+ETAPA_L[nx]}</label>`;
   const prevs=prev.map(q=>{const v=ideaAvg(i,q),d=i.aval&&i.aval[q]&&i.aval[q].decisao;return v!=null||d?`<span class="pill">${esc(S.cfg.fases[q].nome)}: ${v!=null?nf(v):"–"}${d?" · "+esc(d):""}</span>`:"";}).join("");
-  const jg=f==="c1"||f==="c2"?(PH=f,c1Agg(i.id)):null,jp=jg&&jg.A.length?`<button type="button" class="pill br" data-act="c1goRes" data-id="${esc(i.id)}" title="Ver nos resultados do júri" style="border:0;cursor:pointer">Júri ${n1(jg.mean)}/5 · ${jg.A.length}</button> `:"";
+  const jg=(PH=f,c1Agg(i.id)),jp=jg&&jg.A.length?`<button type="button" class="pill br" data-act="c1goRes" data-id="${esc(i.id)}" title="Ver nos resultados do júri" style="border:0;cursor:pointer">Júri ${n1(jg.mean)}/5 · ${jg.A.length}</button> `:"";
   return ideaRow(i,`<div class="ic-av">
     <div class="ic-av-h"><span class="eyebrow">${esc(F.nome)} · avaliação</span><span class="row">${prevs}<span class="note">${i._avg!=null?"#"+(k+1)+" · ":""}média <b class="score">${i._avg!=null?nf(i._avg):"–"}</b></span></span></div>
     ${J.length?`<div class="ic-av-n">${J.map(n=>`<label>${esc(n)}<input class="field n" type="number" step="0.5" min="${F.min}" max="${F.max}" data-b="ideias|${i.id}|aval.${f}.notas.${encodeURIComponent(n)}" data-type="num" value="${esc((a.notas||{})[n]??"")}" aria-label="Nota de ${esc(n)}"></label>`).join("")}</div>`:'<span class="note">Adiciona jurados acima para lhes dares uma nota por ideia.</span>'}
@@ -1314,10 +1314,10 @@ function faseCard(i,k,f,F,J,prev){
       <label class="l">Slides<input class="field" data-b="ideias|${i.id}|aval.${f}.slides" value="${esc(a.slides||"")}" placeholder="https://…"></label>
       <label class="l">Site / protótipo<input class="field" data-b="ideias|${i.id}|aval.${f}.site" value="${esc(a.site||"")}" placeholder="https://…"></label>
       ${a.slides||a.site?`<div class="full row">${a.slides?`<a href="${esc(href(a.slides))}" target="_blank" rel="noopener">Abrir slides ↗</a>`:""}${a.site?`<a href="${esc(href(a.site))}" target="_blank" rel="noopener">Abrir site ↗</a>`:""}</div>`:""}</div>`:""}
-  </div>`,jp+ctl,f==="c1"||f==="c2",f==="c1"||f==="c2"?f:"");
+  </div>`,jp+ctl,true,f);
 }
 function hFase(f){
-  PH=f==="c2"?"c2":"c1";
+  PH=f==="c2"||f==="sd"?f:"c1";
   const F=S.cfg.fases[f];const prev={c1:[],c2:["c1"],sd:["c1","c2"]}[f];
   const list=[...S.ideias.values()].filter(i=>rank(i.etapa)>=rank(f));
   list.forEach(i=>i._avg=ideaAvg(i,f));
@@ -1347,7 +1347,7 @@ function hFase(f){
     ${tile(passa,f==="sd"?"Viram startup":"Passam à fase seguinte",f==="sd"?"objetivo: 3":"")}
     ${tile(fmtD(F.data),"Data",ev?`no CRM: ${esc(ev.nome)}`:"")}
   </div>
-  ${f==="c1"||f==="c2"?c1Coord(f):""}${blocoM}
+  ${c1Coord(f)}${blocoM}
   <div class="card" style="margin-bottom:14px"><div class="card-h"><h2>Júri do ${esc(F.nome)}</h2>
     <span class="row">${crmJ.length?`<button type="button" class="btn sm" data-act="impjuri" data-f="${f}">Importar ${crmJ.length} confirmados do CRM</button>`:""}<label class="row note">Escala <input class="field n sm" type="number" data-cfg="fases.${f}.min" value="${F.min}"> a <input class="field n sm" type="number" data-cfg="fases.${f}.max" value="${F.max}"></label></span></div>
     <div class="row">${J.map((n,k)=>`<span class="pill br">${esc(n)} <button type="button" class="x" data-act="rmjuri" data-f="${f}" data-k="${k}" aria-label="Remover ${esc(n)}">×</button></span>`).join("")||'<span class="note">Adiciona os jurados para ganhares uma coluna de notas por cada um.</span>'}
@@ -1807,12 +1807,12 @@ const C1_ABR={problema:"Prob.",validacao:"Valid.",solucao:"Sol.",escalabilidade:
 let PH="c1";   /* fase em ecrã: "c1" = Challenge I, "c2" = Challenge II. Os documentos do júri ficam separados: c1__… (c1aval) e c2__… (c2aval) */
 const phNome=()=>(S.cfg.fases[PH]&&S.cfg.fases[PH].nome)||(PH==="c2"?"Challenge II":"Challenge I");
 const C2_SEM=["negocio"];   /* critérios retirados por agora do Challenge II (Business model); tira o nome daqui para o voltar a pôr */
-const CRIT=()=>PH==="c2"?C1_CRIT.filter(x=>!C2_SEM.includes(x[0])):C1_CRIT;
-function juriPh(){const v=S.cfg.juriFase||"c2";return v==="c1"||v==="c2"?v:"";}   /* "" = sessões de ideação */
+const CRIT=()=>PH!=="c1"?C1_CRIT.filter(x=>!C2_SEM.includes(x[0])):C1_CRIT;
+function juriPh(){const v=S.cfg.juriFase||"c2";return v==="c1"||v==="c2"||v==="sd"?v:"";}   /* "" = sessões de ideação */
 /* Jurados: só veem a fase que o coordenador escolheu. Só o coordenador pode saltar para as sessões de ideação. */
 function c1Mode(){if(!juriPh())return false;return S.isOwner?S.jFase!=="ideacao":true;}
 function c1Ideas(){const ord=(S.cfg.fases[PH]&&S.cfg.fases[PH].ordem)||[];const pos=id=>{const k=ord.indexOf(id);return k<0?1e4:k;};
-  return [...S.ideias.values()].filter(i=>rank(i.etapa)>=(PH==="c2"?2:1)).sort((a,b)=>pos(a.id)-pos(b.id)||String(a.titulo||"").localeCompare(String(b.titulo||""),"pt"));}
+  return [...S.ideias.values()].filter(i=>rank(i.etapa)>=rank(PH)).sort((a,b)=>pos(a.id)-pos(b.id)||String(a.titulo||"").localeCompare(String(b.titulo||""),"pt"));}
 const c1Id=(iid,j)=>PH+"__"+iid+"__"+slug(j);
 const c1Of=iid=>[...S.feedback.values()].filter(f=>f.tipo===PH+"aval"&&f.ideiaId===iid);
 const c1Mine=iid=>S.jurado?S.feedback.get(c1Id(iid,S.jurado)):null;
@@ -1832,7 +1832,7 @@ function c1Mats(i){const ms=matsOf(i.id),a=(i.aval&&i.aval.c1)||{};
   const slides=ms.filter(m=>m.path&&isSl(m)),links=ms.filter(m=>m.url),files=ms.filter(m=>m.path&&!isSl(m));
   const extra=[];if(a.slides)extra.push({url:a.slides,ficheiro:"Slides",tipo:"Slides do pitch",slide:true});if(a.site)extra.push({url:a.site,ficheiro:"Site / protótipo",tipo:"MVP / protótipo"});
   /* Challenge II: só os slides carregados para o Challenge II; os ficheiros antigos continuam no Challenge I e na área de membro */
-  if(PH==="c2")return {slides:ms.filter(m=>m.fase==="c2"&&m.path),links:[],linkSlides:[],files:[]};
+  if(PH!=="c1"){const sl=ms.filter(m=>m.fase===PH&&m.path),pdf=m=>/\.pdf$/i.test(m.ficheiro||"");return {slides:sl.filter(pdf),links:[],linkSlides:[],files:sl.filter(m=>!pdf(m))};}
   return {slides,links:[...links,...extra.filter(x=>!x.slide)],linkSlides:extra.filter(x=>x.slide).concat(links.filter(m=>/slide|pitch|apresenta/i.test(m.tipo||""))),files};}
 function c1MatHtml(i,big){const M=c1Mats(i);const ext=f=>(String(f||"").split(".").pop()||"").slice(0,4).toUpperCase();
   const sl=[...M.slides.map(m=>`<button type="button" class="btn ${big?"pri":""} c1slbtn" data-act="c1view" data-p="${esc(m.path)}" data-t="${esc(m.ficheiro)}"><span aria-hidden="true">▶</span> Ver slides <small>${esc(m.ficheiro)}</small></button>`),
@@ -1845,20 +1845,21 @@ function c1Res(i){const t=i.resumoJuri||(()=>{const R=i.resumoS||{},k=resKeys(R)
   return t?esc(t).replace(/\s*\[Fundida: «([^»]+)»\]\s*/g,(m,x)=>`<br><span class="note">Da ideia juntada «${x}»:</span> `):"";}
 function c1Scale(cur,attrs,label){return `<span class="c1sc" role="group" aria-label="${esc(label)}">${[0,1,2,3,4,5].map(v=>`<button type="button" ${attrs} data-v="${v}" aria-pressed="${cur!=null&&cur!==""&&Number(cur)===v}" aria-label="${esc(label)}: ${v}" title="${cur!=null&&cur!==""&&Number(cur)===v?"Clica outra vez para apagar a nota":v}">${v}</button>`).join("")}</span>`;}
 function vJuriC1(){
-  PH=juriPh()==="c2"?"c2":"c1";
-  const jur=S.jurado||"",F=S.cfg.fases[PH]||{},list=c1Ideas(),t=(S.c1Tab==="agenda"&&PH!=="c2"?"apres":S.c1Tab||"apres"),curId=c1Cur(list),L=liveState();
+  const jph=juriPh();PH=jph==="c2"||jph==="sd"?jph:"c1";
+  const jur=S.jurado||"",F=S.cfg.fases[PH]||{},list=c1Ideas(),t=((S.c1Tab==="agenda"&&PH!=="c2")||(S.c1Tab==="top3"&&PH!=="sd")?"apres":S.c1Tab||"apres"),curId=c1Cur(list),L=liveState();
   const done=list.filter(i=>c1Done(c1Mine(i.id))).length;
   let h=`<div class="jhero c1hero">
     <div class="row" style="justify-content:space-between;align-items:flex-start"><div><div class="eyebrow">Bootcamp de Inovação 26/27 · Júri</div><h1>${esc(phNome())}</h1>${liveBadge()}
       <div style="opacity:.9;margin-top:2px">${fmtD(F.data)}${jur?` · a avaliar como <b>${esc(jur)}</b> <button type="button" class="btn sm ghost" data-act="jout">trocar</button>`:""}</div></div>
       <span class="row">${canHub()&&S.mode!=="juri"?`<button type="button" class="btn sm" data-act="tohome">← Bootcamp</button>`:""}${S.isOwner?'<button type="button" class="btn sm ghost" data-act="c1fase" data-v="ideacao" title="Ver as sessões de ideação">Sessões de ideação</button>':""}</span></div>
-    <div class="jtabs" role="group" aria-label="Vista"><button type="button" data-act="c1tab" data-v="apres" aria-pressed="${t==="apres"}">Apresentação</button>${PH==="c2"?`<button type="button" data-act="c1tab" data-v="agenda" aria-pressed="${t==="agenda"}">Agenda</button>`:""}<button type="button" data-act="c1tab" data-v="todas" aria-pressed="${t==="todas"}">Todas as ideias (${list.length})</button><button type="button" data-act="c1tab" data-v="notas" aria-pressed="${t==="notas"}">As minhas notas (${done}/${list.length})</button></div>
+    <div class="jtabs" role="group" aria-label="Vista"><button type="button" data-act="c1tab" data-v="apres" aria-pressed="${t==="apres"}">Apresentação</button>${PH==="c2"?`<button type="button" data-act="c1tab" data-v="agenda" aria-pressed="${t==="agenda"}">Agenda</button>`:""}${PH==="sd"?`<button type="button" data-act="c1tab" data-v="top3" aria-pressed="${t==="top3"}">Os meus 3 (${((sdPick()||{}).ids||[]).length}/3)</button>`:""}<button type="button" data-act="c1tab" data-v="todas" aria-pressed="${t==="todas"}">Todas as ideias (${list.length})</button><button type="button" data-act="c1tab" data-v="notas" aria-pressed="${t==="notas"}">As minhas notas (${done}/${list.length})</button></div>
     ${t==="apres"&&list.length?`<div class="pairbar c1bar" role="group" aria-label="Ordem das apresentações">${list.map((i,k)=>{const m=c1Mine(i.id);return `<button type="button" class="pairchip" data-act="c1go" data-id="${esc(i.id)}" aria-pressed="${i.id===curId}" title="${esc(i.titulo||"")}"><b class="c1n">${k+1}</b>${esc(String(i.titulo||"").replace(/\s*\(.*\)$/,"").slice(0,26))}${String(i.titulo||"").replace(/\s*\(.*\)$/,"").length>26?"…":""}${c1Done(m)?'<span class="c1ok" aria-label="avaliada">✓</span>':c1Has(m)?'<span class="c1half" aria-label="a meio">•</span>':""}${i.id===L[PH+"Atual"]?'<span class="now">agora</span>':""}</button>`;}).join("")}</div>`:""}
   </div>`;
   if(S.dbState!=="on")return h+empty("Sem ligação à base de dados","Recarrega a página. Se continuar, avisa o Vitor.");
   if(!jur)return juryWho();
   if(!list.length)return h+empty("Ainda não há ideias no "+phNome(),"Aparecem aqui assim que o Vitor as passar ao "+phNome()+".");
   if(t==="agenda")return h+c2Agenda(list);
+  if(t==="top3")return h+c1Top3(list);
   if(t==="todas")return h+c1Todas(list);
   if(t==="notas")return h+c1Notas(list);
   const k=list.findIndex(i=>i.id===curId),i=list[k];
@@ -1875,7 +1876,7 @@ function c1Apres(i,k,list){
   const info=`<section class="card c1info">
     <div class="row" style="justify-content:space-between"><span class="eyebrow">${k+1}.ª apresentação · ${esc(sessLabel(i))}</span>${starsRO(i)}</div>
     <h2 class="c1title">${esc(i.titulo||"(sem título)")}</h2>
-    <div class="c1ppl">${ppl.length?ppl.map(p=>`<figure>${av(p,ppl.length>3?60:76)}<figcaption>${esc(p)}</figcaption><span class="c1pl">Pitch</span>${c1Scale(f.pitch[p],`data-act="c1pitch" data-id="${esc(i.id)}" data-p="${esc(p)}"`,"Pitch de "+p)}</figure>`).join(""):'<span class="note">Sem apresentadores registados.</span>'}</div>${PH==="c2"&&ppl.length<(i.par||[]).filter(Boolean).length?`<p class="note" style="margin:6px 0 0;text-align:center">Equipa: ${esc((i.par||[]).filter(Boolean).join(", "))}</p>`:""}
+    <div class="c1ppl">${ppl.length?ppl.map(p=>`<figure>${av(p,ppl.length>3?60:76)}<figcaption>${esc(p)}</figcaption><span class="c1pl">Pitch</span>${c1Scale(f.pitch[p],`data-act="c1pitch" data-id="${esc(i.id)}" data-p="${esc(p)}"`,"Pitch de "+p)}</figure>`).join(""):'<span class="note">Sem apresentadores registados.</span>'}</div>${PH!=="c1"&&ppl.length<(i.par||[]).filter(Boolean).length?`<p class="note" style="margin:6px 0 0;text-align:center">Equipa: ${esc((i.par||[]).filter(Boolean).join(", "))}</p>`:""}
     <div class="c1ps ${more?"open":""}"><div><b>Problema</b><p>${esc(i.problema||"—")}</p></div><div><b>Solução</b><p>${esc(i.solucao||"—")}</p></div></div>
     <button type="button" class="btn sm ghost c1more" data-act="c1more" data-id="${esc(i.id)}">${more?"Mostrar menos ▴":"Ler tudo ▾"}</button>
     <div class="c1blk"><span class="jc-lbl">Slides e validação</span>${c1MatHtml(i,true)}</div>
@@ -1884,7 +1885,7 @@ function c1Apres(i,k,list){
   const ev=`<aside class="card c1eval" aria-label="A tua avaliação">
     <div class="c1eh"><h2>A tua avaliação</h2><span class="c1avg" title="Média dos ${CRIT().length} critérios"><small>média</small><b>${n1(m)}</b><small>/5</small></span></div>
     <div class="c1crit">${CRIT().map(([c,l,hint])=>`<div class="c1row"><div class="c1lab"><b>${l}</b><small>${hint}</small></div>${c1Scale(f.notas[c],`data-act="c1nota" data-id="${esc(i.id)}" data-c="${c}"`,l)}</div>`).join("")}</div>
-    ${PH==="c2"?c2Chat(i):`<label class="l">Perguntas para o grupo<textarea class="field" rows="3" id="c1q-${esc(i.id)}" data-c1t="perguntas" data-id="${esc(i.id)}" placeholder="O que queres perguntar no fim do pitch?">${esc(f.perguntas||"")}</textarea></label>
+    ${PH!=="c1"?c2Chat(i):`<label class="l">Perguntas para o grupo<textarea class="field" rows="3" id="c1q-${esc(i.id)}" data-c1t="perguntas" data-id="${esc(i.id)}" placeholder="O que queres perguntar no fim do pitch?">${esc(f.perguntas||"")}</textarea></label>
     <label class="l">Feedback para o grupo<textarea class="field" rows="4" id="c1f-${esc(i.id)}" data-c1t="feedback" data-id="${esc(i.id)}" placeholder="O que está bem, o que falta e o próximo passo que sugeres">${esc(f.feedback||"")}</textarea></label>`}
     <div class="row" style="justify-content:space-between"><span class="note">${c1Has(f)?"Clica de novo num número para o apagar":""}${c1Has(f)&&!c1Done(f)?` · faltam ${CRIT().filter(([c])=>f.notas[c]==null).length} critérios`:""}</span>${next?`<button type="button" class="btn pri" data-act="c1go" data-id="${esc(next.id)}">Seguinte →</button>`:""}</div>
   </aside>`;
@@ -1901,6 +1902,17 @@ function c1Todas(list){const q=S.c1q||"";
         <div class="jc-ps" style="margin-top:8px"><div><b>Problema</b><p>${esc(i.problema||"—")}</p></div><div><b>Solução</b><p>${esc(i.solucao||"—")}</p></div></div>
         <div class="c1blk"><span class="jc-lbl">Resumo do feedback nas sessões de ideação</span><p style="margin:2px 0 0">${c1Res(i)||'<span class="note">Sem resumo.</span>'}</p></div>
         <div class="c1blk"><span class="jc-lbl">Slides e validação</span>${c1MatHtml(i)}</div></details></article>`;}).join("")}</div>`;}
+const sdPickId=j=>"sdpick__"+slug(j);
+const sdPick=()=>S.jurado?S.feedback.get(sdPickId(S.jurado)):null;
+function c1Top3(list){const mine=new Set((sdPick()||{}).ids||[]);
+  return `<div class="card" style="margin-bottom:14px"><div class="card-h"><h2>As tuas 3 startups</h2><span class="note">${mine.size} de 3 escolhidas</span></div>
+    <p class="note" style="margin:0 0 10px">Escolhe as 3 ideias que levavas a startup. Podes mudar até ao fim; o coordenador vê os votos de todos os jurados.</p>
+    <div class="stack">${list.map((i,k)=>{const f=c1Mine(i.id),on=mine.has(i.id),ppl=(i.par||[]).filter(Boolean);
+      return `<article class="jcard c1card"><div class="c1ch"><b class="c1num">${k+1}</b><div style="min-width:0;flex:1"><h3>${esc(i.titulo||"(sem título)")}</h3><span class="jc-ppl">${ppl.map(p=>`<span class="chipp">${av(p,22)}${esc(p)}</span>`).join("")}</span></div>
+        <span class="c1st"><span class="pill ${c1Done(f)?"ok":""}">${f&&c1Has(f)?"Nota "+n1(c1Mean(f)):"Sem nota"}</span><button type="button" class="btn sm ${on?"pri":""}" data-act="c1pick" data-id="${esc(i.id)}" aria-pressed="${on}">${on?"★ Escolhida":"Escolher"}</button></span></div></article>`;}).join("")}</div></div>`;}
+function sdVotos(list){const V={};[...S.feedback.values()].filter(f=>f.tipo==="sdpick").forEach(f=>(f.ids||[]).forEach(id=>(V[id]=V[id]||[]).push(f.jurado)));
+  const r=list.map(i=>({i,v:V[i.id]||[]})).filter(x=>x.v.length).sort((a,b)=>b.v.length-a.v.length);
+  return `<div class="card" style="margin-bottom:14px"><div class="card-h"><h2>Top 3 dos jurados</h2><span class="note">${[...S.feedback.values()].filter(f=>f.tipo==="sdpick"&&(f.ids||[]).length).length} jurados já escolheram</span></div>${r.length?`<ol class="c1ord" style="margin:0">${r.map(x=>`<li><span class="stack2">${avs(x.i.par||[],26)}</span><span class="c1ot"><b>${esc(x.i.titulo||"")}</b><small>${esc(x.v.join(", "))}</small></span><span class="pill br">${x.v.length} voto${x.v.length>1?"s":""}</span></li>`).join("")}</ol>`:'<p class="note" style="margin:0">Ainda nenhum jurado escolheu.</p>'}</div>`;}
 function c1Notas(list){const rows=list.map((i,k)=>({i,k,f:c1Mine(i.id)})),done=rows.filter(r=>c1Done(r.f)).length;
   return `<div class="card" style="margin-bottom:14px"><div class="card-h"><h2>As tuas notas</h2><span class="note">${done} de ${list.length} avaliadas</span></div>
     <div class="c1prog" role="progressbar" aria-valuemin="0" aria-valuemax="${list.length}" aria-valuenow="${done}"><i style="width:${list.length?Math.round(done/list.length*100):0}%"></i></div>
@@ -1912,18 +1924,19 @@ function c1Agg(iid){const A=c1Of(iid).filter(c1Has);const crit={};CRIT().forEach
   const pp={};A.forEach(f=>Object.entries(f.pitch||{}).forEach(([p,v])=>{(pp[p]=pp[p]||[]).push(v);}));const pitch={};Object.keys(pp).forEach(p=>pitch[p]=avg(pp[p]));
   return {A,crit,pitch,mean:avg(A.map(c1Mean)),pitchMean:avg(Object.values(pitch))};}
 function c1Coord(f){
-  PH=f==="c2"?"c2":"c1";
+  PH=f==="c2"||f==="sd"?f:"c1";
   const list=c1Ideas(),L=liveState(),v=S.c1v||"ordem",J=new Set(list.flatMap(i=>c1Of(i.id).filter(c1Has).map(f=>f.jurado)));
   const head=`<div class="card-h"><h2>Apresentações e avaliação do júri</h2><span class="row"><span class="seg" role="group"><button type="button" data-act="c1v" data-v="ordem" aria-pressed="${v==="ordem"}">Ordem das apresentações</button><button type="button" data-act="c1v" data-v="res" aria-pressed="${v==="res"}">Resultados do júri (${J.size})</button></span><a class="btn sm" href="/coordenador/juri" target="_blank" rel="noopener">Abrir painel do júri ↗</a></span></div>
-    <div class="row note" style="gap:8px">Painel do júri mostra: <span class="seg" role="group"><button type="button" data-act="c1jf" data-v="c1" aria-pressed="${juriPh()==="c1"}">Challenge I</button><button type="button" data-act="c1jf" data-v="c2" aria-pressed="${juriPh()==="c2"}">Challenge II</button><button type="button" data-act="c1jf" data-v="ideacao" aria-pressed="${juriPh()===""}">Sessões de ideação</button></span></div>`;
-  if(v==="ordem")return `<div class="card" style="margin-bottom:14px">${head}
+    <div class="row note" style="gap:8px">Painel do júri mostra: <span class="seg" role="group"><button type="button" data-act="c1jf" data-v="c1" aria-pressed="${juriPh()==="c1"}">Challenge I</button><button type="button" data-act="c1jf" data-v="c2" aria-pressed="${juriPh()==="c2"}">Challenge II</button><button type="button" data-act="c1jf" data-v="sd" aria-pressed="${juriPh()==="sd"}">Selection Day</button><button type="button" data-act="c1jf" data-v="ideacao" aria-pressed="${juriPh()===""}">Sessões de ideação</button></span></div>`;
+  const top3=PH==="sd"?sdVotos(list):"";
+  if(v==="ordem")return top3+`<div class="card" style="margin-bottom:14px">${head}
     <div class="row"><button type="button" class="btn sm" data-act="c1ord" data-v="estrelas">Ordenar por estrelas</button><button type="button" class="btn sm" data-act="c1ord" data-v="baralhar">Baralhar</button>${L[PH+"Atual"]?`<button type="button" class="btn sm" data-act="c1now" data-id="">Ninguém a apresentar</button>`:""}<span class="note">A ordem aparece logo ao júri. «Agora» faz o painel do júri saltar para essa ideia.</span></div>
     <ol class="c1ord">${list.map((i,k)=>{const n=c1Of(i.id).filter(c1Has).length,now=i.id===L[PH+"Atual"];return `<li class="${now?"now":""}"><input class="field n sm" type="number" min="1" max="${list.length}" value="${k+1}" data-c1pos="${esc(i.id)}" aria-label="Posição de ${esc(i.titulo||"")}">
-      <span class="stack2">${avs(i.par||[],26)}</span><span class="c1ot"><b>${esc(i.titulo||"")}</b><small>${esc((i.par||[]).filter(Boolean).join(", "))}</small>${PH==="c2"?c2SpkUI(i)+c2SlUI(i):""}</span>
+      <span class="stack2">${avs(i.par||[],26)}</span><span class="c1ot"><b>${esc(i.titulo||"")}</b><small>${esc((i.par||[]).filter(Boolean).join(", "))}</small>${PH!=="c1"?c2SpkUI(i)+c2SlUI(i):""}</span>
       <span class="note">${n} aval.</span><span class="row" style="gap:4px"><button type="button" class="btn sm" data-act="c1mv" data-id="${esc(i.id)}" data-v="-1" ${k?"":"disabled"} aria-label="Subir">↑</button><button type="button" class="btn sm" data-act="c1mv" data-id="${esc(i.id)}" data-v="1" ${k<list.length-1?"":"disabled"} aria-label="Descer">↓</button>
       <button type="button" class="btn sm ${now?"pri":""}" data-act="c1now" data-id="${now?"":esc(i.id)}">${now?"A apresentar":"Agora"}</button></span></li>`;}).join("")}</ol></div>`;
   const R=list.map((i,k)=>Object.assign({i,k},c1Agg(i.id))).sort((a,b)=>(b.mean??-1)-(a.mean??-1)||a.k-b.k);
-  return `<div class="card" style="margin-bottom:14px">${head}
+  return top3+`<div class="card" style="margin-bottom:14px">${head}
     <div class="c1tw"><table class="c1tab c1res"><thead><tr><th>#</th><th style="text-align:left">Ideia</th><th>Júris</th>${CRIT().map(([c,l])=>`<th title="${l}">${C1_ABR[c]}</th>`).join("")}<th>Pitch</th><th>Média</th></tr></thead>
     <tbody>${R.map((r,p)=>{const o=S.c1rOpen&&S.c1rOpen.has(r.i.id);return `<tr class="c1rrow" data-act="c1ropen" data-id="${esc(r.i.id)}" tabindex="0" aria-expanded="${o}"><td>${r.mean!=null?p+1:"–"}</td><td style="text-align:left"><b>${o?"▾":"▸"} ${esc(r.i.titulo||"")}</b><small class="note" style="display:block">${r.k+1}.ª apresentação</small></td><td>${r.A.length}</td>${CRIT().map(([c])=>`<td>${n1(r.crit[c])}</td>`).join("")}<td>${n1(r.pitchMean)}</td><td><b class="score">${n1(r.mean)}</b></td></tr>
       ${o?`<tr class="c1det"><td colspan="${CRIT().length+5}">${Object.keys(r.pitch).length?`<p style="margin:0 0 8px"><b>Pitch por pessoa:</b> ${Object.entries(r.pitch).map(([pn,x])=>`${av(pn,20)} ${esc(pn)} <b>${n1(x)}</b>`).join(" · ")}</p>`:""}
@@ -1933,23 +1946,23 @@ function c1Coord(f){
 function c1SetOrder(ids){S.cfg.fases[PH]=Object.assign({},S.cfg.fases[PH],{ordem:ids});saveCfg();render();}
 
 /* ---- Challenge II: speakers, agenda e chat do júri ---- */
-const c2Ag=i=>(S.cfg.fases.c2&&S.cfg.fases.c2.ag&&S.cfg.fases.c2.ag[i.id])||{};
-function c1Spk(i){const par=(i.par||[]).filter(Boolean);if(PH!=="c2")return par;const sp=(c2Ag(i).sp||[]).filter(n=>par.includes(n));return sp.length?sp:par;}
+const c2Ag=i=>(S.cfg.fases[PH]&&S.cfg.fases[PH].ag&&S.cfg.fases[PH].ag[i.id])||{};
+function c1Spk(i){const par=(i.par||[]).filter(Boolean);if(PH==="c1")return par;const sp=(c2Ag(i).sp||[]).filter(n=>par.includes(n));return sp.length?sp:par;}
 function c2SpkUI(i){const par=(i.par||[]).filter(Boolean),sp=new Set(c2Ag(i).sp||[]);
   return `<span class="c2spk"><small>Quem apresenta:</small>${par.map(p=>`<button type="button" class="c2sp ${sp.has(p)?"on":""}" data-act="c2spk" data-id="${esc(i.id)}" data-p="${esc(p)}" aria-pressed="${sp.has(p)}">${esc(p)}</button>`).join("")}${sp.size?"":'<small>(toda a equipa)</small>'}</span>`;}
-const c2Sl=i=>matsOf(i.id).filter(m=>m.fase==="c2"&&m.path);
+const c2Sl=i=>matsOf(i.id).filter(m=>m.fase===PH&&m.path);
 function c2SlUI(i){if(!S.isOwner)return "";const M=c2Sl(i),up=S.c2up&&S.c2up[i.id];
   return `<span class="c2spk"><small>Slides:</small>${M.map(m=>`<span class="c2sp on" title="${esc(m.ficheiro)}">${esc(String(m.ficheiro||"").slice(0,34))} <button type="button" class="x" data-act="c2slrm" data-id="${esc(m.id)}" aria-label="Retirar ${esc(m.ficheiro)}">✕</button></span>`).join("")}
-    ${up?`<small>a carregar…</small>`:`<label class="c2sp" style="cursor:pointer">${M.length?"Substituir":"Carregar"} PDF<input type="file" accept="application/pdf,.pdf" hidden data-c2up="${esc(i.id)}"></label>`}</span>`;}
+    ${up?`<small>a carregar…</small>`:`<label class="c2sp" style="cursor:pointer">${M.length?"Substituir":"Carregar"} slides<input type="file" accept="application/pdf,.pdf,.ppt,.pptx,application/vnd.openxmlformats-officedocument.presentationml.presentation,application/vnd.ms-powerpoint" hidden data-c2up="${esc(i.id)}"></label>`}</span>`;}
 async function c2Upload(iid,f){
   if(!window.INOV_UPLOAD){toast("O carregamento só funciona na versão web.",true);return;}
-  if(!/\.pdf$/i.test(f.name)&&f.type!=="application/pdf"){toast("Escolhe um ficheiro PDF.",true);return;}
+  if(!/\.(pdf|pptx?)$/i.test(f.name)){toast("Escolhe um PDF ou um PowerPoint (.pptx).",true);return;}
   if(f.size>25*1048576){toast("«"+f.name+"» tem mais de 25 MB.",true);return;}
   (S.c2up=S.c2up||{})[iid]=true;render();
   try{const safe=f.name.normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^A-Za-z0-9._-]+/g,"_");
-    const path=iid+"/c2-"+Date.now().toString(36)+"-"+safe;await window.INOV_UPLOAD(path,f);
+    const path=iid+"/"+PH+"-"+Date.now().toString(36)+"-"+safe;await window.INOV_UPLOAD(path,f);
     const old=c2Sl({id:iid});
-    const id="mc2"+uid(),d={id,ideiaId:iid,ficheiro:f.name,path,tipo:"Slides do pitch",fase:"c2",nome:"Coordenação",email:"",tamanho:f.size,em:new Date().toISOString()};
+    const id="mc2"+uid(),d={id,ideiaId:iid,ficheiro:f.name,path,tipo:"Slides do pitch",fase:PH,nome:"Coordenação",email:"",tamanho:f.size,em:new Date().toISOString()};
     S.materiais.set(id,d);save("materiais",id);
     for(const m of old)await c2SlDel(m.id,true);
     toast("Slides carregados.");}
@@ -2037,7 +2050,10 @@ document.addEventListener("click",e=>{const b=e.target.closest&&e.target.closest
   else if(a==="c1pitch"){const p=b.dataset.p;c1Set(id,f=>{if(f.pitch[p]!=null&&Number(f.pitch[p])===Number(v))delete f.pitch[p];else f.pitch[p]=Number(v);});render();}
   else if(a==="c1view"){e.preventDefault();openViewer(b.dataset.p||"",b.dataset.u||"",b.dataset.t||"");}
   else if(a==="c1v"){S.c1v=v;render();}
-  else if(a==="c1jf"){if(!S.isOwner)return;S.cfg.juriFase=v;saveCfg();render();toast(v==="c1"?"O painel do júri abre no Challenge I.":v==="c2"?"O painel do júri abre no Challenge II.":"O painel do júri abre nas sessões de ideação.");}
+  else if(a==="c1pick"){if(!S.jurado||!id)return;const k=sdPickId(S.jurado);let d=S.feedback.get(k);if(!d){d={id:k,tipo:"sdpick",fase:"sd",jurado:S.jurado,ids:[],enviadoEm:new Date().toISOString(),d:TODAY()};S.feedback.set(k,d);}
+    const on=(d.ids||[]).includes(id);if(!on&&(d.ids||[]).length>=3){toast("Já escolheste 3. Tira uma primeiro.",true);return;}
+    d.ids=on?d.ids.filter(x=>x!==id):[...(d.ids||[]),id];d.updatedAt=new Date().toISOString();save("feedback",k);render();}
+  else if(a==="c1jf"){if(!S.isOwner)return;S.cfg.juriFase=v;saveCfg();render();toast(v==="c1"?"O painel do júri abre no Challenge I.":v==="c2"?"O painel do júri abre no Challenge II.":v==="sd"?"O painel do júri abre no Selection Day.":"O painel do júri abre nas sessões de ideação.");}
   else if(a==="c1goRes"){S.c1v="res";S.c1rOpen=S.c1rOpen||new Set();S.c1rOpen.add(id);render();window.scrollTo(0,0);}
   else if(a==="c1ropen"){S.c1rOpen=S.c1rOpen||new Set();S.c1rOpen.has(id)?S.c1rOpen.delete(id):S.c1rOpen.add(id);render();}
   else if(a==="c1mv"){const ids=c1Ideas().map(i=>i.id),k=ids.indexOf(id),j=k+Number(v);if(k<0||j<0||j>=ids.length)return;[ids[k],ids[j]]=[ids[j],ids[k]];c1SetOrder(ids);}
