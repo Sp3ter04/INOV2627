@@ -1921,19 +1921,22 @@ function c1Todas(list){const q=S.c1q||"";
     <p class="note" style="margin:0">Pela ordem das apresentações. Abre uma ideia para leres tudo e veres os slides; «Avaliar» leva-te à ficha de avaliação.</p></div>
   <div class="stack" id="c1list">${list.map((i,k)=>{const f=c1Mine(i.id),ppl=(i.par||[]).filter(Boolean),o=S.c1Open&&S.c1Open.has("all-"+i.id);
     return `<article class="jcard c1card" data-q="${esc(ideaHay(i))}" ${q.trim()&&!jqMatch(ideaHay(i),q)?"hidden":""}>
-      <div class="c1ch"><b class="c1num">${k+1}</b><div style="min-width:0;flex:1"><h3>${esc(i.titulo||"(sem título)")}</h3><span class="jc-ppl">${ppl.map(p=>`<span class="chipp">${av(p,22)}${esc(p)}</span>`).join("")}</span></div>
+      <div class="c1ch"><b class="c1num">${k+1}</b>${lgo(i,40)}<div style="min-width:0;flex:1"><h3>${idTit(i)}</h3><span class="jc-ppl">${ppl.map(p=>`<span class="chipp">${av(p,22)}${esc(p)}</span>`).join("")}</span></div>
         <span class="c1st">${c1Done(f)?`<span class="pill ok">Avaliada · ${n1(c1Mean(f))}</span>`:c1Has(f)?'<span class="pill warn">A meio</span>':'<span class="pill">Por avaliar</span>'}<button type="button" class="btn sm pri" data-act="c1eval" data-id="${esc(i.id)}">Avaliar</button></span></div>
       <details data-c1open="all-${esc(i.id)}" ${o?"open":""}><summary class="note" style="cursor:pointer;font-weight:700">Problema, solução, resumo e slides</summary>
         <div class="jc-ps" style="margin-top:8px"><div><b>Problema</b><p>${esc(i.problema||"—")}</p></div><div><b>Solução</b><p>${esc(i.solucao||"—")}</p></div></div>
         <div class="c1blk"><span class="jc-lbl">Resumo do feedback nas sessões de ideação</span><p style="margin:2px 0 0">${c1Res(i)||'<span class="note">Sem resumo.</span>'}</p></div>
         <div class="c1blk"><span class="jc-lbl">Slides e validação</span>${c1MatHtml(i)}</div></details></article>`;}).join("")}</div>`;}
+const SU={kblmh7rcmb:"SquadDock",["1tlxjfh7d5g1"]:"Documentos de Civil",la3f8pycy8vs:"Notas de alta",["5aiiw5h9qgna"]:"Manutenção Industrial",z0drifb1wl8u:"Chave",["2yag10rgbcf"]:"Passaporte Digital",b209vuw25iyn:"Cognify",mlvo1t7vddgl:"Forja"};
+const lgo=(i,z)=>PH==="sd"&&SU[i.id]?`<img src="/logos/${i.id}.png" alt="" width="${z}" height="${z}" style="border-radius:10px;background:#fff;border:1px solid var(--line);object-fit:contain;flex:none">`:"";
+const idTit=i=>PH==="sd"&&SU[i.id]?`${esc(SU[i.id])}<small class="note" style="display:block;font-weight:500">${esc(i.titulo||"")}</small>`:esc(i.titulo||"(sem título)");
 const sdPickId=j=>"sdpick__"+slug(j);
 const sdPick=()=>S.jurado?S.feedback.get(sdPickId(S.jurado)):null;
 function c1Top3(list){const mine=new Set((sdPick()||{}).ids||[]);
   return `<div class="card" style="margin-bottom:14px"><div class="card-h"><h2>As tuas 3 startups</h2><span class="note">${mine.size} de 3 escolhidas</span></div>
     <p class="note" style="margin:0 0 10px">Escolhe as 3 ideias que levavas a startup. Podes mudar até ao fim; o coordenador vê os votos de todos os jurados.</p>
     <div class="stack">${list.map((i,k)=>{const f=c1Mine(i.id),on=mine.has(i.id),ppl=(i.par||[]).filter(Boolean);
-      return `<article class="jcard c1card"><div class="c1ch"><b class="c1num">${k+1}</b><div style="min-width:0;flex:1"><h3>${esc(i.titulo||"(sem título)")}</h3><span class="jc-ppl">${ppl.map(p=>`<span class="chipp">${av(p,22)}${esc(p)}</span>`).join("")}</span></div>
+      return `<article class="jcard c1card"><div class="c1ch"><b class="c1num">${k+1}</b>${lgo(i,40)}<div style="min-width:0;flex:1"><h3>${idTit(i)}</h3><span class="jc-ppl">${ppl.map(p=>`<span class="chipp">${av(p,22)}${esc(p)}</span>`).join("")}</span></div>
         <span class="c1st"><span class="pill ${c1Done(f)?"ok":""}">${f&&c1Has(f)?"Nota "+n1(c1Mean(f)):"Sem nota"}</span><button type="button" class="btn sm ${on?"pri":""}" data-act="c1pick" data-id="${esc(i.id)}" aria-pressed="${on}">${on?"★ Escolhida":"Escolher"}</button></span></div></article>`;}).join("")}</div></div>`;}
 function sdVotos(list){const V={};[...S.feedback.values()].filter(f=>f.tipo==="sdpick").forEach(f=>(f.ids||[]).forEach(id=>(V[id]=V[id]||[]).push(f.jurado)));
   const r=list.map(i=>({i,v:V[i.id]||[]})).filter(x=>x.v.length).sort((a,b)=>b.v.length-a.v.length);

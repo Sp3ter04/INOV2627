@@ -78,6 +78,8 @@ body{background:radial-gradient(1200px 400px at 50% -120px,var(--brand-soft),tra
 .chips button{background:var(--surface);box-shadow:var(--sh)}
 #q{border-radius:12px;background:var(--surface);box-shadow:var(--sh)}
 .card.idea{border-radius:16px;box-shadow:var(--sh);border:1px solid var(--line);border-left:5px solid var(--acc,var(--brand));padding:18px;transition:box-shadow .15s}
+.dash{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:10px;margin:0 0 14px}.tile{display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center;background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:var(--sh);padding:14px 8px;cursor:pointer;font:inherit;color:inherit}.tile:hover{box-shadow:var(--sh-h);transform:translateY(-1px)}.tile b{font:800 .95rem/1.15 var(--display)}.tile small{color:var(--muted);font-size:.72rem}
+.lg{border-radius:12px;object-fit:contain;background:#fff;border:1px solid var(--line);flex:none}.chl{display:flex;gap:12px;align-items:center;min-width:0}.sub{display:block;color:var(--muted);font-size:.78rem;margin-top:2px}.flash{animation:fl 1.6s}@keyframes fl{0%,60%{box-shadow:0 0 0 4px var(--brand)}100%{box-shadow:var(--sh)}}
 .card.idea:hover{box-shadow:var(--sh-h)}
 .card[data-ph=sd]{--acc:var(--acc-sd)}.card[data-ph=c2]{--acc:var(--acc-c2)}.card[data-ph=c1]{--acc:var(--acc-c1)}
 .card.idea .ch h3{font-size:1.15rem}
@@ -173,6 +175,9 @@ function c1Det(i,tp){tp=tp||"c1aval";const A=st.fb.filter(f=>f.tipo===tp&&f.idei
   ${L.length?L.map(f=>{const fb=String(f.feedback||"").trim(),q=String(f.perguntas||"").trim();return `<div class="fb"><b>${esc(f.jurado||"Júri")}</b>${fb?`<p class="txt" style="margin:4px 0 0">${esc(fb)}</p>`:""}${q?`<p class="txt note" style="margin:4px 0 0">${esc(q)}</p>`:""}</div>`;}).join(""):'<p class="note">Nenhum jurado deixou feedback escrito.</p>'}</div>`;}
 /* Feedback do júri do Selection Day: escondido aos membros por agora. Muda para true quando quiseres mostrá-lo. */
 const SD_FB=false;
+const SU={kblmh7rcmb:"SquadDock",["1tlxjfh7d5g1"]:"Documentos de Civil",la3f8pycy8vs:"Notas de alta",["5aiiw5h9qgna"]:"Manutenção Industrial",z0drifb1wl8u:"Chave",["2yag10rgbcf"]:"Passaporte Digital",b209vuw25iyn:"Cognify",mlvo1t7vddgl:"Forja"};
+const lg=(id,z)=>SU[id]?`<img class="lg" src="/logos/${id}.png" alt="" width="${z}" height="${z}" loading="lazy">`:"";
+function dashSD(all){return `<div class="dash">${all.filter(i=>SU[i.id]).map(i=>{const n=st.mat.filter(m=>m.ideiaId===i.id).length;return `<button type="button" class="tile" data-a="sdgo" data-id="${esc(i.id)}" aria-label="${esc(SU[i.id])}">${lg(i.id,56)}<b>${esc(SU[i.id])}</b><small>${(i.par||[]).filter(Boolean).length} pessoas · ${n} docs</small></button>`}).join("")}</div>`;}
 const FASES={sd:["Selection Day","sd","sdaval","openSD","sdt"],c2:["Challenge II","c2","c2aval","openC2","c2t"],c1:["Challenge I","c1","c1aval","openC1","c1t"]};
 function resPh(i,k){const [N,key,tp,set,act]=FASES[k],r=i.resumoS&&i.resumoS[key]?esc(i.resumoS[key]).replace(/\n/g,"<br>"):"",o=st[set].has(i.id);
   return `<button type="button" class="res" data-a="${act}" data-id="${esc(i.id)}" aria-expanded="${o}"><span class="lab">Júri · ${N}</span>${r||`<span class="note">Ainda sem resumo do ${N}.</span>`}<span class="more">${o?"Esconder o feedback do júri ▴":"Ver o feedback de cada jurado e as notas ▾"}</span></button>${o?c1Det(i,tp):""}`;}
@@ -226,7 +231,7 @@ function c1Card(i,ph){ph=ph||"c1";const mine=isMine(i),FN=FASES[ph][0];
   else if(panOn(i,"col"))pan=`<div class="pan"><h4>Pedir para colaborar nesta ideia</h4><label for="cj-${esc(i.id)}">Porque queres colaborar e o que podes trazer? (obrigatório)</label><textarea id="cj-${esc(i.id)}" placeholder="Ex.: conheço o setor, tenho contactos em 3 clínicas, posso fazer as entrevistas"></textarea><div class="row"><button class="pri" data-a="col" data-id="${esc(i.id)}">Enviar pedido ao coordenador</button></div><p class="note">Se o coordenador aceitar, passas a fazer parte da ideia.</p></div>`;
   const acts=mine?`<div class="acts">${panBtn(i,"mat","＋ Juntar documento",1)}${panBtn(i,"alt","Propor alteração")}</div>`
     :`<div class="acts">${pend(i,"colaborar")||pend(i,"participar")?'<span class="pill warn">Pedido para colaborar enviado</span>':panBtn(i,"col","Pedir para colaborar",1)}</div>`;
-  return `<article class="card idea" data-ph="${ph}" id="i-${esc(i.id)}" data-q="${esc(nrm([i.titulo,i.problema,i.solucao,(i.par||[]).join(" ")].join(" ")))}"><div class="ch"><h3>${esc(i.titulo||"(sem título)")}</h3><span class="sb">${mine?'<span class="pill ok">Tua ideia</span> ':""}<span class="pill stg-${ph}">${FN}</span></span></div>
+  return `<article class="card idea" data-ph="${ph}" id="i-${esc(i.id)}" data-q="${esc(nrm([i.titulo,i.problema,i.solucao,(i.par||[]).join(" ")].join(" ")))}"><div class="ch"><div class="chl">${lg(i.id,44)}<div><h3>${esc(SU[i.id]||i.titulo||"(sem título)")}</h3>${SU[i.id]?`<small class="sub">${esc(i.titulo||"")}</small>`:""}</div></div><span class="sb">${mine?'<span class="pill ok">Tua ideia</span> ':""}<span class="pill stg-${ph}">${FN}</span></span></div>
   ${metaHtml(i)}${docsHtml(i,mine)}<div class="jury-h">Feedback do júri</div>${phRes(i,ph)}${psHtml(i)}${reqsHtml(i)}${acts}${pan}</article>`;}
 function repCard(i){const p=pend(i,"repescagem");
   const pan=panOn(i,"rep")?`<div class="pan"><h4>Pedir para passar ao Challenge I</h4><p class="note">Explica o que mudou desde a sessão de ideação e junta a validação que o mostra (entrevistas, inquéritos, contactos…).</p><label for="rj-${esc(i.id)}">Justificação (obrigatório)</label><textarea id="rj-${esc(i.id)}" placeholder="Ex.: falámos com 8 empresas do setor e 5 confirmaram o problema e o valor que pagariam"></textarea>${filePick(i,"rk",true)}<div class="row"><button class="pri" data-a="rep" data-id="${esc(i.id)}">Enviar pedido ao coordenador</button></div></div>`:"";
@@ -235,7 +240,7 @@ function repCard(i){const p=pend(i,"repescagem");
 function phHtml(ph){const isF=ph==="sd"?isSD:isC2,FN=FASES[ph][0],all=st.ideias.filter(isF).sort(ordem),mc=all.filter(isMine),list=st.c1f==="minhas"?mc:all;
   const txt=ph==="sd"?"Estas ideias chegaram ao Selection Day. Vês o resumo e o feedback do júri do Challenge II e do Challenge I. Nas tuas, junta slides, MVP ou report; nas outras, podes pedir para colaborar.":"Estas ideias passaram ao Challenge II, com o resumo e o feedback do júri no Challenge II e no Challenge I. Nas tuas, junta documentos ou propõe alterações. Nas outras, podes pedir para colaborar.";
   return `<div class="sum"><div><b>${all.length}</b><span>ideias no ${FN}</span></div><div><b>${mc.length}</b><span>tuas</span></div><div><b>${st.sug.filter(s=>(s.estado||"pendente")==="pendente").length}</b><span>pedidos por decidir</span></div></div>
-  <p class="note" style="margin:0 0 10px">${txt}</p>
+  ${ph==="sd"?dashSD(all):""}<p class="note" style="margin:0 0 10px">${txt}</p>
   <div class="chips" role="group" aria-label="Filtro"><button data-a="c1f" data-v="todas" aria-pressed="${st.c1f==="todas"}">Todas (${all.length})</button><button data-a="c1f" data-v="minhas" aria-pressed="${st.c1f==="minhas"}">As minhas (${mc.length})</button></div>
   <input id="q" type="search" placeholder="Procurar ideias, problemas, pessoas…" aria-label="Procurar ideias" style="margin:0 0 10px">
   ${st.load?`<p>A carregar…</p>`:list.length?list.map(i=>c1Card(i,ph)).join(""):`<div class="card"><p style="margin:0">${st.c1f==="minhas"?"Nenhuma ideia tua está no "+FN+".":"Ainda não há ideias no "+FN+"."}</p></div>`}`;}
@@ -329,6 +334,7 @@ document.addEventListener("click",async ev=>{const b=ev.target.closest("[data-a]
   if(a==="tab"){st.tab=b.dataset.t;st.tabUser=1;st.fs=0;st.msg=null;st.pan="";render();}
   else if(a==="c1f"){st.c1f=b.dataset.v;render();}
   else if(a==="c1t"){st.openC1.has(id)?st.openC1.delete(id):st.openC1.add(id);render();keep();}
+  else if(a==="sdgo"){const e=document.getElementById("i-"+id);if(e){e.scrollIntoView({behavior:"smooth",block:"start"});e.classList.add("flash");setTimeout(()=>e.classList.remove("flash"),1600);}}
   else if(a==="sdt"){st.openSD.has(id)?st.openSD.delete(id):st.openSD.add(id);render();keep();}
   else if(a==="c2t"){st.openC2.has(id)?st.openC2.delete(id):st.openC2.add(id);render();keep();}
   else if(a==="fbt"){st.openFb.has(id)?st.openFb.delete(id):st.openFb.add(id);render();keep();}
