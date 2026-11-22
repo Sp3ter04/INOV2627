@@ -19,7 +19,7 @@ textarea{min-height:110px;resize:vertical}
 button{font:inherit;cursor:pointer;min-height:44px;padding:8px 16px;border-radius:8px;border:1px solid var(--line-2);background:var(--surface);color:var(--fg);font-weight:700}
 button.pri{background:var(--brand);color:var(--on-brand);border-color:var(--brand)}button.lnk{border:0;background:none;color:var(--brand);padding:8px}
 button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:3px solid var(--brand);outline-offset:2px}
-.tabs{display:flex;gap:6px;margin:0 0 14px;position:sticky;top:0;z-index:5;background:var(--bg);padding:8px 0}.tabs button{flex:1;display:flex;flex-direction:column;align-items:center;gap:1px;padding:8px 6px;line-height:1.15}.tabs button small{font-weight:500;opacity:.75;font-size:.74rem}.tabs button[aria-pressed=true]{background:var(--brand);color:var(--on-brand);border-color:var(--brand)}
+.tabs{display:flex;gap:6px;margin:0 0 14px;background:var(--bg);padding:8px 0}.tabs button{flex:1;display:flex;flex-direction:column;align-items:center;gap:1px;padding:8px 6px;line-height:1.15}.tabs button small{font-weight:500;opacity:.75;font-size:.74rem}.tabs button[aria-pressed=true]{background:var(--brand);color:var(--on-brand);border-color:var(--brand)}
 .kinds{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px}.kind{display:block;margin:0;cursor:pointer}.kind input{position:absolute;opacity:0;pointer-events:none}.kind span{display:flex;flex-direction:column;gap:1px;border:2px solid var(--line);border-radius:10px;padding:9px 12px;background:var(--surface)}.kind b{font-size:.95rem}.kind small{color:var(--muted);font-size:.78rem}.kind:has(input:checked) span{border-color:var(--brand);background:var(--brand-soft)}.kind:has(input:focus-visible) span{outline:2px solid var(--brand);outline-offset:2px}
 .dchips{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 0}.dchip{all:unset;box-sizing:border-box;cursor:pointer;display:inline-flex;align-items:center;gap:6px;max-width:100%;padding:6px 10px;border:1px solid var(--line);border-radius:99px;background:var(--surface-2);font-size:.82rem;font-weight:600;color:var(--fg)}.dchip:hover{border-color:var(--brand)}.dchip:focus-visible{outline:2px solid var(--brand)}.dchip i{font-style:normal;color:var(--brand)}.dchip small{color:var(--muted);font-weight:500}
 .stg-sd{background:var(--ok-soft,#d3f9d8);color:var(--ok,#2b8a3e)}.stg-c2{background:var(--brand-soft);color:var(--brand)}
@@ -78,6 +78,8 @@ body{background:radial-gradient(1200px 400px at 50% -120px,var(--brand-soft),tra
 .chips button{background:var(--surface);box-shadow:var(--sh)}
 #q{border-radius:12px;background:var(--surface);box-shadow:var(--sh)}
 .card.idea{border-radius:16px;box-shadow:var(--sh);border:1px solid var(--line);border-left:5px solid var(--acc,var(--brand));padding:18px;transition:box-shadow .15s}
+.dform:has(input[value="mvp"]:checked) .fi,.dform:has(input[value="sd"]:checked) .li,.dform:has(input[value="resumo"]:checked) .li{display:none}
+.tg{width:100%;display:flex;align-items:center;gap:8px;text-align:left;background:none;border:0;color:inherit;font:inherit;cursor:pointer;padding:6px 0}.tg .chev{margin-left:auto;color:var(--muted)}.resx{margin:6px 0}.resx .res{border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:var(--surface)}.resb{padding:8px 4px}.fbk{margin-top:8px}
 .dash{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:10px;margin:0 0 14px}.tile{display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center;background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:var(--sh);padding:14px 8px;cursor:pointer;font:inherit;color:inherit}.tile:hover{box-shadow:var(--sh-h);transform:translateY(-1px)}.tile b{font:800 .95rem/1.15 var(--display)}.tile small{color:var(--muted);font-size:.72rem}
 .lg{border-radius:22%;object-fit:contain;flex:none}.chl{display:flex;gap:12px;align-items:center;min-width:0}.sub{display:block;color:var(--muted);font-size:.78rem;margin-top:2px}.flash{animation:fl 1.6s}@keyframes fl{0%,60%{box-shadow:0 0 0 4px var(--brand)}100%{box-shadow:var(--sh)}}
 .card.idea:hover{box-shadow:var(--sh-h)}
@@ -113,12 +115,12 @@ body{background:radial-gradient(1200px 400px at 50% -120px,var(--brand-soft),tra
 @media(min-width:700px){.kinds{grid-template-columns:repeat(3,1fr)}}
 input[type=file]{padding:9px 10px;background:var(--surface);border-style:dashed}
 .fb{border-top-color:var(--line)}
-@media (max-width:520px){.card.idea{padding:14px;border-left-width:4px}.tabs{top:58px}}
+@media (max-width:520px){.card.idea{padding:14px;border-left-width:4px}}
 </style></head><body>
 <div id="app"></div>
 <script>
 const U="https://hggrgaktnacmmgmaoeib.supabase.co",K="sb_publishable_em1gUMD7EQjI8n1hCE18tQ_DSy-eAsR",DOM="@junitec.pt",LS_CODE="inov-coord-code",SS_ADM="inov-membro-admin";
-const st={ses:null,nome:"",ideias:[],fb:[],fotos:{},sug:[],mat:[],tab:"",c1f:"todas",msg:null,load:false,view:"",sim:true,membros:[],openFb:new Set(),openC1:new Set(),openC2:new Set(),openSD:new Set(),pan:"",q:""};
+const st={ses:null,nome:"",ideias:[],fb:[],fotos:{},sug:[],mat:[],tab:"",c1f:"todas",msg:null,load:false,view:"",sim:true,membros:[],openFb:new Set(),openC1:new Set(),openC2:new Set(),openSD:new Set(),openFbk:new Set(),openDoc:new Set(),pan:"",q:""};
 const $=s=>document.querySelector(s);
 const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const lc=s=>String(s||"").toLowerCase();
@@ -176,11 +178,11 @@ function c1Det(i,tp){tp=tp||"c1aval";const A=st.fb.filter(f=>f.tipo===tp&&f.idei
 /* Feedback do júri do Selection Day: escondido aos membros por agora. Muda para true quando quiseres mostrá-lo. */
 const SD_FB=false;
 const SU={kblmh7rcmb:"SquadDock",["1tlxjfh7d5g1"]:"Documentos de Civil",la3f8pycy8vs:"Notas de alta",["5aiiw5h9qgna"]:"Manutenção Industrial",z0drifb1wl8u:"Chave",["2yag10rgbcf"]:"Passaporte Digital",b209vuw25iyn:"Cognify",mlvo1t7vddgl:"Forja"};
-const lg=(id,z)=>SU[id]?`<img class="lg" src="/logos/${id}.png" alt="" width="${z}" height="${z}" loading="lazy">`:"";
+const lg=(id,z)=>{const x=st.ideias.find(q=>q.id===id),src=(x&&x.logo)||(SU[id]?"/logos/"+id+".png":"");return src?`<img class="lg" src="${esc(src)}" alt="" width="${z}" height="${z}" loading="lazy">`:"";};
 function dashSD(all){return `<div class="dash">${all.filter(i=>SU[i.id]).map(i=>{const n=st.mat.filter(m=>m.ideiaId===i.id).length;return `<button type="button" class="tile" data-a="sdgo" data-id="${esc(i.id)}" aria-label="${esc(SU[i.id])}">${lg(i.id,56)}<b>${esc(SU[i.id])}</b><small>${(i.par||[]).filter(Boolean).length} pessoas · ${n} docs</small></button>`}).join("")}</div>`;}
 const FASES={sd:["Selection Day","sd","sdaval","openSD","sdt"],c2:["Challenge II","c2","c2aval","openC2","c2t"],c1:["Challenge I","c1","c1aval","openC1","c1t"]};
 function resPh(i,k){const [N,key,tp,set,act]=FASES[k],r=i.resumoS&&i.resumoS[key]?esc(i.resumoS[key]).replace(/\n/g,"<br>"):"",o=st[set].has(i.id);
-  return `<button type="button" class="res" data-a="${act}" data-id="${esc(i.id)}" aria-expanded="${o}"><span class="lab">Júri · ${N}</span>${r||`<span class="note">Ainda sem resumo do ${N}.</span>`}<span class="more">${o?"Esconder o feedback do júri ▴":"Ver o feedback de cada jurado e as notas ▾"}</span></button>${o?c1Det(i,tp):""}`;}
+  return `<div class="resx"><button type="button" class="res tg" data-a="${act}" data-id="${esc(i.id)}" aria-expanded="${o}"><span class="lab">Júri · ${N}</span><span class="chev">${o?"▴":"▾"}</span></button>${o?`<div class="resb">${r||`<span class="note">Ainda sem resumo do ${N}.</span>`}${c1Det(i,tp)}</div>`:""}</div>`;}
 function phRes(i,ph){
   if(ph==="sd")return (SD_FB?resPh(i,"sd"):"")+resPh(i,"c2")+resPh(i,"c1");
   if(ph==="c2")return resPh(i,"c2")+resPh(i,"c1");
@@ -204,35 +206,40 @@ const IC={slides:'<svg viewBox="0 0 24 24" width="20" height="20" fill="none" st
  file:'<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.5l-8.6 8.6a5.5 5.5 0 0 1-7.8-7.8l9-9a3.7 3.7 0 0 1 5.2 5.2l-9 9a1.8 1.8 0 0 1-2.6-2.6l8.4-8.4"/></svg>'};
 const icFor=m=>m.url?IC.link:/slide|pitch/i.test(m.tipo||"")?IC.slides:/resumo/i.test(m.tipo||"")?IC.doc:/mvp|protót/i.test(m.tipo||"")?IC.link:IC.file;
 /* tipo, o que o júri vê e a fase a que o documento fica ligado (vazio = a fase do separador onde estás) */
-const DOCK=[["sd","Slides Selection Day","PowerPoint ou PDF","Slides Selection Day","sd",IC.slides],["c2","Slides Challenge II","PowerPoint ou PDF","Slides Challenge II","c2",IC.slides],["c1","Slides Challenge I","PowerPoint ou PDF","Slides Challenge I","c1",IC.slides],["resumo","Resumo Executivo","1 página · PDF ou Word","Resumo Executivo","",IC.doc],["mvp","MVP","link ou ficheiro","MVP / protótipo","",IC.link],["outro","Outro","qualquer ficheiro","Outro","",IC.file]];
+const DOCK=[["sd","Slides Selection Day","PowerPoint ou PDF","Slides Selection Day","sd",IC.slides],["resumo","Resumo Executivo","1 página · PDF ou Word","Resumo Executivo","sd",IC.doc],["mvp","MVP","link para o MVP","MVP / protótipo","sd",IC.link],["outro","Outro","ficheiro ou link","Outro","sd",IC.file]];
 function matHtml(i){const ma=st.mat.filter(m=>m.ideiaId===i.id),I=esc(i.id);return (ma.length?fileList(ma):"")+
-  `<div class="lab" style="margin-top:12px">1. O que queres juntar?</div>
-  <div class="kinds" role="radiogroup" aria-label="Tipo de documento">${DOCK.map(([v,l,sub,,,ic])=>`<label class="kind"><input type="radio" name="dk-${I}" value="${v}"${v===(st.tab==="c2"?"c2":st.tab==="c1"?"c1":"sd")?" checked":""}><span><i class="kic">${ic}</i><b>${l}</b><small>${sub}</small></span></label>`).join("")}</div>
-  <div class="lab" style="margin-top:12px">2. Escolhe o ficheiro e/ou cola o link</div>
-  <label for="f-${I}">Ficheiro (PowerPoint, PDF, Word… até 25 MB)</label><input type="file" id="f-${I}" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.csv,.txt,.png,.jpg,.jpeg">
-  <label for="lu-${I}">Link (MVP, protótipo, Figma, Google Slides…)</label><input id="lu-${I}" type="url" inputmode="url" placeholder="https://…">
-  <label for="ln-${I}">Nome (opcional)</label><input id="ln-${I}" maxlength="80" placeholder="Ex.: MVP no Figma">
+  `<div class="dform"><div class="lab" style="margin-top:12px">1. O que queres juntar?</div>
+  <div class="kinds" role="radiogroup" aria-label="Tipo de documento">${DOCK.map(([v,l,sub,,,ic],k)=>`<label class="kind"><input type="radio" name="dk-${I}" value="${v}"${k===0?" checked":""}><span><i class="kic">${ic}</i><b>${l}</b><small>${sub}</small></span></label>`).join("")}</div>
+  <div class="lab" style="margin-top:12px">2. Escolhe o ficheiro ou cola o link</div>
+  <div class="fi"><label for="f-${I}">Ficheiro (PowerPoint, PDF, Word… até 25 MB)</label><input type="file" id="f-${I}" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.csv,.txt,.png,.jpg,.jpeg"></div>
+  <div class="li"><label for="lu-${I}">Link do MVP (protótipo, Figma, site…)</label><input id="lu-${I}" type="url" inputmode="url" placeholder="https://…"></div>
   <div class="row"><button class="pri" data-a="doc" data-id="${I}">Juntar documento</button></div>
-  <p class="note" style="margin:8px 0 0">O júri vê estes documentos. Os slides em PDF abrem num leitor página a página; os PowerPoint ficam para descarregar. Os slides ficam ligados à fase que escolheres.</p>`;}
+  <p class="note" style="margin:8px 0 0">Fica ligado ao Selection Day. O júri vê estes documentos: os slides em PDF abrem num leitor página a página; os PowerPoint ficam para descarregar.</p></div>`;}
 function altHtml(i,withTitle){return `<label for="at-${esc(i.id)}">Título</label><input id="at-${esc(i.id)}" maxlength="120" value="${esc(i.titulo||"")}"${withTitle?"":" disabled"}>
   <label for="p-${esc(i.id)}">Problema (ideia)</label><textarea id="p-${esc(i.id)}">${esc(i.problema||"")}</textarea>
   <label for="s-${esc(i.id)}">Solução</label><textarea id="s-${esc(i.id)}">${esc(i.solucao||"")}</textarea>
   <label for="n-${esc(i.id)}">Porquê? (opcional)</label><input id="n-${esc(i.id)}"><div class="row"><button class="pri" data-a="sug" data-id="${esc(i.id)}">Enviar proposta ao coordenador</button></div><p class="note">O título e a descrição só mudam depois de o coordenador aceitar.</p>`;}
 const panBtn=(i,k,label,pri)=>{const on=st.pan===i.id+"|"+k;return `<button${pri?' class="pri"':""} data-a="pan" data-id="${esc(i.id)}" data-k="${k}" aria-expanded="${on}">${label}</button>`;};
 const panOn=(i,k)=>st.pan===i.id+"|"+k;
-function docsHtml(i,mine){const ma=st.mat.filter(m=>m.ideiaId===i.id);
-  if(!ma.length)return mine?`<div class="docs empty"><span class="dic">${IC.file}</span><span class="dtx"><b>Ainda sem documentos</b><small>Junta os slides, o resumo executivo ou o MVP: é isto que o júri vai abrir.</small></span></div>`:"";
-  return `<div class="docs"><div class="docs-h"><b>Documentos</b><span class="pill">${ma.length}</span></div>${ma.map(m=>{const ic=`<span class="dic">${icFor(m)}</span>`,tx=`<span class="dtx"><b>${esc(m.ficheiro||m.url)}</b><small>${esc(m.tipo||"")}${m.nome?" · "+esc(m.nome):""}</small></span>`;
-    return m.url?`<a class="drow" href="${esc(/^https?:\/\//i.test(m.url)?m.url:"https://"+m.url)}" target="_blank" rel="noopener">${ic}${tx}<span class="dgo" aria-hidden="true">↗</span></a>`:`<button type="button" class="drow" data-a="dl" data-p="${esc(m.path)}">${ic}${tx}<span class="dgo" aria-hidden="true">⬇</span></button>`;}).join("")}</div>`;}
+function docsHtml(i,mine){const ma=st.mat.filter(m=>m.ideiaId===i.id),o=st.openDoc.has(i.id);
+  if(!ma.length)return mine?`<div class="docs empty"><span class="dic">${IC.file}</span><span class="dtx"><b>Ainda sem documentos</b><small>Junta os slides do Selection Day, o resumo executivo ou o MVP: é isto que o júri vai abrir.</small></span></div>`:"";
+  return `<div class="docs"><button type="button" class="docs-h tg" data-a="dct" data-id="${esc(i.id)}" aria-expanded="${o}"><b>Documentos</b><span class="pill">${ma.length}</span><span class="chev">${o?"▴":"▾"}</span></button>${o?ma.map(m=>{const ic=`<span class="dic">${icFor(m)}</span>`,tx=`<span class="dtx"><b>${esc(m.ficheiro||m.url)}</b><small>${esc(m.tipo||"")}</small></span>`;
+    return m.url?`<a class="drow" href="${esc(/^https?:\/\//i.test(m.url)?m.url:"https://"+m.url)}" target="_blank" rel="noopener">${ic}${tx}<span class="dgo" aria-hidden="true">↗</span></a>`:`<button type="button" class="drow" data-a="dl" data-p="${esc(m.path)}">${ic}${tx}<span class="dgo" aria-hidden="true">⬇</span></button>`;}).join(""):""}</div>`;}
+function fbkHtml(i,ph){const o=st.openFbk.has(i.id);return `<div class="fbk"><button type="button" class="docs-h tg" data-a="fbk" data-id="${esc(i.id)}" aria-expanded="${o}"><b>Feedback do júri</b><span class="chev">${o?"▴":"▾"}</span></button>${o?phRes(i,ph):""}</div>`;}
+async function setLogo(id,data){const i=ideia(id);if(!i)return;const d=Object.assign({},i);if(data)d.logo=data;else delete d.logo;
+  if(!simulando()){await rest("docs?col=eq.ideias&id=eq."+encodeURIComponent(id),{method:"PATCH",body:JSON.stringify({data:d,updated_at:new Date().toISOString()})});}
+  Object.assign(i,d);if(!data)delete i.logo;}
+function toLogo(f){return new Promise((ok,ko)=>{if(!/^image\//.test(f.type)){ko(new Error("Escolhe uma imagem (PNG, JPG…)."));return;}const im=new Image(),u=URL.createObjectURL(f);im.onload=()=>{const S=192,c=document.createElement("canvas");c.width=c.height=S;const x=c.getContext("2d"),m=Math.min(im.width,im.height),sx=(im.width-m)/2,sy=(im.height-m)/2;x.drawImage(im,sx,sy,m,m,0,0,S,S);URL.revokeObjectURL(u);let o=c.toDataURL("image/webp",.85);if(!/^data:image\/webp/.test(o))o=c.toDataURL("image/png");ok(o);};im.onerror=()=>ko(new Error("Não consegui ler essa imagem."));im.src=u;});}
 function c1Card(i,ph){ph=ph||"c1";const mine=isMine(i),FN=FASES[ph][0];
   let pan="";
   if(panOn(i,"mat"))pan=`<div class="pan"><h4>Documentos da ideia</h4>${matHtml(i)}</div>`;
+  else if(panOn(i,"logo"))pan=`<div class="pan"><h4>Símbolo / imagem de marca da ideia</h4><div style="display:flex;gap:12px;align-items:center">${lg(i.id,56)}<div style="flex:1"><label for="lgf-${esc(i.id)}">Escolhe uma imagem (quadrada fica melhor)</label><input type="file" id="lgf-${esc(i.id)}" accept="image/*"></div></div><div class="row"><button class="pri" data-a="logo" data-id="${esc(i.id)}">Guardar símbolo</button><button data-a="logo0" data-id="${esc(i.id)}">Repor o original</button></div></div>`;
   else if(panOn(i,"alt"))pan=`<div class="pan"><h4>Propor alteração do título, da ideia e da solução</h4>${altHtml(i,true)}</div>`;
   else if(panOn(i,"col"))pan=`<div class="pan"><h4>Pedir para colaborar nesta ideia</h4><label for="cj-${esc(i.id)}">Porque queres colaborar e o que podes trazer? (obrigatório)</label><textarea id="cj-${esc(i.id)}" placeholder="Ex.: conheço o setor, tenho contactos em 3 clínicas, posso fazer as entrevistas"></textarea><div class="row"><button class="pri" data-a="col" data-id="${esc(i.id)}">Enviar pedido ao coordenador</button></div><p class="note">Se o coordenador aceitar, passas a fazer parte da ideia.</p></div>`;
-  const acts=mine?`<div class="acts">${panBtn(i,"mat","＋ Juntar documento",1)}${panBtn(i,"alt","Propor alteração")}</div>`
+  const acts=mine?`<div class="acts">${panBtn(i,"mat","＋ Juntar documento",1)}${panBtn(i,"logo","Mudar símbolo")}${panBtn(i,"alt","Propor alteração")}</div>`
     :`<div class="acts">${pend(i,"colaborar")||pend(i,"participar")?'<span class="pill warn">Pedido para colaborar enviado</span>':panBtn(i,"col","Pedir para colaborar",1)}</div>`;
   return `<article class="card idea" data-ph="${ph}" id="i-${esc(i.id)}" data-q="${esc(nrm([i.titulo,i.problema,i.solucao,(i.par||[]).join(" ")].join(" ")))}"><div class="ch"><div class="chl">${lg(i.id,44)}<div><h3>${esc(SU[i.id]||i.titulo||"(sem título)")}</h3>${SU[i.id]?`<small class="sub">${esc(i.titulo||"")}</small>`:""}</div></div><span class="sb">${mine?'<span class="pill ok">Tua ideia</span> ':""}<span class="pill stg-${ph}">${FN}</span></span></div>
-  ${metaHtml(i)}${docsHtml(i,mine)}<div class="jury-h">Feedback do júri</div>${phRes(i,ph)}${psHtml(i)}${reqsHtml(i)}${acts}${pan}</article>`;}
+  ${metaHtml(i)}${docsHtml(i,mine)}${fbkHtml(i,ph)}${psHtml(i)}${reqsHtml(i)}${acts}${pan}</article>`;}
 function repCard(i){const p=pend(i,"repescagem");
   const pan=panOn(i,"rep")?`<div class="pan"><h4>Pedir para passar ao Challenge I</h4><p class="note">Explica o que mudou desde a sessão de ideação e junta a validação que o mostra (entrevistas, inquéritos, contactos…).</p><label for="rj-${esc(i.id)}">Justificação (obrigatório)</label><textarea id="rj-${esc(i.id)}" placeholder="Ex.: falámos com 8 empresas do setor e 5 confirmaram o problema e o valor que pagariam"></textarea>${filePick(i,"rk",true)}<div class="row"><button class="pri" data-a="rep" data-id="${esc(i.id)}">Enviar pedido ao coordenador</button></div></div>`:"";
   return `<article class="card" id="i-${esc(i.id)}" data-q="${esc(nrm([i.titulo,i.problema,i.solucao,(i.par||[]).join(" ")].join(" ")))}"><div class="ch"><h3>${esc(i.titulo||"(sem título)")}</h3><span class="pill sb">${i.sessao||"?"}.ª sessão</span></div>
@@ -365,13 +372,18 @@ document.addEventListener("click",async ev=>{const b=ev.target.closest("[data-a]
     b.disabled=true;const fs=await filesFrom("rk",id,"Validação (pedido Challenge I)");
     await pedido("repescagem",i,{nota:n,fase:"c1",ficheiros:fs});st.pan="";flash("Pedido para passar ao Challenge I enviado ao coordenador."+sim);}
   else if(a==="fs"){st.fs=Number(b.dataset.v)||0;render();}
-  else if(a==="doc"){const I=ia=>document.getElementById(ia+id),f=I("f-").files[0];let u=I("lu-").value.trim();const nm=I("ln-").value.trim(),k=(document.querySelector(`input[name="dk-${id}"]:checked`)||{}).value||"outro",E=DOCK.find(x=>x[0]===k)||DOCK[5],tp=E[3],fase=E[4]||(["sd","c2","c1"].includes(st.tab)?st.tab:"");
-    if(!f&&!u){flash("Escolhe um ficheiro ou cola um link.",1);return;}
-    if(u){if(!/^https?:\/\//i.test(u))u="https://"+u;try{new URL(u);}catch(x){flash("Esse link não parece válido.",1);return;}}
+  else if(a==="doc"){const I=ia=>document.getElementById(ia+id),f=I("f-").files[0];let u=I("lu-").value.trim();const k=(document.querySelector(`input[name="dk-${id}"]:checked`)||{}).value||"sd",E=DOCK.find(x=>x[0]===k)||DOCK[0],tp=E[3],fase="sd";
+    const wantF=k==="sd"||k==="resumo",wantL=k==="mvp";let ff=wantL?null:f,uu=wantF?"":u;
+    if(wantF&&!ff){flash("Escolhe o ficheiro.",1);return;}if(wantL&&!uu){flash("Cola o link do MVP.",1);return;}if(!ff&&!uu){flash("Escolhe um ficheiro ou cola um link.",1);return;}
+    if(uu){if(!/^https?:\/\//i.test(uu))uu="https://"+uu;try{new URL(uu);}catch(x){flash("Esse link não parece válido.",1);return;}}
     b.disabled=true;
-    if(f)await upload(id,f,tp,fase);
-    if(u){const d={id:nid("m"),email:myEmail(),nome:st.nome,ideiaId:id,ficheiro:nm||u.replace(/^https?:\/\//,"").slice(0,60),url:u,tipo:tp,em:new Date().toISOString()};if(fase)d.fase=fase;await put("materiais",d);st.mat.push(d);}
+    if(ff)await upload(id,ff,tp,fase);
+    if(uu){const d={id:nid("m"),email:myEmail(),nome:st.nome,ideiaId:id,ficheiro:uu.replace(/^https?:\/\//,"").slice(0,60),url:uu,tipo:tp,em:new Date().toISOString()};d.fase=fase;await put("materiais",d);st.mat.push(d);}
     st.msg="Documento juntado."+(isAdm()?" (modo admin: simulado, nada foi enviado)":"");st.err=false;render();keep();}
+  else if(a==="dct"){st.openDoc.has(id)?st.openDoc.delete(id):st.openDoc.add(id);render();keep();}
+  else if(a==="fbk"){st.openFbk.has(id)?st.openFbk.delete(id):st.openFbk.add(id);render();keep();}
+  else if(a==="logo"){const f=document.getElementById("lgf-"+id).files[0];if(!f){flash("Escolhe uma imagem.",1);return;}b.disabled=true;const data=await toLogo(f);await setLogo(id,data);st.msg="Símbolo atualizado.";st.err=false;st.pan="";render();keep();}
+  else if(a==="logo0"){b.disabled=true;await setLogo(id,"");st.msg="Símbolo original reposto.";st.err=false;st.pan="";render();keep();}
   else if(a==="dl"){if(String(b.dataset.p).startsWith("simulado/")){flash("Ficheiro simulado no modo admin: não existe no servidor.",1);return;}
     await fresh();const r=await fetch(U+"/storage/v1/object/sign/materiais/"+b.dataset.p,{method:"POST",headers:hdr({"Content-Type":"application/json"}),body:JSON.stringify({expiresIn:300})});const j=await r.json();if(!r.ok)throw new Error("Sem acesso ao ficheiro.");window.open(U+"/storage/v1"+j.signedURL,"_blank","noopener");}
   else if(a==="rm"){if(!confirm("Remover este ficheiro?"))return;const m=st.mat.find(x=>x.id===id);

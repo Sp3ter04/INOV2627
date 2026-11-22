@@ -38,6 +38,7 @@ function handle(route){
   if(m==="POST"){let b=JSON.parse(req.postData());b=Array.isArray(b)?b:[b];
     if(b.some(r=>!(coord||["ideias","feedback"].includes(r.col)||(em&&["sugestoes","materiais"].includes(r.col)&&r.data.email===em))))return route.fulfill({status:403,body:"rls"});
     b.forEach(r=>store.set(r.col+"/"+r.id,{col:r.col,id:r.id,data:r.data}));return route.fulfill({status:201,body:""});}
+  if(m==="PATCH"){const col=q("col"),id=q("id"),r=store.get(col+"/"+id);if(!r||!(coord||col==="ideias"))return route.fulfill({status:403,body:"rls"});r.data=JSON.parse(req.postData()).data;return route.fulfill({status:204,body:""});}
   if(m==="DELETE"){store.delete(q("col")+"/"+q("id"));return route.fulfill({status:204,body:""});}
   return route.fulfill({status:400,body:"?"});
 }
@@ -63,31 +64,39 @@ ok(tabs.join("|")==="Selection Day|Challenge II|Challenge I","separadores: Selec
 ok(await P.locator('.tabs button[aria-pressed="true"]',{hasText:"Selection Day"}).count()===1,"abre no Selection Day");
 ok(await P.locator("article").count()===2,"2 ideias no Selection Day (só as do SD)");
 ok(!(await P.locator("#i-sd1").textContent()).includes("Falta pricing")&&await P.locator('#i-sd1 [data-a="sdt"]').count()===0,"sem caixa de feedback do Selection Day (escondida por agora)");
-ok((await P.locator("#i-sd1").textContent()).includes("Resumo C2 das avarias"),"resumo do Challenge II também");
+ok(!(await P.locator("#i-sd1").textContent()).includes("Resumo C2 das avarias"),"resumo fechado por defeito");
+await P.click('#i-sd1 [data-a="fbk"]');await W(200);await P.click('#i-sd1 [data-a="c2t"]');await W(200);
+ok((await P.locator("#i-sd1").textContent()).includes("Resumo C2 das avarias"),"abrir feedback + resumo C2 mostra o resumo");
 ok(await P.getByText("pedir para matar").count()===0,"sem «Má validação: pedir para matar»");
 ok(await P.locator('#i-sd1 [data-a="pan"][data-k="mat"]',{hasText:"Juntar documento"}).count()===1,"botão «Juntar documento» nas minhas ideias");
 ok(await P.locator('#i-sd2 [data-a="pan"][data-k="mat"]').count()===0&&await P.locator('#i-sd2 [data-a="pan"][data-k="col"]').count()===1,"nas dos outros só «Pedir para colaborar»");
 await P.click('#i-sd1 [data-a="pan"][data-k="mat"]');await W(300);
-ok(await P.locator("#i-sd1 .kind").count()===6,"6 tipos: Slides SD/C2/C1, Resumo Executivo, MVP, Outro",(await P.locator("#i-sd1 .kind b").allTextContents()).join());
+ok(await P.locator("#i-sd1 .kind").count()===4&&!(await P.locator("#i-sd1 .kinds").textContent()).includes("Challenge"),"4 tipos: Slides SD, Resumo Executivo, MVP, Outro (sem C1/C2)",(await P.locator("#i-sd1 .kind b").allTextContents()).join());
 // slides pptx
-await P.locator('#i-sd1 .kind',{hasText:"Slides Challenge II"}).click();
+await P.locator('#i-sd1 .kind',{hasText:"Slides Selection Day"}).click();
 await P.setInputFiles("#f-sd1",{name:"Slides SD.pptx",mimeType:"application/vnd.openxmlformats-officedocument.presentationml.presentation",buffer:Buffer.from("PK-x")});
 await P.click('#i-sd1 [data-a="doc"]');await W(900);
 const mats=()=>[...store.values()].filter(r=>r.col==="materiais").map(r=>r.data);
-ok(mats().some(m=>m.ficheiro==="Slides SD.pptx"&&m.tipo==="Slides Challenge II"&&m.fase==="c2"),"slides PowerPoint juntados com fase sd",JSON.stringify(mats().map(m=>[m.ficheiro,m.tipo,m.fase])));
+ok(mats().some(m=>m.ficheiro==="Slides SD.pptx"&&m.tipo==="Slides Selection Day"&&m.fase==="sd"),"slides PowerPoint juntados com fase sd",JSON.stringify(mats().map(m=>[m.ficheiro,m.tipo,m.fase])));
 ok(uploads.some(x=>/sd1\//.test(x)),"ficheiro enviado para a pasta da ideia");
 // MVP por link
 await P.click('#i-sd1 [data-a="pan"][data-k="mat"]');await W(200);
 if(await P.locator("#lu-sd1").count()===0)await P.click('#i-sd1 [data-a="pan"][data-k="mat"]');
-await P.locator('#i-sd1 .kind',{hasText:"MVP"}).click();await P.fill("#lu-sd1","figma.com/proto/abc");await P.fill("#ln-sd1","MVP Figma");
+await P.locator('#i-sd1 .kind',{hasText:"MVP"}).click();await P.fill("#lu-sd1","figma.com/proto/abc");
 await P.click('#i-sd1 [data-a="doc"]');await W(700);
 ok(mats().some(m=>m.url==="https://figma.com/proto/abc"&&m.tipo==="MVP / protótipo"&&m.fase==="sd"),"link do MVP juntado");
-ok(await P.locator("#i-sd1 .drow").count()===2,"os 2 documentos aparecem no cartão");
+ok(await P.locator("#i-sd1 .drow").count()===0,"documentos fechados por defeito");await P.click('#i-sd1 [data-a="dct"]');await W(200);ok(await P.locator("#i-sd1 .drow").count()===2,"abrir documentos mostra os 2");
 // vazio
 await P.click('#i-sd1 [data-a="pan"][data-k="mat"]');await W(200);
 if(await P.locator("#lu-sd1").count()===0)await P.click('#i-sd1 [data-a="pan"][data-k="mat"]');
 await P.click('#i-sd1 [data-a="doc"]');await W(300);
-ok((await P.locator(".msg").textContent()).includes("Escolhe um ficheiro"),"sem nada escolhido avisa");
+ok((await P.locator(".msg").textContent()).includes("Escolhe o ficheiro"),"sem nada escolhido avisa");
+// mudar símbolo
+await P.click('#i-sd1 [data-a="pan"][data-k="logo"]');await W(200);
+const png=Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==","base64");
+await P.setInputFiles("#lgf-sd1",{name:"l.png",mimeType:"image/png",buffer:png});await P.click('#i-sd1 [data-a="logo"]');await W(900);
+ok([...store.values()].some(r=>r.col==="ideias"&&r.id==="sd1"&&/^data:image\//.test(r.data.logo||"")),"símbolo guardado na ideia");
+ok(await P.locator('#i-sd1 img.lg[src^="data:image"]').count()===1,"símbolo novo aparece no cartão");
 // outras abas
 await P.click('.tabs [data-t="c2"]');await W(300);
 ok(await P.locator("article").count()===3&&await P.locator("article",{hasText:"Ainda Challenge II"}).count()===1,"Challenge II mostra as 3 (SD inclui-se)");
