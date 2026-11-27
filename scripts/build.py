@@ -13,4 +13,5 @@ import shutil
 shutil.copytree(root/"web/logos",root/"public/logos",dirs_exist_ok=True)
 (root/"public/docs").mkdir(exist_ok=True)
 shutil.copytree(root/"web/docs",root/"public/docs",dirs_exist_ok=True)
+(root/"public/votar.html").write_text((root/"src/votar.html").read_text(encoding="utf-8"),encoding="utf-8")
 print("public/app.html", len(head) + len(app))

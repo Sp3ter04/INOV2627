@@ -1,0 +1,56 @@
+<!doctype html><html lang="pt-PT"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="robots" content="noindex"><title>Votar · Melhor Pitch</title><link rel="icon" href="data:,">
+<style>
+:root{--bg:#f4f6fb;--sf:#fff;--tx:#0f1b2d;--mu:#5b6678;--ln:#dfe4ee;--br:#2d5aa6;--br2:#1f4488;--ok:#1f8a4c;--er:#c0392b;--sh:0 1px 2px rgba(15,27,45,.06),0 6px 20px rgba(15,27,45,.06)}
+@media (prefers-color-scheme:dark){:root{--bg:#0d1420;--sf:#16202f;--tx:#eef2f9;--mu:#9aa7bb;--ln:#26334a;--br:#6ea0ff;--br2:#8db3ff;--sh:0 1px 2px rgba(0,0,0,.4),0 6px 20px rgba(0,0,0,.35)}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-text-size-adjust:100%}
+main{max-width:640px;margin:0 auto;padding:20px 16px 40px}
+.hero{text-align:center;padding:18px 0 6px}.eyebrow{font-size:.75rem;letter-spacing:.12em;text-transform:uppercase;color:var(--br);font-weight:700}h1{margin:4px 0 6px;font-size:1.7rem;line-height:1.15}.sub{color:var(--mu);margin:0}
+.card{background:var(--sf);border:1px solid var(--ln);border-radius:18px;box-shadow:var(--sh);padding:16px;margin-top:14px}
+label{display:block;font-weight:700;margin:0 0 6px}input[type=text],input[type=password]{width:100%;font:inherit;padding:13px 14px;border-radius:12px;border:1.5px solid var(--ln);background:var(--bg);color:var(--tx)}input:focus{outline:2px solid var(--br);border-color:transparent}
+.opts{display:grid;gap:10px;margin-top:12px}.opt{display:flex;align-items:center;gap:12px;text-align:left;width:100%;font:inherit;color:inherit;background:var(--sf);border:1.5px solid var(--ln);border-radius:16px;padding:12px;cursor:pointer;transition:transform .08s,border-color .15s}
+.opt:active{transform:scale(.99)}.opt[aria-pressed=true]{border-color:var(--br);background:color-mix(in srgb,var(--br) 10%,var(--sf));box-shadow:0 0 0 2px color-mix(in srgb,var(--br) 35%,transparent)}
+.opt img{width:52px;height:52px;border-radius:22%;flex:none;object-fit:contain}.opt b{display:block;font-size:1.05rem}.opt small{color:var(--mu)}.opt .ck{margin-left:auto;font-size:1.3rem;color:var(--br);opacity:0}.opt[aria-pressed=true] .ck{opacity:1}
+button.pri{width:100%;margin-top:14px;font:inherit;font-weight:800;padding:15px;border:0;border-radius:14px;background:var(--br);color:#fff;cursor:pointer}button.pri:disabled{opacity:.45;cursor:not-allowed}
+button.lk{background:none;border:0;color:var(--br);font:inherit;font-weight:700;cursor:pointer;padding:8px 0}
+.msg{margin:10px 0 0;font-weight:600}.msg.e{color:var(--er)}.msg.o{color:var(--ok)}.note{color:var(--mu);font-size:.9rem}
+.done{text-align:center}.done .big{font-size:2.6rem}.bars{display:grid;gap:10px;margin-top:12px}.bar{position:relative;border:1px solid var(--ln);border-radius:14px;overflow:hidden;padding:10px 12px;display:flex;align-items:center;gap:10px}
+.bar i{position:absolute;inset:0 auto 0 0;background:color-mix(in srgb,var(--br) 22%,transparent);z-index:0;transition:width .5s}.bar>*{position:relative;z-index:1}.bar img{width:34px;height:34px;border-radius:22%}.bar b{flex:1}.bar span{font-weight:800;font-size:1.1rem}.bar.w{border-color:var(--br)}
+.row{display:flex;gap:8px}.row input{flex:1}.row button{width:auto;margin:0;padding:0 18px}
+</style></head><body><main id="app"></main>
+<script>
+const U="https://hggrgaktnacmmgmaoeib.supabase.co",K="sb_publishable_em1gUMD7EQjI8n1hCE18tQ_DSy-eAsR",LS="inov-votou";
+const IDEIAS=[["5aiiw5h9qgna","MONZAI","Matilde + Lourenço"],["z0drifb1wl8u","Chave","Afonso + Francisca"],["kblmh7rcmb","SquadDock","Bernardo"],["la3f8pycy8vs","SumMed AI","Rita + Francisca"],["1tlxjfh7d5g1","DocCi","Inês P. + Maria"],["2yag10rgbcf","Fio de Prova","Xavier + Inês F."],["b209vuw25iyn","Cognify","Rita + Inês P."],["mlvo1t7vddgl","Forja","Guilherme"]];
+const $=s=>document.querySelector(s),esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const slug=s=>String(s||"").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
+const H={apikey:K,Authorization:"Bearer "+K,"Content-Type":"application/json"};
+const st={nome:"",sel:"",msg:"",err:false,busy:false,voted:null,res:null,pw:false,rmsg:""};
+try{const v=JSON.parse(localStorage.getItem(LS)||"null");if(v&&v.ideia)st.voted=v;}catch(e){}
+const nm=id=>(IDEIAS.find(x=>x[0]===id)||[])[1]||id;
+const lg=id=>`<img src="/logos/${id}.png" alt="" width="52" height="52">`;
+function render(){const A=$("#app");
+  const head=`<div class="hero"><div class="eyebrow">Selection Day · 27 nov</div><h1>Melhor Pitch</h1><p class="sub">${st.voted?"O teu voto está registado.":"Escolhe o pitch que mais gostaste. Só podes votar uma vez."}</p></div>`;
+  if(st.res)return void(A.innerHTML=head+resHtml());
+  if(st.voted)return void(A.innerHTML=head+`<div class="card done"><div class="big">🗳️</div><h2 style="margin:6px 0">Obrigado, ${esc(st.voted.nome)}!</h2><p class="note" style="margin:0">Votaste em <b>${esc(nm(st.voted.ideia))}</b>.</p></div>`+pwHtml());
+  A.innerHTML=head+`<div class="card"><label for="n">O teu nome</label><input id="n" type="text" autocomplete="name" maxlength="60" placeholder="Nome e apelido" value="${esc(st.nome)}"></div>
+  <div class="card"><label>Em quem votas?</label><div class="opts">${IDEIAS.map(([id,n,sp])=>`<button type="button" class="opt" data-id="${id}" aria-pressed="${st.sel===id}">${lg(id)}<span><b>${esc(n)}</b><small>${esc(sp)}</small></span><span class="ck">✓</span></button>`).join("")}</div>
+  <button class="pri" id="go" ${st.busy||!st.sel||st.nome.trim().length<3?"disabled":""}>${st.busy?"A enviar…":"Votar"}</button>${st.msg?`<p class="msg ${st.err?"e":"o"}">${esc(st.msg)}</p>`:""}<p class="note" style="margin:10px 0 0">O voto não pode ser alterado depois de enviado.</p></div>`+pwHtml();}
+function pwHtml(){return `<div class="card"><label for="pw">Ver resultados (organização)</label><div class="row"><input id="pw" type="password" autocomplete="off" placeholder="Palavra-passe"><button class="pri" id="rv">Ver</button></div>${st.rmsg?`<p class="msg e">${esc(st.rmsg)}</p>`:""}</div>`;}
+function resHtml(){const r=st.res,tot=r.reduce((a,x)=>a+x.n,0),mx=Math.max(1,...r.map(x=>x.n));
+  const rows=IDEIAS.map(([id,n])=>({id,n:n,v:(r.find(x=>x.ideia===id)||{}).n||0})).sort((a,b)=>b.v-a.v);
+  return `<div class="card"><h2 style="margin:0">Resultados</h2><p class="note" style="margin:2px 0 0">${tot} voto${tot===1?"":"s"} · atualiza sozinho</p><div class="bars">${rows.map((x,k)=>`<div class="bar ${k===0&&x.v>0?"w":""}"><i style="width:${Math.round(x.v/mx*100)}%"></i><img src="/logos/${x.id}.png" alt="">${k===0&&x.v>0?"🏆 ":""}<b>${esc(x.n)}</b><span>${x.v}</span></div>`).join("")}</div><button class="lk" id="cl">← Voltar</button></div>`;}
+async function voto(){if(st.busy)return;const nome=st.nome.trim().replace(/\s+/g," ");st.busy=true;st.msg="";render();
+  try{const id="voto__"+slug(nome),d={id,tipo:"voto",estado:"voto",nome,ideia:st.sel,em:new Date().toISOString()};
+    const r=await fetch(U+"/rest/v1/docs",{method:"POST",headers:Object.assign({Prefer:"return=minimal"},H),body:JSON.stringify({col:"pedidos",id,data:d})});
+    if(r.status===409||/duplicate|23505/.test(r.ok?"":await r.clone().text())){st.err=true;st.msg="Esse nome já votou.";st.busy=false;render();return;}
+    if(!r.ok)throw new Error("erro");
+    st.voted={nome,ideia:st.sel};try{localStorage.setItem(LS,JSON.stringify(st.voted));}catch(e){}st.busy=false;render();
+  }catch(e){st.err=true;st.msg="Não foi possível enviar. Tenta outra vez.";st.busy=false;render();}}
+let tm=null;
+async function resultados(p){try{const r=await fetch(U+"/rest/v1/rpc/votos_resultado",{method:"POST",headers:H,body:JSON.stringify({p})});if(!r.ok){const t=await r.text();throw new Error(/pass/i.test(t)?"pass":r.status===404?"nofn":"err");}return r.json();}catch(e){throw e;}}
+async function abrir(){const p=($("#pw")||{}).value||"";if(!p)return;st.rmsg="";try{st.res=await resultados(p);st.pwv=p;render();clearInterval(tm);tm=setInterval(async()=>{try{st.res=await resultados(st.pwv);if(st.res)render();}catch(e){}},8000);}catch(e){st.rmsg=e.message==="pass"?"Palavra-passe errada.":e.message==="nofn"?"Resultados ainda não ativados.":"Não foi possível obter os resultados.";render();}}
+document.addEventListener("input",e=>{if(e.target.id==="n"){st.nome=e.target.value;const b=$("#go");if(b)b.disabled=st.busy||!st.sel||st.nome.trim().length<3;}});
+document.addEventListener("click",e=>{const t=e.target.closest("button");if(!t)return;
+  if(t.classList.contains("opt")){st.sel=t.dataset.id;render();}else if(t.id==="go")voto();else if(t.id==="rv")abrir();else if(t.id==="cl"){st.res=null;clearInterval(tm);render();}});
+document.addEventListener("keydown",e=>{if(e.key==="Enter"&&e.target.id==="pw")abrir();});
+render();
+</script></body></html>
