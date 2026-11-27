@@ -97,6 +97,10 @@ const pj=await A.locator("#qapill b").textContent().catch(()=>"");
 ok(/^[56]:\d\d$/.test(pj),"ao iniciar no painel do júri, o jurado vê o tempo",pj);
 await H.click('#qapill [data-v="reset"]');await W(4500);
 ok(await A.locator("#qapill").count()===0,"repor no painel do júri esconde o selo ao jurado");
+// dono em /juri (não /coordenador): sem controlos do cronómetro e sem botão «Sessões de ideação»
+const J2=await open("/juri",{code:CODE,jurado:"Miguel Gomes"});
+ok(await J2.locator('[data-act="c1qa"]').count()===0,"em /juri nem o coordenador tem controlos do cronómetro");
+ok(await H.getByText("Sessões de ideação",{exact:true}).count()===0,"sem botão «Sessões de ideação» no painel do júri");
 // egress: em repouso só chegam alterações
 const b0=bytes,g0=gets;await W(12000);
 console.log("repouso 12 s:",gets-g0,"pedidos,",bytes-b0,"bytes (coleção completa ≈",JSON.stringify([...store.values()].map(r=>r.data)).length,")");

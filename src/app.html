@@ -1761,15 +1761,16 @@ function setLive(p){const L=Object.assign({},liveState(),p,{id:"estado"});S.live
 const QA_MS=6*60000;
 const nowS=()=>Date.now()+(window.INOV_SKEW||0);   /* hora do servidor: todos os ecrãs contam o mesmo tempo */
 function qaLeft(){const q=liveState().qa||{};if(q.fim)return Math.max(0,q.fim-nowS());return q.resta!=null?q.resta:null;}
+const qaOwn=()=>!!S.isOwner&&/^\/coordenador/.test(location.pathname);   /* só o coordenador, e só em /coordenador, mexe no cronómetro */
 function qaTick(){let el=document.getElementById("qapill");const q=liveState().qa||{},l=qaLeft();
-  if(l==null&&!(S.isOwner&&S.mode==="juri")||!(S.mode==="juri"||S.isOwner)){if(el)el.remove();return;}
-  const own=!!S.isOwner,run=!!q.fim,idle=l==null,txt=Math.floor((l==null?QA_MS:l)/60000)+":"+String(Math.floor(((l==null?QA_MS:l)%60000)/1000)).padStart(2,"0");
+  if(l==null&&!(qaOwn()&&S.mode==="juri")||!(S.mode==="juri"||qaOwn())){if(el)el.remove();return;}
+  const own=qaOwn(),run=!!q.fim,idle=l==null,txt=Math.floor((l==null?QA_MS:l)/60000)+":"+String(Math.floor(((l==null?QA_MS:l)%60000)/1000)).padStart(2,"0");
   if(!el){el=document.createElement("div");el.id="qapill";el.setAttribute("role","timer");el.setAttribute("aria-label","Tempo para perguntas e respostas");document.body.appendChild(el);}
   el.className="qapill"+(l===0?" end":l!=null&&l<=60000?" warn":"")+(run||idle?"":" paused")+(idle?" idle":"");
   const k=txt+"|"+run+"|"+own+"|"+idle;
   if(el._k!==k){el._k=k;el.innerHTML=`<span class="qal">Perguntas e respostas</span><b>${txt}</b>${l===0?'<span class="qal">Tempo!</span>':idle?"":!run?'<span class="qal">em pausa</span>':""}${own?(idle?`<button type="button" data-act="c1qa" data-v="start" aria-label="Iniciar o tempo para todos">▶ Iniciar para todos</button>`:`<button type="button" data-act="c1qa" data-v="${run?"pause":"start"}" aria-label="${run?"Pausar":"Retomar"}">${run?"❚❚":"▶"}</button><button type="button" data-act="c1qa" data-v="reset" aria-label="Repor e esconder">✕</button>`):""}<i></i>`;}
   const bar=el.querySelector("i");if(bar)bar.style.width=Math.round((l==null?1:l/QA_MS)*100)+"%";}
-function qaCtl(){const q=liveState().qa||{},l=qaLeft(),run=!!q.fim;
+function qaCtl(){if(!qaOwn())return "";const q=liveState().qa||{},l=qaLeft(),run=!!q.fim;
   return `<div class="row note" style="gap:8px">Perguntas e respostas (6 min) — o júri vê o tempo num selo no canto do ecrã: ${l==null?`<button type="button" class="btn sm pri" data-act="c1qa" data-v="start">▶ Iniciar 6:00</button>`:`<b>${Math.floor(l/60000)}:${String(Math.floor(l%60000/1000)).padStart(2,"0")}</b>${run?`<button type="button" class="btn sm" data-act="c1qa" data-v="pause">Pausar</button>`:l>0?`<button type="button" class="btn sm pri" data-act="c1qa" data-v="start">Retomar</button>`:""}<button type="button" class="btn sm" data-act="c1qa" data-v="reset">Repor e esconder</button>`}</div>`;}
 setInterval(qaTick,500);
 function sess(n){return S.sessoes.get("s"+n)||{id:"s"+n,n,pares:Array.from({length:6},()=>({a:"",b:""})),juri:JURI_DEF.slice()};}
@@ -1876,7 +1877,7 @@ function vJuriC1(){
   let h=`<div class="jhero c1hero">
     <div class="row" style="justify-content:space-between;align-items:flex-start"><div><div class="eyebrow">Bootcamp de Inovação 26/27 · Júri</div><h1>${esc(phNome())}</h1>${liveBadge()}
       <div style="opacity:.9;margin-top:2px">${fmtD(F.data)}${jur?` · a avaliar como <b>${esc(jur)}</b> <button type="button" class="btn sm ghost" data-act="jout">trocar</button>`:""}</div></div>
-      <span class="row">${canHub()&&S.mode!=="juri"?`<button type="button" class="btn sm" data-act="tohome">← Bootcamp</button>`:""}${S.isOwner?'<button type="button" class="btn sm ghost" data-act="c1fase" data-v="ideacao" title="Ver as sessões de ideação">Sessões de ideação</button>':""}</span></div>
+      <span class="row">${canHub()&&S.mode!=="juri"?`<button type="button" class="btn sm" data-act="tohome">← Bootcamp</button>`:""}</span></div>
     <div class="jtabs" role="group" aria-label="Vista"><button type="button" data-act="c1tab" data-v="apres" aria-pressed="${t==="apres"}">Apresentação</button>${PH==="c2"?`<button type="button" data-act="c1tab" data-v="agenda" aria-pressed="${t==="agenda"}">Agenda</button>`:""}${PH==="sd"?`<button type="button" data-act="c1tab" data-v="top3" aria-pressed="${t==="top3"}">Os meus 3 (${((sdPick()||{}).ids||[]).length}/3)</button>`:""}<button type="button" data-act="c1tab" data-v="todas" aria-pressed="${t==="todas"}">Todas as ideias (${list.length})</button><button type="button" data-act="c1tab" data-v="notas" aria-pressed="${t==="notas"}">As minhas notas (${done}/${list.length})</button></div>
     ${t==="apres"&&list.length?`<div class="pairbar c1bar" role="group" aria-label="Ordem das apresentações">${list.map((i,k)=>{const m=c1Mine(i.id);return `<button type="button" class="pairchip" data-act="c1go" data-id="${esc(i.id)}" aria-pressed="${i.id===curId}" title="${esc(i.titulo||"")}"><b class="c1n">${k+1}</b>${esc(String(i.titulo||"").replace(/\s*\(.*\)$/,"").slice(0,26))}${String(i.titulo||"").replace(/\s*\(.*\)$/,"").length>26?"…":""}${c1Done(m)?'<span class="c1ok" aria-label="avaliada">✓</span>':c1Has(m)?'<span class="c1half" aria-label="a meio">•</span>':""}${i.id===L[PH+"Atual"]?'<span class="now">agora</span>':""}</button>`;}).join("")}</div>`:""}
   </div>`;
@@ -2072,7 +2073,7 @@ document.addEventListener("click",e=>{const b=e.target.closest&&e.target.closest
   else if(a==="c1go"){if(!id)return;S.c1Sel=id;S.c1Follow=id===liveState()[PH+"Atual"]?true:false;render();window.scrollTo(0,0);}
   else if(a==="c1eval"){S.c1Tab="apres";S.c1Sel=id;S.c1Follow=id===liveState()[PH+"Atual"];render();window.scrollTo(0,0);}
   else if(a==="c1follow"){S.c1Follow=true;render();window.scrollTo(0,0);}
-  else if(a==="c1qa"){if(!S.isOwner)return;const q=liveState().qa||{},l=qaLeft();
+  else if(a==="c1qa"){if(!qaOwn())return;const q=liveState().qa||{},l=qaLeft();
     if(v==="start")setLive({qa:{fim:nowS()+(l!=null&&l>0?l:QA_MS)}});else if(v==="pause")setLive({qa:{resta:l||0}});else setLive({qa:null});
     render();qaTick();}
   else if(a==="c1now"){if(!S.isOwner)return;setLive({[PH+"Atual"]:id||""});S.c1Follow=true;render();toast(id?"O júri passa a ver esta ideia.":"Ninguém a apresentar.");}
