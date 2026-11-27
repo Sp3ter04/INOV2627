@@ -11,4 +11,6 @@ head = ('<!doctype html><html lang="pt-PT"><head><meta charset="utf-8">'
 (root / "public/membro.html").write_text((root / "src/membro.html").read_text(encoding="utf-8"), encoding="utf-8")
 import shutil
 shutil.copytree(root/"web/logos",root/"public/logos",dirs_exist_ok=True)
+(root/"public/docs").mkdir(exist_ok=True)
+shutil.copytree(root/"web/docs",root/"public/docs",dirs_exist_ok=True)
 print("public/app.html", len(head) + len(app))
