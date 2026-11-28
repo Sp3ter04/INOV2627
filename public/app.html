@@ -1949,9 +1949,12 @@ function c1Notas(list){const rows=list.map((i,k)=>({i,k,f:c1Mine(i.id)})),done=r
     <tbody>${rows.map(({i,k,f})=>`<tr data-act="c1eval" data-id="${esc(i.id)}" tabindex="0" class="${c1Done(f)?"":"todo"}"><td>${k+1}</td><td style="text-align:left"><b>${esc(i.titulo||"")}</b></td><td>${n1(c1Pitch(f))}</td>${CRIT().map(([c])=>`<td>${f&&f.notas&&f.notas[c]!=null?f.notas[c]:"–"}</td>`).join("")}<td><b>${n1(c1Mean(f))}</b></td></tr>`).join("")}</tbody></table></div>
     <p class="note" style="margin:0">Toca numa linha para abrires a ideia. As notas vão de 0 a 5.</p></div>`;}
 /* ---- coordenador: ordem e resultados (separador Challenge I) ---- */
-function c1Agg(iid){const A=c1Of(iid).filter(c1Has);const crit={};CRIT().forEach(([c])=>crit[c]=avg(A.map(f=>f.notas&&f.notas[c])));
+function c1Agg(iid){const A=c1Of(iid).filter(c1Has);
+  /* média aparada: retira o jurado com a melhor e o com a pior média (só com 3+ avaliações); o pitch não entra na média */
+  const S2=A.slice().sort((a,b)=>c1Mean(b)-c1Mean(a)),cut=A.length>=3?new Set([S2[0],S2[S2.length-1]]):new Set(),T=A.filter(f=>!cut.has(f));
+  const crit={};CRIT().forEach(([c])=>crit[c]=avg(T.map(f=>f.notas&&f.notas[c])));
   const pp={};A.forEach(f=>Object.entries(f.pitch||{}).forEach(([p,v])=>{(pp[p]=pp[p]||[]).push(v);}));const pitch={};Object.keys(pp).forEach(p=>pitch[p]=avg(pp[p]));
-  return {A,crit,pitch,mean:avg(A.map(c1Mean)),pitchMean:avg(Object.values(pitch))};}
+  return {A,T,cut,crit,pitch,mean:avg(T.map(c1Mean)),pitchMean:avg(Object.values(pitch))};}
 function c1Coord(f){
   PH=f==="c2"||f==="sd"?f:"c1";
   const list=c1Ideas(),L=liveState(),v=S.c1v||"ordem",J=new Set(list.flatMap(i=>c1Of(i.id).filter(c1Has).map(f=>f.jurado)));
@@ -1968,11 +1971,11 @@ function c1Coord(f){
   const R=list.map((i,k)=>Object.assign({i,k},c1Agg(i.id))).sort((a,b)=>(b.mean??-1)-(a.mean??-1)||a.k-b.k);
   return top3+`<div class="card" style="margin-bottom:14px">${head}
     <div class="c1tw"><table class="c1tab c1res"><thead><tr><th>#</th><th style="text-align:left">Ideia</th><th>Júris</th>${CRIT().map(([c,l])=>`<th title="${l}">${C1_ABR[c]}</th>`).join("")}<th>Pitch</th><th>Média</th></tr></thead>
-    <tbody>${R.map((r,p)=>{const o=S.c1rOpen&&S.c1rOpen.has(r.i.id);return `<tr class="c1rrow" data-act="c1ropen" data-id="${esc(r.i.id)}" tabindex="0" aria-expanded="${o}"><td>${r.mean!=null?p+1:"–"}</td><td style="text-align:left"><b>${o?"▾":"▸"} ${esc(r.i.titulo||"")}</b><small class="note" style="display:block">${r.k+1}.ª apresentação</small></td><td>${r.A.length}</td>${CRIT().map(([c])=>`<td>${n1(r.crit[c])}</td>`).join("")}<td>${n1(r.pitchMean)}</td><td><b class="score">${n1(r.mean)}</b></td></tr>
+    <tbody>${R.map((r,p)=>{const o=S.c1rOpen&&S.c1rOpen.has(r.i.id);return `<tr class="c1rrow" data-act="c1ropen" data-id="${esc(r.i.id)}" tabindex="0" aria-expanded="${o}"><td>${r.mean!=null?p+1:"–"}</td><td style="text-align:left"><b>${o?"▾":"▸"} ${esc(r.i.titulo||"")}</b><small class="note" style="display:block">${r.k+1}.ª apresentação</small></td><td title="${r.cut.size?r.A.length+' avaliações; retiradas a melhor e a pior':'menos de 3 avaliações: nada retirado'}">${r.T.length}${r.cut.size?`<small class="note">/${r.A.length}</small>`:""}</td>${CRIT().map(([c])=>`<td>${n1(r.crit[c])}</td>`).join("")}<td>${n1(r.pitchMean)}</td><td><b class="score">${n1(r.mean)}</b></td></tr>
       ${o?`<tr class="c1det"><td colspan="${CRIT().length+5}">${Object.keys(r.pitch).length?`<p style="margin:0 0 8px"><b>Pitch por pessoa:</b> ${Object.entries(r.pitch).map(([pn,x])=>`${av(pn,20)} ${esc(pn)} <b>${n1(x)}</b>`).join(" · ")}</p>`:""}
-        ${r.A.length?r.A.map(f=>`<div class="c1jr"><div class="row" style="justify-content:space-between"><b>${esc(f.jurado)}</b><span class="note">${CRIT().map(([c,l])=>`${C1_ABR[c]} ${f.notas&&f.notas[c]!=null?f.notas[c]:"–"}`).join(" · ")} · média <b>${n1(c1Mean(f))}</b>${Object.keys(f.pitch||{}).length?" · pitch "+Object.entries(f.pitch).map(([pn,x])=>esc(first(pn))+" "+x).join(", "):""}</span></div>
+        ${r.A.length?r.A.map(f=>`<div class="c1jr" ${r.cut.has(f)?'style="opacity:.55"':''}><div class="row" style="justify-content:space-between"><b>${esc(f.jurado)}${r.cut.has(f)?' <span class="pill">retirada</span>':''}</b><span class="note">${CRIT().map(([c,l])=>`${C1_ABR[c]} ${f.notas&&f.notas[c]!=null?f.notas[c]:"–"}`).join(" · ")} · média <b>${n1(c1Mean(f))}</b>${Object.keys(f.pitch||{}).length?" · pitch "+Object.entries(f.pitch).map(([pn,x])=>esc(first(pn))+" "+x).join(", "):""}</span></div>
           ${(f.perguntas||"").trim()?`<p class="fbc"><span class="pill br">Perguntas</span> ${esc(f.perguntas)}</p>`:""}${(f.feedback||"").trim()?`<p class="fbc"><span class="pill ok">Feedback</span> ${esc(f.feedback)}</p>`:""}</div>`).join(""):'<p class="note" style="margin:0">Ainda nenhum jurado avaliou esta ideia.</p>'}</td></tr>`:""}`;}).join("")}</tbody></table></div>
-    <p class="note" style="margin:0">Ordenado pela média dos ${CRIT().length} critérios (0–5). Toca numa ideia para veres as notas, as perguntas e o feedback de cada jurado.</p></div>`;}
+    <p class="note" style="margin:0">Ordenado pela média dos ${CRIT().length} critérios (0–5), sem o pitch e sem a melhor e a pior avaliação de cada ideia (Júris = avaliações usadas/total). Toca numa ideia para veres as notas, as perguntas e o feedback de cada jurado.</p></div>`;}
 function c1SetOrder(ids){S.cfg.fases[PH]=Object.assign({},S.cfg.fases[PH],{ordem:ids});saveCfg();render();}
 
 /* ---- Challenge II: speakers, agenda e chat do júri ---- */
