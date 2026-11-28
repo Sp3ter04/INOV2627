@@ -813,7 +813,7 @@ function restoreFields(root,list){
     if(it.focused){el.focus({preventScroll:true});try{if(it.s!=null)el.setSelectionRange(it.s,it.e);}catch(e){}}}}
 document.addEventListener("focusout",()=>setTimeout(()=>{if(S.pendingRender&&!editing()){S.pendingRender=false;render();}},0));
 
-const VIEWS=[{id:"geral",l:"Visão geral",c:"#fff"},{sep:1},{id:"hub",l:"Bootcamp",c:"var(--p-hub)"},{id:"apollo",l:"Apollo",c:"var(--p-apollo)"},{id:"ud",l:"Unicorn Day",c:"var(--p-ud)"},{id:"kpis",l:"KPIs dos membros",c:"var(--ok)"},{sep:1},{id:"mbr",l:"MBR mensal",c:"var(--brand-2)"},{id:"defs",l:"Definições",c:"transparent"}];
+const VIEWS=[{id:"geral",l:"Visão geral",c:"#fff"},{sep:1},{id:"hub",l:"Bootcamp",c:"var(--p-hub)"},{id:"kpis",l:"KPIs dos membros",c:"var(--ok)"},{sep:1},{id:"mbr",l:"MBR mensal",c:"var(--brand-2)"},{id:"defs",l:"Definições",c:"transparent"}];
 function renderNav(){document.getElementById("nav").innerHTML=VIEWS.filter(v=>S.isOwner||v.id==="hub").map(v=>v.sep?'<div class="sep"></div>':`<button type="button" data-go="${v.id}" ${S.view===v.id?'aria-current="page"':""}><span class="dot" style="background:${v.c}"></span>${v.l}</button>`).join("");}
 function render(){
   renderNav();
@@ -885,16 +885,10 @@ function vGeral(){
     ${tile(mentores,"Mentores na rede",`${juris} júris`)}
     ${tile(ideias,"Ideias geradas",sts.length?`${sts.length} startups ativas`:"Selection Day a 25 nov")}
   </div>
-  <div class="grid g3" style="margin-bottom:14px">
+  <div class="grid" style="margin-bottom:14px">
     <div class="card pillar" style="--pc:var(--p-hub)"><div class="card-h"><h2>Bootcamp</h2><button class="btn sm ghost" data-go="hub">Abrir →</button></div>
       <div class="funnel">${fun.map(([e,n])=>`<div class="fstep"><span>${ETAPA_L[e]}</span><div><span class="fb" style="display:inline-block;width:${Math.max(8,fun[0][1]?n/fun[0][1]*100:0)}%">${n}</span></div></div>`).join("")}</div>
       <dl class="kv"><dt>Parcerias do Hub (formações)</dt><dd>${hub.ps.length}</dd><dt>Ganho pelas startups</dt><dd>${eur(money)}</dd></dl></div>
-    <div class="card pillar" style="--pc:var(--p-apollo)"><div class="card-h"><h2>Apollo VI</h2><button class="btn sm ghost" data-go="apollo">Abrir →</button></div>
-      <dl class="kv"><dt>Confirmado</dt><dd>${eur(ap.eurConf)}</dd><dt>Em pipeline</dt><dd>${eur(ap.eurPipe)}</dd><dt>Parcerias (inclui pacote UD + Apollo)</dt><dd>${ap.ps.length}</dd><dt>Em negociação</dt><dd>${ap.byEstado["em negociação"]}</dd><dt>Startups no programa</dt><dd>${c.startups.filter(s=>s.programa==="Apollo").length} / ${m.apolloStartups}</dd></dl>
-      ${m.apolloEur?`<div class="note">Meta de sponsors: ${eur(ap.eurConf)} de ${eur(m.apolloEur)}</div>${progress(ap.eurConf,m.apolloEur,"var(--p-apollo)")}`:""}</div>
-    <div class="card pillar" style="--pc:var(--p-ud)"><div class="card-h"><h2>Unicorn Day 27</h2><button class="btn sm ghost" data-go="ud">Abrir →</button></div>
-      <dl class="kv"><dt>Confirmado</dt><dd>${eur(ud.eurConf)}</dd><dt>Em pipeline</dt><dd>${eur(ud.eurPipe)}</dd><dt>Parcerias (inclui pacote UD + Apollo)</dt><dd>${ud.ps.length}</dd><dt>Prémios em conversa</dt><dd>${ud.ps.filter(p=>p.tipo==="Prémio").length}</dd><dt>VCs / investidores confirmados</dt><dd>${m.udVCsAtual} / ${m.udVCs}</dd></dl>
-      ${m.udEur?`<div class="note">Meta de sponsors: ${eur(ud.eurConf)} de ${eur(m.udEur)}</div>${progress(ud.eurConf,m.udEur,"var(--p-ud)")}`:""}</div>
   </div>
   <div class="grid g21">
     <div class="stack">
